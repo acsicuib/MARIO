@@ -51,6 +51,8 @@ class PolicyManager():
     def __call__(self, sim, routing):
         if self.active:
             print("Hello world from instance %s: %i"%(self.name,self.DES))
+            currentNode = sim.alloc_DES[self.DES]
+
 
             print("\t ALL Routes: ",routing.controlServices)
             routes = []
