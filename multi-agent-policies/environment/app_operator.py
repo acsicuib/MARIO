@@ -71,9 +71,7 @@ class Mario():
                 rnd_index_action = np.random.choice(np.array(act_index),1, p=prob)
                 action = acts[rnd_index_action[0]]
 
-
                 self.perfom_action(sim,action)
-
                 self.memory = []
             else:
                 pass
@@ -87,19 +85,30 @@ class Mario():
         :param action:
         :return:
         """
-        print("Performing action")
-        print("\t Service: ",action[0])
-        print("\t ID_S: ",action[1])
-        print("\t Node: ",action[2])
+        # print("Performing action")
+        # print("\t Service: ",action[0])
+        # print("\t ID_S: ",action[1])
+        # print("\t Node: ",action[2])
         print("\t Action: ",action[3])
-        type_action = action[3][0:action[3].index("(")]
-        if type_action == "replicate":
+        act = str(action[3])
+        type_action = act[0:act.index("(")]
+        parameters = act[len(type_action+"("):-1]
+        print("Action:",type_action)
+        print("parameters:",parameters)
+
+        if type_action == "replicate": # replicate(Si,[TargetNodes])
+            #parameters: 0,[3, 2]
+            parameters = parameters.replace("[","")
+            parameters = parameters.replace("]","")
+            nodes_to_replicate = np.array(parameters.split(",")).astype(int)[1:]
+            print(nodes_to_replicate)
             pass
 
         elif type_action == "nop":
+            # Doing nothing
             pass
 
-        elif type_action == "migrate":
+        elif type_action == "migrate": # migrate(Si,TargetNode,MaxLatency):-
             pass
 
         elif type_action == "replicate":
