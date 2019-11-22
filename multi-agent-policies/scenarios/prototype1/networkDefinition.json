@@ -28,7 +28,7 @@
   "entity": [
     {
       "COST": 1,
-      "capacity": "(3, 3)",
+      "HwReqs": "10",
       "name": 1,
       "IPT": 1000,
       "WATT": 1.0,
@@ -38,7 +38,7 @@
     },
     {
       "COST": 1,
-      "capacity": "(3, 3)",
+      "HwReqs": "10",
       "name": 3,
       "IPT": 1000,
       "WATT": 1.0,
@@ -48,7 +48,7 @@
     },
     {
       "COST": 1,
-      "capacity": "(3, 3)",
+      "HwReqs": "10",
       "name": 2,
       "IPT": 1000,
       "WATT": 1.0,
@@ -58,7 +58,7 @@
     },
     {
       "COST": 1,
-      "capacity": "(3, 3)",
+      "HwReqs": "10",
       "name": 4,
       "IPT": 1000,
       "WATT": 1.0,
@@ -68,7 +68,7 @@
     },
     {
       "COST": 1,
-      "capacity": "(3, 3)",
+      "HwReqs": "10",
       "name": 0,
       "IPT": 1000,
       "WATT": 1.0,

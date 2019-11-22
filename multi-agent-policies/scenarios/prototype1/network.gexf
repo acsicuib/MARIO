@@ -10,7 +10,7 @@
     </attributes>
     <attributes class="node" mode="static">
       <attribute id="0" title="COST" type="long" />
-      <attribute id="1" title="capacity" type="string" />
+      <attribute id="1" title="HwReqs" type="string" />
       <attribute id="2" title="name" type="long" />
       <attribute id="3" title="IPT" type="long" />
       <attribute id="4" title="WATT" type="double" />
@@ -21,7 +21,7 @@
       <node id="1" label="1">
         <attvalues>
           <attvalue for="0" value="1" />
-          <attvalue for="1" value="(3, 3)" />
+          <attvalue for="1" value="10" />
           <attvalue for="2" value="1" />
           <attvalue for="3" value="1000" />
           <attvalue for="4" value="1.0" />
@@ -32,7 +32,7 @@
       <node id="3" label="3">
         <attvalues>
           <attvalue for="0" value="1" />
-          <attvalue for="1" value="(3, 3)" />
+          <attvalue for="1" value="10" />
           <attvalue for="2" value="3" />
           <attvalue for="3" value="1000" />
           <attvalue for="4" value="1.0" />
@@ -43,7 +43,7 @@
       <node id="2" label="2">
         <attvalues>
           <attvalue for="0" value="1" />
-          <attvalue for="1" value="(3, 3)" />
+          <attvalue for="1" value="10" />
           <attvalue for="2" value="2" />
           <attvalue for="3" value="1000" />
           <attvalue for="4" value="1.0" />
@@ -54,7 +54,7 @@
       <node id="4" label="4">
         <attvalues>
           <attvalue for="0" value="1" />
-          <attvalue for="1" value="(3, 3)" />
+          <attvalue for="1" value="10" />
           <attvalue for="2" value="4" />
           <attvalue for="3" value="1000" />
           <attvalue for="4" value="1.0" />
@@ -65,7 +65,7 @@
       <node id="0" label="0">
         <attvalues>
           <attvalue for="0" value="1" />
-          <attvalue for="1" value="(3, 3)" />
+          <attvalue for="1" value="10" />
           <attvalue for="2" value="0" />
           <attvalue for="3" value="1000" />
           <attvalue for="4" value="1.0" />

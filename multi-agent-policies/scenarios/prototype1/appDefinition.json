@@ -1,6 +1,13 @@
 [
   {
+    "id": 2,
     "name": "2",
+    "HwReqs": 1,
+    "MaxReqs": 200,
+    "MaxLatency": 50,
+    "deadline": 487203.22,
+    "profile_rules": "profile_rules_1.pl",
+
     "transmission": [
       {
         "module": "2_19",
@@ -15,7 +22,6 @@
         "name": "2_19"
       }
     ],
-    "deadline": 487203.22,
     "message": [
       {
         "d": "2_19",
@@ -25,7 +31,6 @@
         "id": 0,
         "instructions": 330
       }
-    ],
-    "id": 2
+    ]
   }
 ]

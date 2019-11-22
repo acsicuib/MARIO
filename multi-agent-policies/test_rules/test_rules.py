@@ -5,7 +5,6 @@ from problog.tasks import sample
 
 modeltext = """
 :- use_module(library(lists)).
-
 nop(Si) :- 
 							serviceInstance(Si, S, N),
                             service(S, HwReqs, MaxReqs, MaxLatency),
