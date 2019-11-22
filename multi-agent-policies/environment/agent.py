@@ -60,19 +60,19 @@ class PolicyManager():
     def __call__(self, sim, routing):
         if self.active:
             self.rules.clear()
-            print("Running control instance: %s: %i"%(self.name,self.DES))
+            # print("Running control instance: %s: %i"%(self.name,self.DES))
             self.logger.info("Running control instance: %s: %i"%(self.name,self.DES))
 
             currentNode = sim.alloc_DES[self.DES]
             self.rules.and_rule("serviceInstance",self.DES,self.app_name,currentNode)
 
-            print("\t All paths [wl-node,service-node: ",routing.controlServices)
+            # print("\t All paths [wl-node,service-node: ",routing.controlServices)
             routes = []
-            neighbours = []
+            neighbours = [currentNode]
             for (path,des) in routing.controlServices.values():
                 if des==self.DES:
                     routes.append([self.get_latency(path, sim.topology), path])
-                    neighbours += path
+                    # neighbours += path # Uncomment in case of considering nodes from user-paths
 
             neighbours += [e[1] for e in sim.topology.G.edges(currentNode)]
             neighbours = list(dict.fromkeys(neighbours))
@@ -115,30 +115,36 @@ class PolicyManager():
                 print("Not information yet")
                 self.logger.warning("There are not messages.")
 
-
-            actions = self.run_problog_model(self.rules)
-            print(actions)
+            actions = self.run_problog_model(self.rules,self.DES,currentNode)
 
             #Sending the rules to the app_operator, aka MARIO
             self.app_operator.get_actions_from_agents((self.name,self.DES,currentNode,actions))
-            sys.exit()
 
 
-    def run_problog_model(self, rules):
+
+    def run_problog_model(self, rules, service_name,current_node):
         all_rules = ""
         with open(self.rule_profile, "r") as f:
             all_rules = f.read()
-        # print(all_rules)
+
+        queries = "\nquery(nop(%s)).\n"%service_name
+        queries += "query(migrate(%s, X, %s)).\n"%(service_name,current_node)
+        queries += "query(replicate(%s, X)).\n"%service_name
+        queries += "query(suicide(%s)).\n"%service_name
+        queries += "query(fusion(X, Y)).\n"
+
         modeltext = """
         :- use_module(library(lists)).
+           route(xxxxxx, path(xxxx, xxx, []), 10, 10).
         %s
-        """%(all_rules+"\n"+str(rules))
-        print("******")
-        print(modeltext)
-        print("******")
+        
+        """%(all_rules+"\n"+str(rules)+queries)
+        # print("******")
+        # print(modeltext)
+        # print("******")
         model = PrologString(modeltext)
         result = get_evaluatable().create_from(model).evaluate()
-        
+        result = [(a,result[a]) for a in result if result[a]!=0] #filter actions with prob.= 0
         return result
 
 
