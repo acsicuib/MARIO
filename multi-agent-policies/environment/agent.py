@@ -9,12 +9,11 @@ from problogRulesGenerator import Rules
 from problog.program import PrologString
 from problog import get_evaluatable
 from problog.tasks import sample
-
+from pathlib import Path
 
 class PolicyManager():
 
     def get_app_identifier(self,nameservice):
-        print("nameservice:",nameservice)
         return nameservice[0:nameservice.index("_")]
 
     def get_latency(self, path, topology):
@@ -55,9 +54,10 @@ class PolicyManager():
         self.rules = Rules(rules)
         self.agents = {}
         self.app_operator = app_operator
+        self.action_on_render =0
         # data = json.load(open(path + 'usersDefinition.json'))
 
-    def __call__(self, sim, routing):
+    def __call__(self, sim, routing, experiment_path):
         if self.active:
             self.rules.clear()
             # print("Running control instance: %s: %i"%(self.name,self.DES))
@@ -66,7 +66,7 @@ class PolicyManager():
             currentNode = sim.alloc_DES[self.DES]
             self.rules.and_rule("serviceInstance",self.DES,self.app_name,currentNode)
 
-            # print("\t All paths [wl-node,service-node: ",routing.controlServices)
+             # print("\t All paths [wl-node,service-node: ",routing.controlServices)
             routes = []
             neighbours = [currentNode]
             for (path,des) in routing.controlServices.values():
@@ -115,14 +115,23 @@ class PolicyManager():
                 print("Not information yet")
                 self.logger.warning("There are not messages.")
 
-            actions = self.run_problog_model(self.rules,self.DES,currentNode)
+            actions = self.run_problog_model(self.rules,self.DES,currentNode,experiment_path)
 
             #Sending the rules to the app_operator, aka MARIO
             self.app_operator.get_actions_from_agents((self.name,self.DES,currentNode,actions))
 
 
 
-    def run_problog_model(self, rules, service_name,current_node):
+    def run_problog_model(self, rules, service_name,current_node,experiment_path):
+        """
+        executes the model into the prolog engine.
+
+        :param rules:
+        :param service_name:
+        :param current_node:
+        :param experiment_path:
+        :return:
+        """
         all_rules = ""
         with open(self.rule_profile, "r") as f:
             all_rules = f.read()
@@ -139,13 +148,30 @@ class PolicyManager():
         %s
         
         """%(all_rules+"\n"+str(rules)+queries)
-        # print("******")
-        # print(modeltext)
-        # print("******")
+
         model = PrologString(modeltext)
+        self.render(service_name,current_node,modeltext,experiment_path)
         result = get_evaluatable().create_from(model).evaluate()
         result = [(a,result[a]) for a in result if result[a]!=0] #filter actions with prob.= 0
         return result
 
 
+    def render(self,service_name,current_node,modeltext,experiment_path):
+        """
+        write the model into a file
 
+        :param service_name:
+        :param current_node:
+        :param modeltext:
+        :param experiment_path:
+        :return:
+        """
+        print(experiment_path)
+        rules_dir = Path(experiment_path + "results/models/")
+        rules_dir.mkdir(parents=True, exist_ok=True)
+        rules_dir = str(rules_dir)
+
+        with open(rules_dir+"/rules_%s_n%i_%i.pl"%(service_name,current_node,self.action_on_render),"w") as f:
+            f.write(modeltext)
+
+        self.action_on_render +=1

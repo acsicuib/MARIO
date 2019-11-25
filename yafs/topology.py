@@ -165,7 +165,7 @@ class Topology:
         self.__init_uptimes()
 
     def load_all_node_attr(self,data):
-        self.G = nx.Graph()
+        self.G = nx.DiGraph()
         for edge in data["link"]:
             self.G.add_edge(edge["s"], edge["d"], BW=edge[self.LINK_BW], PR=edge[self.LINK_PR])
 

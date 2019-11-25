@@ -28,23 +28,25 @@
   "entity": [
     {
       "COST": 1,
-      "HwReqs": "3",
+      "HwReqs": "4",
       "name": 1,
       "IPT": 1000,
       "WATT": 1.0,
       "RAM": 1,
       "id": 1,
-      "occupation": "[0, 0, 0, 0, 0, 0, 0, 0, 0,]"
+      "occupation": "[0, 0, 0, 0]",
+      "shape": "(2,2)"
     },
     {
       "COST": 1,
-      "HwReqs": "5",
+      "HwReqs": "6",
       "name": 3,
       "IPT": 1000,
       "WATT": 1.0,
       "RAM": 1,
       "id": 3,
-      "occupation": "[0, 0, 0, 0, 0, 0, 0, 0, 0,]"
+      "occupation": "[0, 0, 0, 0, 0, 0]",
+      "shape": "(3,2)"
     },
     {
       "COST": 1,
@@ -54,27 +56,30 @@
       "WATT": 1.0,
       "RAM": 1,
       "id": 2,
-      "occupation": "[0, 0, 0, 0, 0, 0, 0, 0, 0,]"
+      "occupation": "[0]",
+      "shape": "(1,1)"
     },
     {
       "COST": 1,
-      "HwReqs": "3",
+      "HwReqs": "4",
       "name": 4,
       "IPT": 1000,
       "WATT": 1.0,
       "RAM": 1,
       "id": 4,
-      "occupation": "[0, 0, 0, 0, 0, 0, 0, 0, 0,]"
+      "occupation": "[0, 0, 0, 0]",
+      "shape": "(2,2)"
     },
     {
       "COST": 1,
-      "HwReqs": "2",
+      "HwReqs": "1",
       "name": 0,
       "IPT": 1000,
       "WATT": 1.0,
       "RAM": 1,
       "id": 0,
-      "occupation": "[0, 0, 0, 0, 0, 0, 0, 0, 0,]"
+      "occupation": "[0]",
+      "shape": "(1,1)"
     }
   ]
 }

@@ -1,9 +1,9 @@
 {
   "initialAllocation": [
     {
-      "module_name": "2_19",
-      "app": "2",
-      "id_resource":1
+      "module_name": "1_01",
+      "app": "1",
+      "id_resource": 1
     }
   ]
 }
