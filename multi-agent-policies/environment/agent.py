@@ -42,7 +42,8 @@ class PolicyManager():
         return deployed_services,nodes_with_services
 
     def __init__(self,DES,name,rules,service_rule_profile,path,app_operator):
-        self.DES = DES
+        self.id_monitor = None
+        self.DES = DES #Service ID
         self.name = name
         self.app_name = self.get_app_identifier(self.name)
         self.active = True
@@ -58,10 +59,13 @@ class PolicyManager():
         # data = json.load(open(path + 'usersDefinition.json'))
 
     def __call__(self, sim, routing, experiment_path):
-        if self.active:
+        if self.id_monitor in self.app_operator.active_monitor.values(): # Once a process is finished, the service may run for the last time. The simulator does not control this last call.
             self.rules.clear()
-            # print("Running control instance: %s: %i"%(self.name,self.DES))
-            self.logger.info("Running control instance: %s: %i"%(self.name,self.DES))
+            print("\nMonitor ID: %i for service: %i (%s)  running rules "%(self.id_monitor,self.DES,self.name))
+            self.logger.info("\nMonitor ID: %i for service: %i (%s)  running rules "%(self.id_monitor,self.DES,self.name))
+
+            # print("PREVIOUS SERVICES")
+            # print(self.app_operator.active_monitor)
 
             currentNode = sim.alloc_DES[self.DES]
             self.rules.and_rule("serviceInstance",self.DES,self.app_name,currentNode)
@@ -112,14 +116,14 @@ class PolicyManager():
                             path.inner_rule("path", n_user, currentNode, r[1])
                             self.rules.and_rule("route", self.DES, path, r[0],n_messages)
             else:
-                print("Not information yet")
-                self.logger.warning("There are not messages.")
+                print("INFO - No messages among users and service")
+                self.logger.warning("INFO - There are not new messages among users and service")
+
 
             actions = self.run_problog_model(self.rules,self.DES,currentNode,experiment_path)
-
             #Sending the rules to the app_operator, aka MARIO
+            # print("Sending new rules to MARIO: %s",actions)
             self.app_operator.get_actions_from_agents((self.name,self.DES,currentNode,actions))
-
 
 
     def run_problog_model(self, rules, service_name,current_node,experiment_path):
@@ -166,7 +170,6 @@ class PolicyManager():
         :param experiment_path:
         :return:
         """
-        print(experiment_path)
         rules_dir = Path(experiment_path + "results/models/")
         rules_dir.mkdir(parents=True, exist_ok=True)
         rules_dir = str(rules_dir)

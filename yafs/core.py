@@ -688,16 +688,15 @@ class Sim:
         self.logger.debug("STOP_Process - Internal Monitor: %s\t#DES:%i" % (name, myId))
 
 
-    def __add_monitor(self, name, function, distribution, **param):
+    def __add_monitor(self, idDES, name, function, distribution, **param):
         """
         Add a DES process for user purpose
         """
-        myId = self.__get_id_process()
-        self.logger.debug("Added_Process - Internal Monitor: %s\t#DES:%i" % (name, myId))
-        while not self.stop:
+        self.logger.debug("Added_Process - Internal Monitor: %s\t#DES:%i" % (name, idDES))
+        while not self.stop and self.des_process_running[idDES]:
             yield self.env.timeout(distribution.next())
             function(**param)
-        self.logger.debug("STOP_Process - Internal Monitor: %s\t#DES:%i" % (name, myId))
+        self.logger.debug("STOP_Process - Internal Monitor: %s\t#DES:%i" % (name, idDES))
 
 
 
@@ -758,7 +757,11 @@ class Sim:
             param (dict): the parameters of the *distribution* function
 
         """
-        self.env.process(self.__add_monitor(name, function, distribution, **param))
+        idDES = self.__get_id_process()
+        self.des_process_running[idDES] = True
+        self.env.process(self.__add_monitor(idDES,name, function, distribution, **param))
+        return idDES
+
 
     def register_event_entity(self, next_event_dist, event_type=EVENT_UP_ENTITY, **args):
         """

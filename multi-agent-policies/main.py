@@ -132,7 +132,7 @@ def main(simulated_time, experiment_path,case,it):
     # s.deploy_monitor("EvolutionOfServices", evol, dStart, **{"sim": s, "routing": selectorPath,"case":case, "stop_time":stop_time, "it":it})
 
     dStart = deterministicDistribution(10, name="Deterministic")
-    appOp = Mario(period=200,rules=globalrules,path_csv_files=path_csv_files,service_rule_profile=service_rule_profile,app_number=len(dataApp))
+    appOp = Mario(period=500,rules=globalrules,path_csv_files=path_csv_files,service_rule_profile=service_rule_profile,app_number=len(dataApp))
     s.deploy_monitor("App-Operator", appOp, dStart,**{"sim": s, "routing": selectorPath, "path":experiment_path})
 
     """
@@ -141,7 +141,7 @@ def main(simulated_time, experiment_path,case,it):
     logging.info(" Performing simulation: %s %i "%(case,it))
     s.run(stop_time, test_initial_deploy=False, show_progress_monitor=False)  # To test deployments put test_initial_deploy a TRUE
 
-
+    appOp.render(s,experiment_path,selectorPath,["END",-1,-1,"NONE"])
 
     """
     Storing results from other strategies
@@ -170,3 +170,5 @@ if __name__ == '__main__':
 
         print("\n--- %s seconds ---" % (time.time() - start_time))
     print("All simulations done")
+
+# ffmpeg -r 1 -i network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p out2.mp4

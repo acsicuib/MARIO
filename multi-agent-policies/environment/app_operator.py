@@ -32,6 +32,9 @@ class Mario():
         self.image_id =0
         self.__draw_controlUser = {}
 
+        self.active_monitor = {}
+        # key: id_service (DES), value: id_monitor (DES)
+
     def __call__(self, sim, routing, path):
         """
         This functions is called periodically
@@ -51,17 +54,23 @@ class Mario():
             for app in sim.alloc_module:
                 for service in sim.alloc_module[app]:
                     for des in sim.alloc_module[app][service]:
-                        logging.info("Generating a new agent control from: %s with id: %i"%(service,des))
-                        period = deterministicDistribution(self.period, name="Deterministic")
-                        pm = PolicyManager(des,service,self.globalrules,self.service_rule_profile,self.path_csv_files,app_operator=self)
-                        sim.deploy_monitor("Policy Manager %i"%des, pm, period, **{"sim": sim, "routing": routing, "experiment_path":path})
+                        self.create_monitor_of_module(des, path, routing, service, sim)
             self.create_initial_services = False #only one time
         else:
+            print("\nI'M MARIOOOOOOOOOO ")
+            print("NUMBER OF RULES ON MEMORY: %i"%len(self.memory))
             if len(self.memory)>0:
-                # TODO Control actions from all agents & select the best option
-                print("MARIO IS HERE ")
+                self.step += 1
+                sim.print_debug_assignaments() # DEBUG
+
+            # TODO Control actions from all agents & select the best option
+            take_last_action = [] # It perfoms the last set of agent rules
+            for rule in reversed(self.memory): #(self.name,self.DES,currentNode,actions)
                 acts, prob = [], []
-                for rule in self.memory: #(self.name,self.DES,currentNode,actions)
+                print("++ Taking a new action ")
+
+                if rule[1] not in take_last_action:
+                    take_last_action.append(rule[1])
                     # print("\tService:"+rule[0])
                     # print("\tID_Service:%i"%rule[1])
                     # print("\tNode:%i"%rule[2])
@@ -70,23 +79,19 @@ class Mario():
                         acts.append((rule[0],rule[1],rule[2],action[0]))
                         prob.append(action[1])
 
-                # TODO get the priorities of tha agent
-                prob = np.array(prob)
-                prob = [v/prob.sum() for v in prob] #May be there are problems when the sum>=1 by decimals
-                act_index = range(len(acts))
-                rnd_index_action = np.random.choice(np.array(act_index),1, p=prob)
-                action = acts[rnd_index_action[0]]
+                    # TODO apply agent priorities
+                    prob = np.array(prob)
+                    prob = [v/prob.sum() for v in prob] #May be there are problems when the sum>=1 by decimals
 
-                self.render(sim,path,routing,action)
+                    act_index = range(len(acts))
+                    rnd_index_action = np.random.choice(np.array(act_index),1, p=prob)
+                    action = acts[rnd_index_action[0]]
+                    self.render(sim,path,routing,action)
+                    self.perfom_action(sim,action,routing,path)
 
-                self.perfom_action(sim,action)
-                self.memory = []
+            self.memory = []
 
-            else:
-                pass
-            self.step += 1
-
-    def perfom_action(self,sim,action):
+    def perfom_action(self,sim,action,routing,path):
         """
         Decode the action and perfom the action in the simulator
 
@@ -94,14 +99,16 @@ class Mario():
         :param action:
         :return:
         """
-        print("***"*10)
-        print("Performing action")
+
+        print(" + Perfom action")
         print("\t Service: ",action[0])
         print("\t ID_S: ",action[1])
         print("\t Node: ",action[2])
         print("\t action: ",action[3])
+        print("\t ********* ")
 
         service = action[0]
+        id_service = action[1]
         on_node = action[2]
         act = str(action[3])
         type_action = act[0:act.index("(")]
@@ -116,15 +123,20 @@ class Mario():
             parameters = parameters.replace("[","")
             parameters = parameters.replace("]","")
 
-            if len(parameters)<=1:
+            if len(parameters)<=2:
                 print("WARNING: a replicate-command without parameters")
             else:
                 nodes_to_replicate = np.array(parameters.split(",")).astype(int)[1:]
+                space_on_node = self.get_free_space_on_nodes(sim)
                 for n in nodes_to_replicate:
-                    self.logger.info("Action Replicate New instance of %s on node: %i"%(service,n))
-                    print("\t\t+Action Replicate New instance of %s on node: %i"%(service,n))
-                    self.deploy_module(sim,service,n)
-                    #TODO Crear agente
+                    if space_on_node[n]>0:
+                        self.logger.info("Action Replicate new instance of %s on node: %i"%(service,n))
+                        print("\t\t+Action Replicate new instance of %s on node: %i"%(service,n))
+                        self.deploy_module(sim, service, n, routing, path)
+                    else:
+                        self.logger.warning("There is not more free space on node: %i"%n)
+                        print("\t WARNING: NO FREE SPACE ON NODE:%i"%n)
+
             pass
 
         elif type_action == "nop":
@@ -142,22 +154,38 @@ class Mario():
         elif type_action == "suicide":
             # no arguments
             self.logger.info("Action Suicide instance %s on node: %i" % (service, on_node))
-            sim.undeploy_module(self.get_app_identifier(service),service, on_node)
-            # TODO REMOVE agente
+            self.undeploy_module(sim,service,on_node,id_service)
 
             pass
 
         elif type_action == "fusion":
             pass
 
-    def deploy_module(self, sim, service, node):
+    def undeploy_module(self,sim,service,node,id_service):
+        sim.undeploy_module(self.get_app_identifier(service), service, node)
+        #Remove stop process
+        del self.active_monitor[id_service]
+        sim.stop_process(id_service)
+
+
+    def deploy_module(self, sim, service, node,routing,path):
+        # Allocation the module in the simulator
         app_name = self.get_app_identifier(service)
         app = sim.apps[app_name]
         services = app.services
-        return sim.deploy_module(app_name, service, services[service], [node])
+        des = sim.deploy_module(app_name, service, services[service], [node])[0]
+        # Creating a new monitor associated to the module
+        self.create_monitor_of_module(des, path, routing, service, sim)
 
-
-    # sim.un_deploy_module(self,sim,service_name,node):
+    def create_monitor_of_module(self, des, path, routing, service, sim):
+        period = deterministicDistribution(self.period, name="Deterministic")
+        pm = PolicyManager(des, service, self.globalrules, self.service_rule_profile, self.path_csv_files,app_operator=self)
+        id_monitor = sim.deploy_monitor("Policy Manager %i" % des, pm, period,
+                                        **{"sim": sim, "routing": routing, "experiment_path": path})
+        pm.id_monitor = id_monitor
+        logging.info("Generating a new agent control from: %s with id: %i - Monitor: %i" % (service, des, id_monitor))
+        print("Generating a new agent control from: %s with id: %i - Monitor: %i" % (service, des, id_monitor))
+        self.active_monitor[des] = id_monitor
 
     def get_actions_from_agents(self, something):
         """
@@ -197,6 +225,15 @@ class Mario():
             nodes_with_users[user_service[0]].append(self.get_app_identifier(user_service[1]))
         return nodes_with_users
 
+    def get_free_space_on_nodes(self,sim):
+        currentOccupation =dict([a, int(x)] for a,x in nx.get_node_attributes(G=sim.topology.G, name="HwReqs").items())
+        for app in sim.alloc_module:
+            dict_module_node = sim.alloc_module[app]  # modules deployed
+            for module in dict_module_node:
+                for des in dict_module_node[module]:
+                    currentOccupation[sim.alloc_DES[des]] -= 1
+        return currentOccupation
+
     def get_nodes_with_services(self,sim):
         """
         It returns a dictionary for node with a np.array with the occupation for visualization purporse
@@ -221,6 +258,7 @@ class Mario():
             try:
                 currentOccupation[node] = np.array(currentOccupation[node]).reshape(eval(shape[node]))
             except ValueError:
+                self.logger.error("Network node: %i defined with a bad shape "%node)
                 print("Network node: %i defined with a bad shape "%node)
                 currentOccupation[node] = np.zeros(shape(1,1))
 
@@ -229,11 +267,11 @@ class Mario():
 
     def render(self,sim,path,routing,action):
         # print("\t All paths [wl-node,service-node: ", routing.controlServices)
-        print("Performing action")
-        print("\t Service: ", action[0])
-        print("\t ID_S: ", action[1])
-        print("\t Node: ", action[2])
-        print("Action: ", action[3])
+        # print("Performing action")
+        # print("\t Service: ", action[0])
+        # print("\t ID_S: ", action[1])
+        # print("\t Node: ", action[2])
+        # print("Action: ", action[3])
 
         if self.pos == None: #first time
             # self.pos = nx.kamada_kawai_layout(sim.topology.G)  # el layout podria ser una entrada?
@@ -254,9 +292,11 @@ class Mario():
         norm = mpl.colors.BoundaryNorm(bounds, newcmp.N)
 
         fig, ax = plt.subplots(figsize=(16.0, 10.0))
-        plt.text(0.5, 1.1, "Step: %i" % self.step, {'color': 'black', 'fontsize': 16})
+        left, bottom, width, height = ax.get_position().bounds
+        top = bottom + height
+        plt.text(width/1.3, top*1.25, "Step: %i - Time:%i" % (self.step,sim.env.now), {'color': 'black', 'fontsize': 16})
         action_text = "Node N%i + Service: %i(%s) -> Action: %s" % (action[2], action[1], action[0], action[3])
-        plt.text(0.5,1.,action_text, {'color': 'black', 'fontsize': 14})
+        plt.text(width/1.55,top*1.22,action_text, {'color': 'black', 'fontsize': 14})
 
         nx.draw(sim.topology.G, self.pos, with_labels=False, node_size=1, node_color="#1260A0", edge_color="gray", node_shape="o",
                 font_size=7, font_color="white", ax=ax)
@@ -298,5 +338,5 @@ class Mario():
         plt.close(fig)
 
         #TODO DEBUG
-        if self.image_id >5:
-            sys.exit()
+        # if self.image_id >5:
+        #     sys.exit()
