@@ -1,4 +1,3 @@
-import copy
 class Rules():
 
     def __init__(self,rules=None):

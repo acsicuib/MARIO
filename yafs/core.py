@@ -932,6 +932,7 @@ class Sim:
         if not placement.name in self.placement_policy.keys():  # First Time
             self.placement_policy[placement.name] = {"placement_policy": placement, "apps": []}
             if placement.activation_dist is not None:
+                print("ENV ADD PLACEMENT")
                 self.env.process(self.__add_placement_process(placement))
         self.placement_policy[placement.name]["apps"].append(app.name)
 
@@ -1252,7 +1253,6 @@ class Sim:
         """
         for place in self.placement_policy.items():
             for app_name in place[1]["apps"]:
-                print("APP_NAME ",app_name)
                 place[1]["placement_policy"].initial_allocation(self, app_name)  # internally consideres the apps in charge
 
         """

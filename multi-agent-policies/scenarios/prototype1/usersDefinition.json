@@ -2,16 +2,16 @@
   "sources": [
     {
       "id_resource": 4,
-      "app": "1",
+      "app": 1,
       "message": "M.USER.APP.1",
-      "lambda": 100,
+      "lambda": 20,
       "constraint": {"deadline":500,"cost":300}
     },
     {
       "id_resource": 0,
-      "app": "1",
+      "app": 1,
       "message": "M.USER.APP.1",
-      "lambda": 200,
+      "lambda": 20,
       "constraint": {"deadline":500,"cost":300}
     }
 

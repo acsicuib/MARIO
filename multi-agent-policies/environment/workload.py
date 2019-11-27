@@ -1,5 +1,5 @@
 from yafs.population import Population
-from yafs.distribution import exponentialDistribution
+from yafs.distribution import exponentialDistribution,deterministic_distribution
 import random
 import logging
 
@@ -11,6 +11,7 @@ class DynamicWorkload(Population):
     def __init__(self, data, iteration,logger=None,**kwargs):
         super(DynamicWorkload, self).__init__(**kwargs)
         self.data = data
+
         self.it = iteration
         self.userOrderInputByInvocation = []
 
@@ -24,6 +25,7 @@ class DynamicWorkload(Population):
     def initial_allocation(self, sim, app_name):
             size = len(self.data)
             self.userOrderInputByInvocation = random.sample(range(size), size)
+            self.logger.info(" User tournament creation: %s"%self.userOrderInputByInvocation)
 
     """
     In each invocation, we launch one user
@@ -38,15 +40,16 @@ class DynamicWorkload(Population):
             lambd = item["lambda"]
 
             self.logger.info("Launching user %i (app: %s), in node: %i, at time: %i " % (item["id_resource"],app_name, idtopo,sim.env.now))
+            print("Launching user %i (app: %s), in node: %i, at time: %i " % (item["id_resource"],app_name, idtopo,sim.env.now))
 
             app = sim.apps[app_name]
             msg = app.get_message(item["message"])
 
             # A basic creation of the seed: unique for each user and different in each simulation repetition
-            seed = item["id_resource"] * 1000 + item["lambda"] + self.it
+            # seed = item["id_resource"] * 1000 + item["lambda"] + self.it
 
-            dDistribution = exponentialDistribution(name="Exp", lambd=lambd, seed=seed)
-
+            # dDistribution = exponentialDistribution(name="Exp", lambd=lambd, seed=seed)
+            dDistribution = deterministic_distribution(name="DET", time=lambd)
             idsrc = sim.deploy_source(app_name, id_node=idtopo, msg=msg, distribution=dDistribution)
 
 

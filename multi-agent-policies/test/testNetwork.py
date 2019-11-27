@@ -1,12 +1,33 @@
 
 import networkx as nx
 import json
+from yafs.topology import *
 
-G = nx.cycle_graph(10)
-print(G.nodes)
-print(G.edges(0))
-nadj = [e for e in G.edges(0)]
-print(nadj)
+# G = nx.cycle_graph(10)
+# print(G.nodes)
+# print(G.edges(0))
+# nadj = [e for e in G.edges(0)]
+# print(nadj)
+
+experiment_path = "../scenarios/prototype1/"
+t = Topology()
+# dataNetwork = json.load(open(path + 'networkDefinition.json'))
+dataNetwork = json.load(open(experiment_path + 'networkDefinition.json'))
+t.load_all_node_attr(dataNetwork)
+nx.draw(t.G,with_labels=True)
+plt.show()
+
+src = 0
+dst = 1
+print(nx.shortest_path(t.G,src,dst))
+
+print(t.G.edges(2))
+for e in t.G.edges(2):
+    print("EDGE:",e)
+
+
+lat = nx.get_edge_attributes(t.G,"PR")
+print(lat)
 # data = json.load(open('exp1/networkDefinition.json'))
 #
 # G = nx.Graph()

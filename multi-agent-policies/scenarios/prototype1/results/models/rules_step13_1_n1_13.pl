@@ -1,6 +1,7 @@
-:- use_module(library(lists)).
 
-nop(Si) :- serviceInstance(Si, S, N),
+        :- use_module(library(lists)).
+           route(xxxxxx, path(xxxx, xxx, []), 10, 10).
+        nop(Si) :- serviceInstance(Si, S, N),
            service(S, HwReqs, MaxReqs, MaxLatency),
            node(N, Hw, Neighbours),
            findall(route(Si, P, PathLatency, UReqs), route(Si, P, PathLatency, UReqs), Routes),
@@ -16,7 +17,7 @@ fusion(Si1,Si2):- serviceInstance(Si1, S, N),
                 route(Si2,path(_, N2, NodesPath2), PathLatency2,UReqs2),
                 UReqs1 + UReqs2 < MaxReqs.
 
-migrate(Si,TargetNode,MaxLatency):-   
+migrate(Si,TargetNode,MaxLatency):-
                 serviceInstance(Si, S, N),
 				service(S, HwReqs, MaxReqs, MaxLatency),
                 node(N, Hw, Neighbours),
@@ -53,41 +54,23 @@ checkLatencies([route(Si, P, PathLatency, UReqs)|Ps], MaxLatency, SumReqs) :-
                             checkLatencies(Ps, MaxLatency, SumReqsOld),
                             SumReqs is SumReqsOld + UReqs.
 
-priority([nop,migrate,replicate,suicide]).
+priority([nop,replicate,migrate,suicide]).
+service(1,1,200,50).
+serviceInstance(1,1,1).
+node(1,4,[3, 2]).
+node(3,6,[1, 4, 0]).
+node(2,1,[1]).
+link(1,3,20,1).
+link(1,2,10,1).
+route(1,path(0,1,[0, 3, 1]),45,13).
+route(1,path(4,1,[4, 3, 1]),45,13).
 
-service(meteo, 1, 200, 50).
-
-serviceInstance(s42, meteo, n1).
-serviceInstance(s45, meteo, n1).
-serviceInstance(s43, meteo, n2).
-
-
-
-node(n1, 3, [n3, n2]). %node(identifier, HW-capacity,neigh)
-node(n2, 1, [n1]).
-node(n3, 5, [n1, n4, n5]).
-node(n4, 3, [n3]).
-node(n5, 2, [n3]).
-
-
-link(n1,n3,40,5). % link(source node, target node, latency, bw) 
-link(n1,n2,10,5).
-
-0.5::route(s42, path(n4, n1, [n4, n3, n1]), 45, 100); % route(S, Path, Latency, ReqsNo)
-0.4::route(s42, path(n4, n1, [n4, n3, n1]), 45, 10). % route(S, Path, Latency, ReqsNo)
-
-route(s45, path(n4, n1, [n4, n3, n1]), 45, 20).
-0.20::route(s42, path(n5, n1, [n5, n3, n1]), 45, 20).
-%0.80::route(s42, path(n5, n1, [n5, n3, n1]), 45, 0).
-
-
-query(nop(s42)).
-query(nop(s43)).
-query(migrate(s42,X,1)).
-query(replicate(s42,X)).
-query(suicide(s42)).
-query(suicide(s43)).
-query(fusion(X,Y)).
+query(nop(1)).
+query(migrate(1, X, 1)).
+query(replicate(1, X)).
+query(suicide(1)).
+query(fusion(X, Y)).
 query(priority(X)).
 
-%writenl(priority([nop,migrate,replicate,suicide])).
+        
+        

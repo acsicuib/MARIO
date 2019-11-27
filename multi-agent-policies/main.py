@@ -6,7 +6,7 @@ import time
 import json
 import logging.config
 from pathlib import Path
-
+import sys
 from yafs.core import Sim
 from yafs.application import Application, Message
 from yafs.topology import Topology
@@ -108,30 +108,25 @@ def main(simulated_time, experiment_path,case,it):
     POPULATION algorithm
     """
     dataPopulation = json.load(open(experiment_path + 'usersDefinition.json'))
-
     # Each application has an unique population politic
     # For the original json, we filter and create a sub-list for each app politic
     for aName in apps.keys():
         data = []
         for element in dataPopulation["sources"]:
+            # print("element-app", type(element["app"]))
             if element['app'] == aName:
                 data.append(element)
 
         distribution = exponentialDistribution(name="Exp", lambd=random.randint(100,200), seed= int(aName)*100+it)
+        # distribution = deterministic_distribution(name="DET", time=10)
         pop_app = DynamicWorkload(name="Dynamic_%s" % aName, data=data, iteration=it, activation_dist=distribution)
+
         s.deploy_app(apps[aName], placement, pop_app, selectorPath)
 
-
     """
-    CUSTOM EVOLUTION
+    MARIO app controler & Agent generator
     """
-    #For each instance service -> a new instance of AGENT(DES process)
-
-    # dStart = deterministicDistributionStartPoint(stop_time/2.,stop_time / 2.0 /10.0, name="Deterministic")
-    # evol = CustomStrategy(path,pathResults,total_services=6,draw_grid_topology_dimension=10,pathCSV=default_results_path)
-    # s.deploy_monitor("EvolutionOfServices", evol, dStart, **{"sim": s, "routing": selectorPath,"case":case, "stop_time":stop_time, "it":it})
-
-    dStart = deterministicDistribution(10, name="Deterministic")
+    dStart = deterministic_distribution(200, name="Deterministic")
     appOp = Mario(period=500,rules=globalrules,path_csv_files=path_csv_files,service_rule_profile=service_rule_profile,app_number=len(dataApp))
     s.deploy_monitor("App-Operator", appOp, dStart,**{"sim": s, "routing": selectorPath, "path":experiment_path})
 
@@ -141,7 +136,7 @@ def main(simulated_time, experiment_path,case,it):
     logging.info(" Performing simulation: %s %i "%(case,it))
     s.run(stop_time, test_initial_deploy=False, show_progress_monitor=False)  # To test deployments put test_initial_deploy a TRUE
 
-    appOp.render(s,experiment_path,selectorPath,["END",-1,-1,"NONE"])
+    # appOp.render(s,experiment_path,selectorPath,["END",-1,-1,"NONE"])
 
     """
     Storing results from other strategies
@@ -158,7 +153,7 @@ if __name__ == '__main__':
     print("Scenario definition: ",experiment_path)
 
     nSimulations = 1
-    timeSimulation = 150000
+    timeSimulation = 100000
 
     for i in range(nSimulations):
         start_time = time.time()

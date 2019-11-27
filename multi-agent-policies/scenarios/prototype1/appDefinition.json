@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "name": "1",
+    "name": 1,
     "HwReqs": 1,
     "MaxReqs": 200,
     "MaxLatency": 50,
@@ -9,25 +9,25 @@
 
     "transmission": [
       {
-        "module": "1_01",
-        "message_in": "M.USER.APP.1"
+        "message_in": "M.USER.APP.1",
+        "module": "1_01"
       }
     ],
     "module": [
       {
-        "RAM": 1,
+        "id": 1,
+        "name": "1_01",
         "type": "MODULE",
-        "id": 19,
-        "name": "1_01"
+        "RAM": 1
       }
     ],
     "message": [
       {
-        "d": "1_01",
-        "bytes": 2621,
+        "id": 0,
         "name": "M.USER.APP.1",
         "s": "None",
-        "id": 0,
+        "d": "1_01",
+        "bytes": 2621,
         "instructions": 330
       }
     ]

@@ -4,12 +4,11 @@ import json
 import sys
 from collections import defaultdict
 import pandas as pd
-import numpy as np
 from problogRulesGenerator import Rules
 from problog.program import PrologString
 from problog import get_evaluatable
-from problog.tasks import sample
 from pathlib import Path
+import re
 
 class PolicyManager():
 
@@ -41,13 +40,14 @@ class PolicyManager():
 
         return deployed_services,nodes_with_services
 
-    def __init__(self,DES,name,rules,service_rule_profile,path,app_operator):
+    def __init__(self,DES,name,rules,service_rule_profile,path,app_operator,render):
         self.id_monitor = None
         self.DES = DES #Service ID
         self.name = name
-        self.app_name = self.get_app_identifier(self.name)
+        self.app_name = int(self.get_app_identifier(self.name))
         self.active = True
         self.path_csv_files = path
+
         self.rule_profile = service_rule_profile[self.app_name]
 
         self.logger = logging.getLogger(__name__)
@@ -56,6 +56,8 @@ class PolicyManager():
         self.agents = {}
         self.app_operator = app_operator
         self.action_on_render =0
+
+        self.render_action = render
         # data = json.load(open(path + 'usersDefinition.json'))
 
     def __call__(self, sim, routing, experiment_path):
@@ -91,8 +93,15 @@ class PolicyManager():
             # LINK FACTS
             lat = nx.get_edge_attributes(sim.topology.G,"PR")
             bw = nx.get_edge_attributes(sim.topology.G,"BW")
+
             for e in sim.topology.G.edges(currentNode):
-                self.rules.and_rule("link", e[0], e[1], lat[e],bw[e])
+                try:
+                    self.rules.and_rule("link", e[0], e[1], lat[e],bw[e])
+                except KeyError:
+                    # G is not a directional Graph
+                    # it doesn't have to be, but it doesn't find the shortestpath
+                    e = (e[1],e[0])
+                    self.rules.and_rule("link", e[0], e[1], lat[e], bw[e])
 
 
             # Getting the number of user requests == number of  messages in that path
@@ -134,7 +143,7 @@ class PolicyManager():
         :param service_name:
         :param current_node:
         :param experiment_path:
-        :return:
+        :return: a list order by agent preference with the highest probabilities
         """
         all_rules = ""
         with open(self.rule_profile, "r") as f:
@@ -145,6 +154,8 @@ class PolicyManager():
         queries += "query(replicate(%s, X)).\n"%service_name
         queries += "query(suicide(%s)).\n"%service_name
         queries += "query(fusion(X, Y)).\n"
+        queries += "query(priority(X)).\n"
+
 
         modeltext = """
         :- use_module(library(lists)).
@@ -154,11 +165,53 @@ class PolicyManager():
         """%(all_rules+"\n"+str(rules)+queries)
 
         model = PrologString(modeltext)
-        self.render(service_name,current_node,modeltext,experiment_path)
+        if self.render_action:
+            self.render(service_name,current_node,modeltext,experiment_path)
         result = get_evaluatable().create_from(model).evaluate()
-        result = [(a,result[a]) for a in result if result[a]!=0] #filter actions with prob.= 0
-        return result
+        # print(result)
+        best_actions = self.__sort_results_rules(result)
 
+        return best_actions
+
+    def __sort_results_rules(self,result):
+        """
+        test file: test_proc_rules.py
+
+        :param result:
+        :return:
+        """
+        pattern_priorities = r"priority\(\[(.*?)\]"
+        pattern_probabilites = r"(:\ \d.\d,*)"
+        numberRules = 5
+
+        matches = list(re.finditer(pattern_priorities, str(result)))
+        assert len(matches) > 0, "Agent rules without rule priority"
+        action_priorities = matches[0].group(1).replace(" ", "").split(",")
+
+        matches = re.finditer(pattern_probabilites, str(result))
+        index = 1
+        best_probability = -1.0
+        order_actions = [None] * numberRules
+        for matchNum, match in enumerate(matches):
+            for groupNum in range(0, len(match.groups())):
+                groupNum = groupNum + 1
+                start, end = match.start(groupNum), match.end(groupNum)
+                probability = float(match.group(groupNum).replace(": ", "").replace(",", ""))
+                action = str(result)[index:start]
+                name_action: str = action[0:action.index("(")]
+                if name_action != "priority": # ignore priority rule
+                    if probability > best_probability:
+                        order_actions = [None] * numberRules
+                        idx = [i for i, name in enumerate(action_priorities) if name == name_action]
+                        order_actions[idx[0]] = action
+                        best_probability = probability
+                    elif probability == best_probability:
+                        idx = [i for i, name in enumerate(action_priorities) if name == name_action]
+                        order_actions[idx[0]] = action
+
+                # print(name_action)
+                index = end + 1
+        return order_actions
 
     def render(self,service_name,current_node,modeltext,experiment_path):
         """
@@ -174,7 +227,7 @@ class PolicyManager():
         rules_dir.mkdir(parents=True, exist_ok=True)
         rules_dir = str(rules_dir)
 
-        with open(rules_dir+"/rules_%s_n%i_%i.pl"%(service_name,current_node,self.action_on_render),"w") as f:
+        with open(rules_dir+"/rules_step%i_%s_n%i_%i.pl"%(self.app_operator.step,service_name,current_node,self.action_on_render),"w") as f:
             f.write(modeltext)
 
         self.action_on_render +=1

@@ -2,7 +2,7 @@
   "initialAllocation": [
     {
       "module_name": "1_01",
-      "app": "1",
+      "app": 1,
       "id_resource": 1
     }
   ]

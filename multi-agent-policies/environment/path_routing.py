@@ -1,5 +1,4 @@
 from yafs.selection import Selection
-from yafs.topology import *
 import networkx as nx
 
 class DeviceSpeedAwareRouting(Selection):
@@ -15,13 +14,11 @@ class DeviceSpeedAwareRouting(Selection):
 
     def compute_BEST_DES(self, node_src, alloc_DES, sim, DES_dst,message):
         try:
-
             bestLong = float('inf')
             minPath = []
             bestDES = []
             #print len(DES_dst)
             for dev in DES_dst:
-                #print "DES :",dev
                 node_dst = alloc_DES[dev]
                 path = list(nx.shortest_path(sim.topology.G, source=node_src, target=node_dst))
                 long = len(path)
@@ -41,7 +38,6 @@ class DeviceSpeedAwareRouting(Selection):
 
     def get_path(self, sim, app_name, message, topology_src, alloc_DES, alloc_module, traffic, from_des):
         node_src = topology_src #entity that sends the message
-
         # Name of the service
         service = message.dst
 
@@ -61,6 +57,10 @@ class DeviceSpeedAwareRouting(Selection):
         self.controlServices[(node_src, service)] = (path, des)
 
         return [path], [des]
+
+    def clear_routing_cache(self):
+        self.invalid_cache_value = False
+        self.cache = {}
 
     def get_path_from_failure(self, sim, message, link, alloc_DES, alloc_module, traffic, ctime, from_des):
         # print "Example of enrouting"
