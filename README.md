@@ -3,6 +3,7 @@
 
 Installation
 ------------
+0. Requires: Python 3.6
 
 1. Clone the project in your local folder:
 
