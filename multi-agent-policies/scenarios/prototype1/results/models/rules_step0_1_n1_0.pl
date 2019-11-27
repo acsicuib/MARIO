@@ -54,7 +54,7 @@ checkLatencies([route(Si, P, PathLatency, UReqs)|Ps], MaxLatency, SumReqs) :-
                             checkLatencies(Ps, MaxLatency, SumReqsOld),
                             SumReqs is SumReqsOld + UReqs.
 
-priority([nop,replicate,migrate,suicide]).
+priority([replicate,nop,migrate,suicide]).
 service(1,1,200,50).
 serviceInstance(1,1,1).
 node(1,4,[3, 2]).

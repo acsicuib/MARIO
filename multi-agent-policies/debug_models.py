@@ -48,10 +48,10 @@ def sort_results_rules(result):
 ************************
 VARIABLES 
 """
-mario_step = 2
-service = 9
-node = 2
-agent_step = 1
+mario_step = 0
+service = 1
+node = 1
+agent_step = 0
 """
 ************************
 """

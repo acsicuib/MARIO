@@ -136,13 +136,12 @@ def main(simulated_time, experiment_path,case,it):
     logging.info(" Performing simulation: %s %i "%(case,it))
     s.run(stop_time, test_initial_deploy=False, show_progress_monitor=False)  # To test deployments put test_initial_deploy a TRUE
 
-    # appOp.render(s,experiment_path,selectorPath,["END",-1,-1,"NONE"])
+    appOp.render(s,experiment_path,selectorPath,["END",-1,-1,"NONE"])
 
     """
     Storing results from other strategies
     """
     s.print_debug_assignaments()
-
 
 
 if __name__ == '__main__':
