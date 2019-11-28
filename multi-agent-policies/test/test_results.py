@@ -24,9 +24,9 @@ for i, row in df2.iterrows():
     service_node = int(row["SRC"])
     service_name = row["module"]
     user_node = int(row["DST"])
-    print service_node,service_name,user_node,row[3:]
+    print(service_node,service_name,user_node,row[3:])
 
-constraints =    
+
 path = "/Users/isaaclera/PycharmProjects/YAFS/src/examples/RuleBasedDistributedModel/exp1/"
 dataPopulation = json.load(open(path + 'usersDefinition.json'))
 for element in dataPopulation["sources"]:

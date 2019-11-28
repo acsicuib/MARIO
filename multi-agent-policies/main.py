@@ -59,11 +59,9 @@ def main(simulated_time, experiment_path,case,it):
     TOPOLOGY from a json
     """
     t = Topology()
-    # dataNetwork = json.load(open(path + 'networkDefinition.json'))
     dataNetwork = json.load(open(experiment_path + 'networkDefinition.json'))
     t.load_all_node_attr(dataNetwork)
     # t.write(path +"network.gexf")
-    # t = loadTopology(path + 'test_GLP.gml')
 
     """
     Global Rules for all services
@@ -82,7 +80,7 @@ def main(simulated_time, experiment_path,case,it):
     service_rule_profile={}
     for app in dataApp:
         service_rule_profile[app["name"]]=experiment_path+app["profile_rules"] # Global path to pl.file
-    # print(globalrules)
+
 
 
     """
@@ -136,11 +134,10 @@ def main(simulated_time, experiment_path,case,it):
     logging.info(" Performing simulation: %s %i "%(case,it))
     s.run(stop_time, test_initial_deploy=False, show_progress_monitor=False)  # To test deployments put test_initial_deploy a TRUE
 
+    """
+    Storing results from other monitors
+    """
     appOp.render(s,experiment_path,selectorPath,["END",-1,-1,"NONE"])
-
-    """
-    Storing results from other strategies
-    """
     s.print_debug_assignaments()
 
 
