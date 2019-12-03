@@ -26,6 +26,7 @@ class Mario():
         self.pos = None
         self.image_dir = None
         self.step = 0
+        self.UID = 0 # count all steps (valid or not valid rules)
         self.path_csv_files = path_csv_files
         self.total_services = app_number
 
@@ -70,7 +71,7 @@ class Mario():
 
             # TODO v2 Control actions from all agents & select the best option
             # current implementation FCFS
-
+            self.UID += 1
             take_last_action = [] # It perfoms the last set of agent rules
             for rule in reversed(self.memory): #(self.name,self.DES,currentNode,actions,action_priority)
                 acts, prob = [], []
@@ -334,6 +335,10 @@ class Mario():
 
         action_text = "Node N%i + Service: %i(%s) -> Action: %s" % (action[2], action[1], action[0], action[3])
         plt.text(width/1.55,top*1.22,action_text, {'color': 'black', 'fontsize': 14})
+
+        action_text = "rules_UID%i_n%i_s%i_X.pl" % (self.UID, action[2], action[1])
+        plt.text(width/1.35,top*1.18,action_text, {'color': 'pink', 'fontsize': 16})
+
 
         nx.draw(sim.topology.G, self.pos, with_labels=False, node_size=1, node_color="#1260A0", edge_color="gray", node_shape="o",
                 font_size=7, font_color="white", ax=ax)

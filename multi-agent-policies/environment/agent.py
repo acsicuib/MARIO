@@ -165,11 +165,13 @@ class PolicyManager():
         """%(all_rules+"\n"+str(rules)+queries)
 
         model = PrologString(modeltext)
-        if self.render_action:
-            self.render(service_name,current_node,modeltext,experiment_path)
+
         result = get_evaluatable().create_from(model).evaluate()
-        # print(result)
+        # print("RE ",result)
         best_actions = self.__sort_results_rules(result)
+        # print("BA ",best_actions[0])
+        if self.render_action:
+            self.render(service_name, current_node, modeltext, experiment_path)
 
         return best_actions
 
@@ -227,7 +229,7 @@ class PolicyManager():
         rules_dir.mkdir(parents=True, exist_ok=True)
         rules_dir = str(rules_dir)
 
-        with open(rules_dir+"/rules_step%i_%s_n%i_%i.pl"%(self.app_operator.step,service_name,current_node,self.action_on_render),"w") as f:
+        with open(rules_dir+"/rules_UID%i_n%i_s%s_%i.pl"%(self.app_operator.UID+1,current_node,service_name,self.action_on_render),"w") as f:
             f.write(modeltext)
 
         self.action_on_render +=1

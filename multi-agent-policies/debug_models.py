@@ -48,17 +48,17 @@ def sort_results_rules(result):
 ************************
 VARIABLES 
 """
-mario_step = 0
-service = 1
+UID = 8
 node = 1
-agent_step = 0
+service = 1
+agent_step = 2
 """
 ************************
 """
 
 experiment_path = "scenarios/prototype1/"
 model_path = "results/models/"
-file_model ="rules_step%i_%i_n%i_%i.pl"%(mario_step,service,node,agent_step)
+file_model ="rules_UID%i_n%i_s%i_%i.pl"%(UID,node,service,agent_step)
 pathfile =experiment_path+model_path+file_model
 model_text =""
 with open(pathfile, "r") as f:

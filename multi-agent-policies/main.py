@@ -162,4 +162,4 @@ if __name__ == '__main__':
         print("\n--- %s seconds ---" % (time.time() - start_time))
     print("All simulations done")
 
-# ffmpeg -r 1 -i network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p out2.mp4
+# ffmpeg -r 1 -i images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p out2.mp4
