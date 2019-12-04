@@ -21,6 +21,8 @@ Installation
 3. Update your python path according with your OS and run: 
 ```bash
 cd multi-agent-policies
+PYTHONPATH=~/PycharmProjects/DistributedPolicies/
+export PYTHONPATH=$PYTHONPATH/multi-agent-policies/environment:$PYTHONPATH
 python main.py
 ```
 
