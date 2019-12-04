@@ -11,7 +11,7 @@ migrate(Si,M):-
         HwM >= HwReqs,
         forall(route(Si, path(_, N, P), _, _), isPenultimateHop(M, P)).
 
-isPenultimateHop(M, [M|Last]):- node(Last,_,_).
+isPenultimateHop(M, [M]).
 isPenultimateHop(M, [P|Ps]) :-
             P \= M,
             isPenultimateHop(M, Ps).
@@ -30,9 +30,9 @@ link(n1,n2,10,5).
 link(n1,n4,10,5).
 link(n2,n5,10,5).
 
-route(s1, path(n2, n1, [n2, n1]), 45, 100).
-route(s1, path(n3, n1, [n3, n1]), 45, 20).
-route(s1, path(n5, n1, [n5,n2,n1]), 45, 20).
+route(s1, path(n2, n1, []), 45, 100).
+route(s1, path(n3, n1, []), 45, 20).
+route(s1, path(n5, n1, [n2]), 45, 20).
 
 query(migrate(s1,X)).
 query(isPenultimateHop(n1,[n3,n1])).
