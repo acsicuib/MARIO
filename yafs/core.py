@@ -2,6 +2,9 @@
 """
 This module unifies the event-discrete simulation environment with the rest of modules: placement, topology, selection, population, utils and metrics.
 
+
+ NOTE: THIS VERSION IS A REDUCED ONE WITHOUT INCLUDE GEOGRAPHICAL LIBS
+
 """
 
 
@@ -19,10 +22,10 @@ from yafs.metrics import Metrics
 from yafs.distribution import *
 from yafs import utils
 
-from trackanimation.animation import AnimationTrack
+# from trackanimation.animation import AnimationTrack
 
 import numpy as np
-import smopy
+# import smopy
 from PIL import Image as pimg
 
 EVENT_UP_ENTITY = "node_up"
@@ -742,6 +745,8 @@ class Sim:
     def get_DES(self,name):
         return self.des_control_process[name]
 
+
+
     def deploy_monitor(self, name, function, distribution, **param):
         """
         Add a DES process for user purpose
@@ -1232,7 +1237,9 @@ class Sim:
     def set_movement_control(self,evol):
         self.control_movement_class = evol
 
-    def run(self, until,test_initial_deploy=False,show_progress_monitor=True,mobile_behaviour=False):
+    def run(self, until, test_initial_deploy=False, show_progress_monitor=False, mobile_behaviour=False):
+
+
         """
         Start the simulation
 
@@ -1278,6 +1285,6 @@ class Sim:
         """
         self.until = until
         if not test_initial_deploy:
-            self.env.run(until=until) #This does not stop the simpy.simulation at time. We have to force the stop
+            self.env.run(until) #This does not stop the simpy.simulation at time. We have to force the stop
 
         self.metrics.close()

@@ -1,12 +1,3 @@
-from problog.program import PrologString
-from problog import get_evaluatable
-from problog.tasks import sample
-
-
-modeltext = """
-:- use_module(library(lists)).
-           route(xxxxxx, path(xxxx, xxx, []), 10, 10).
-
 nop(Si) :- serviceInstance(Si, S, N),
            service(S, _, _, _),
            node(N, _, _),
@@ -75,20 +66,3 @@ route(s1, path(n5, n1, [n5, n2]), 45, 100).
 route(s1, path(n3, n1, [n3]), 45, 20).
 route(s1, path(n6, n1, [n6, n2]), 45, 20).
 route(s2, path(n4, n4, []), 45, 20).
-
-query(nop(s1)).
-
-
-
-"""
-
-# result = get_evaluatable().create_from(PrologString(model)).evaluate()
-
-model = PrologString(modeltext)
-result2 = get_evaluatable().create_from(model).evaluate()
-print(result2)
-
-result = sample.sample(model, n=3, format='dict')
-print(result)
-
-# https: // github.com / yuce / pyswip / issues / 48

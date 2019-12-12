@@ -128,7 +128,7 @@ class PolicyManager():
                 print("INFO - No messages among users and service")
                 self.logger.warning("INFO - There are not new messages among users and service")
 
-
+            self.logger.info("Performing problog model")
             actions = self.run_problog_model(self.rules,self.DES,currentNode,experiment_path)
             #Sending the rules to the app_operator, aka MARIO
             # print("Sending new rules to MARIO: %s",actions)
@@ -164,14 +164,18 @@ class PolicyManager():
         
         """%(all_rules+"\n"+str(rules)+queries)
 
-        model = PrologString(modeltext)
+        print(modeltext)
+        try:
+            model = PrologString(modeltext)
+            result = get_evaluatable().create_from(model).evaluate()
+        except:
+            raise Exception(" A problem running problog ")
 
-        result = get_evaluatable().create_from(model).evaluate()
-        # print("RE ",result)
-        best_actions = self.__sort_results_rules(result)
-        # print("BA ",best_actions[0])
-        if self.render_action:
-            self.render(service_name, current_node, modeltext, experiment_path)
+            # print("RE ",result)
+            best_actions = self.__sort_results_rules(result)
+            # print("BA ",best_actions[0])
+            if self.render_action:
+                self.render(service_name, current_node, modeltext, experiment_path)
 
         return best_actions
 

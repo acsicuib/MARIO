@@ -17,6 +17,16 @@ fusion(Si1,Si2):- serviceInstance(Si1, S, N),
                 route(Si2,path(_, N2, NodesPath2), PathLatency2,UReqs2),
                 UReqs1 + UReqs2 < MaxReqs.
 
+migrate(Si,TargetNode):-
+                serviceInstance(Si, S, N),
+				service(S, HwReqs, MaxReqs, MaxLatency),
+                node(N, Hw, Neighbours),
+                node(TargetNode,_,_),
+                member(TargetNode,Neighbours),
+                route(Si,path(_, N, NodesPath), PathLatency,_),
+                member(TargetNode,NodesPath).
+
+
 migrate(Si,TargetNode,MaxLatency):-
                 serviceInstance(Si, S, N),
 				service(S, HwReqs, MaxReqs, MaxLatency),

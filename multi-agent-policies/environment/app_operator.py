@@ -15,13 +15,13 @@ import os
 
 class Mario():
 
-    def __init__(self,rules,service_rule_profile,path_csv_files,app_number,period=100,render=True):
+    def __init__(self, common_rules, service_rule_profile, path_csv_files, app_number, period, render):
         self.create_initial_services = True
         self.logger = logging.getLogger(__name__)
         self.memory = []
         # self.memory = deque(maxlen=200)
         self.period = period
-        self.globalrules = rules
+        self.common_rules = common_rules
         self.service_rule_profile = service_rule_profile
         self.pos = None
         self.image_dir = None
@@ -37,6 +37,7 @@ class Mario():
 
         self.active_monitor = {}
         # key: id_service (DES), value: id_monitor (DES)
+
 
     def __call__(self, sim, routing, path):
         """
@@ -214,9 +215,12 @@ class Mario():
         # Creating a new monitor associated to the module
         self.create_monitor_of_module(des, path, routing, service, sim)
 
+
     def create_monitor_of_module(self, des, path, routing, service, sim):
         period = deterministic_distribution(self.period, name="Deterministic")
-        pm = PolicyManager(des, service, self.globalrules, self.service_rule_profile, self.path_csv_files,app_operator=self,render=self.render)
+        pm = PolicyManager(des, service, self.common_rules, self.service_rule_profile, self.path_csv_files, self, self.render)
+
+
         id_monitor = sim.deploy_monitor("Policy Manager %i" % des, pm, period,
                                         **{"sim": sim, "routing": routing, "experiment_path": path})
         pm.id_monitor = id_monitor

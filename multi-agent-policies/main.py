@@ -115,8 +115,8 @@ def main(simulated_time, experiment_path,case,it):
             if element['app'] == aName:
                 data.append(element)
 
-        distribution = exponentialDistribution(name="Exp", lambd=random.randint(100,200), seed= int(aName)*100+it)
-        # distribution = deterministic_distribution(name="DET", time=10)
+        # distribution = exponential_distribution(name="Exp", lambd=random.randint(100,200), seed= int(aName)*100+it)
+        distribution = deterministic_distribution(name="DET", time=10)
         pop_app = DynamicWorkload(name="Dynamic_%s" % aName, data=data, iteration=it, activation_dist=distribution)
 
         s.deploy_app(apps[aName], placement, pop_app, selectorPath)
@@ -124,15 +124,15 @@ def main(simulated_time, experiment_path,case,it):
     """
     MARIO app controler & Agent generator
     """
-    dStart = deterministic_distribution(200, name="Deterministic")
-    appOp = Mario(period=500,rules=globalrules,path_csv_files=path_csv_files,service_rule_profile=service_rule_profile,app_number=len(dataApp))
-    s.deploy_monitor("App-Operator", appOp, dStart,**{"sim": s, "routing": selectorPath, "path":experiment_path})
+    time_activation = deterministic_distribution(time=100, name="Deterministic")
+    appOp = Mario(globalrules,service_rule_profile, path_csv_files, app_number=len(dataApp),period=300,render=True)
+    s.deploy_monitor("App-Operator", appOp, time_activation, **{"sim": s, "routing": selectorPath, "path":experiment_path})
 
     """
     RUNNING
     """
     logging.info(" Performing simulation: %s %i "%(case,it))
-    s.run(stop_time, test_initial_deploy=False, show_progress_monitor=False)  # To test deployments put test_initial_deploy a TRUE
+    s.run(stop_time)  # To test deployments put test_initial_deploy a TRUE
 
     """
     Storing results from other monitors
