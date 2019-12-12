@@ -1014,7 +1014,7 @@ class Sim:
         return id_DES
 
 
-    def undeploy_module(self, app_name,service_name, idtopo):
+    def undeploy_all_modules(self, app_name,service_name, idtopo):
         """ removes all modules deployed in a node
         modules with the same name = service_name
         from app_name
@@ -1031,6 +1031,31 @@ class Sim:
                 self.alloc_module[app_name][service_name].remove(des)
                 self.stop_process(des)
                 del self.alloc_DES[des]
+
+    def undeploy_source(self, des):
+        """ remove one source deployed in a node
+        from app_name
+        deployed in id_topo
+        """
+        # Clearing related structures
+        if des in self.alloc_source:
+            self.stop_process(des)
+            del self.alloc_source[des]
+            del self.alloc_DES[des]
+
+
+    def undeploy_module(self, app_name,service_name, des):
+        """ remove one module deployed in a node
+        from app_name
+        deployed in id_topo
+        """
+        # Clearing related structures
+        for d in self.alloc_module[app_name][service_name]:
+            if d == des:
+                self.alloc_module[app_name][service_name].remove(des)
+                self.stop_process(des)
+                del self.alloc_DES[des]
+                break
 
     def remove_node(self, id_node_topology):
         # Stopping related processes deployed in the module and clearing main structure: alloc_DES

@@ -46,10 +46,6 @@ class DeviceSpeedAwareRouting(Selection):
         #print "Enrouting from SRC: %i  -<->- DES %s"%(node_src,DES_dst)
 
         #The number of nodes control the updating of the cache. If the number of nodes changes, the cache is totally cleaned.
-        if self.invalid_cache_value:
-            self.invalid_cache_value = False
-            self.cache = {}
-
         if (node_src,tuple(DES_dst)) not in self.cache.keys():
             self.cache[node_src,tuple(DES_dst)] = self.compute_BEST_DES(node_src, alloc_DES, sim, DES_dst,message)
 
@@ -61,6 +57,7 @@ class DeviceSpeedAwareRouting(Selection):
     def clear_routing_cache(self):
         self.invalid_cache_value = False
         self.cache = {}
+        self.controlServices = {}
 
     def get_path_from_failure(self, sim, message, link, alloc_DES, alloc_module, traffic, ctime, from_des):
         # print "Example of enrouting"

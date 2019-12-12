@@ -10,6 +10,7 @@ from problog import get_evaluatable
 from pathlib import Path
 import re
 
+PROBLOG = False #TODO def like global var on the project
 class PolicyManager():
 
     def get_app_identifier(self,nameservice):
@@ -61,7 +62,7 @@ class PolicyManager():
         # data = json.load(open(path + 'usersDefinition.json'))
 
     def __call__(self, sim, routing, experiment_path):
-        if self.id_monitor in self.app_operator.active_monitor.values(): # Once a process is finished, the service may run for the last time. The simulator does not control this last call.
+        if self.id_monitor in self.app_operator.active_monitor.values():# Once a process is finished, the service may run for the last time. The simulator does not control this last call.
             self.rules.clear()
             print("\nMonitor ID: %i for service: %i (%s)  running rules "%(self.id_monitor,self.DES,self.name))
             self.logger.info("\nMonitor ID: %i for service: %i (%s)  running rules "%(self.id_monitor,self.DES,self.name))
@@ -109,10 +110,10 @@ class PolicyManager():
             sim.metrics.flush()
             # Loading samples generated along current period (self.activations-1,self.activation)
             df = pd.read_csv(self.path_csv_files + ".csv", skiprows=range(1, self.previous_number_samples))  # include header
+            self.previous_number_samples += len(df.index) - 1  # avoid header
             df = df[df["DES.dst"]==self.DES]
             if len(df)>0:
                 # print("Number of samples: %i (from: %i)" % (len(df.index)-1, self.previous_number_samples))
-                self.previous_number_samples += len(df.index) - 1  # avoid header
                 if len(routes)>0:
                     # print(routes)
                     # print(df[["TOPO.src","TOPO.dst"]])
@@ -129,10 +130,101 @@ class PolicyManager():
                 self.logger.warning("INFO - There are not new messages among users and service")
 
             self.logger.info("Performing problog model")
-            actions = self.run_problog_model(self.rules,self.DES,currentNode,experiment_path)
+            if PROBLOG:
+                actions = self.run_problog_model(self.rules,self.DES,currentNode,experiment_path)
+            else:
+                actions = self.run_swi_model(self.rules,self.DES,currentNode,experiment_path,sim)
             #Sending the rules to the app_operator, aka MARIO
             # print("Sending new rules to MARIO: %s",actions)
             self.app_operator.get_actions_from_agents((self.name,self.DES,currentNode,actions))
+
+    def run_swi_model(self, rules, service_name, current_node, experiment_path,sim):
+        # Load policy rules
+
+        policy_rules = ""
+        with open(self.rule_profile, "r") as f:
+            policy_rules = f.read()
+
+        modelrules = """
+           route(xxxxxx, path(xxxx, xxx, []), 10, 10).
+        %s
+
+        """ % (policy_rules + "\n" + str(rules))
+
+        #Writing the model.pl
+        rules_dir = Path(experiment_path + "results/models/")
+        rules_dir.mkdir(parents=True, exist_ok=True)
+        rules_dir = str(rules_dir)
+        path_file = rules_dir + "/rules_swi_UID%i_n%i_s%s_%i_%i.pl" % (self.app_operator.UID + 1, current_node, service_name, self.action_on_render,sim.env.now)
+        with open(path_file, "w") as f:
+            f.write(modelrules)
+
+        self.action_on_render += 1
+
+        try:
+            from pyswip import Prolog
+            # swipl - -dump - runtime - variables
+            prolog = Prolog()
+            prolog.consult(path_file)
+
+            nop = list(prolog.query("nop(%i)"%service_name))
+            suicide = list(prolog.query("suicide(%i)"%service_name))
+            replicate = list(prolog.query("replicate(%i,M)"%service_name))
+            migrate = list(prolog.query("migrate(%i,M)"%service_name))
+
+
+            # DEBUG INFO
+            # print("Actions taken by service:%i"%service_name)
+            # print(nop)
+            # print(suicide)
+            # print(replicate)
+            # print(migrate)
+
+            # Priority query doesnot work
+            numberRules = 5 #TODO Fix this var as global
+            order_actions = [None] * numberRules
+
+            #the Order is defined by a sequential dealing of the results
+            if len(suicide) == 0:  # nop(sX) is false => None %EXPECTED: boolean
+                order_actions[0] = None
+            else:
+                order_actions[0] = 'suicide(%i)' % service_name
+
+            if len(nop) == 0:  # nop(sX) is false => None %EXPECTED: boolean
+                order_actions[1] = None
+            else:
+                order_actions[1] = 'nop(%i)' % service_name
+
+            # replicate predicate
+            # replicate(1,[3, 2])
+            tonodes = set()
+            for rep in replicate:
+                tonodes.add(rep["M"])
+            if len(tonodes)>0:
+                order_actions[2] = 'replicate(%i,%s)' % (service_name,list(tonodes))
+            else:
+                order_actions[2] = None
+
+            # migrate predicate
+            # migrate(s42,X2,1) ...
+            ## NOTE: current swi-migrate rule return an array like replicate statement.
+            ##       in this case, we only get the first one value of that array
+            tonodes = []
+            for rep in migrate:
+                tonodes.append(rep["M"])
+                break
+            if len(tonodes)>0:
+                order_actions[3] = 'migrate(%i,X,%s)' % (service_name,tonodes[0])
+            else:
+                order_actions[3] = None
+
+            order_actions[4] = None
+
+
+            return order_actions
+
+        except:
+            raise "Error running PYSWIP model: %s" % path_file
 
 
     def run_problog_model(self, rules, service_name,current_node,experiment_path):
@@ -164,12 +256,10 @@ class PolicyManager():
         
         """%(all_rules+"\n"+str(rules)+queries)
 
-        print(modeltext)
+        # print(modeltext)
         try:
             model = PrologString(modeltext)
             result = get_evaluatable().create_from(model).evaluate()
-        except:
-            raise Exception(" A problem running problog ")
 
             # print("RE ",result)
             best_actions = self.__sort_results_rules(result)
@@ -177,7 +267,12 @@ class PolicyManager():
             if self.render_action:
                 self.render(service_name, current_node, modeltext, experiment_path)
 
-        return best_actions
+            return best_actions
+        except:
+            raise Exception(" A problem running problog ")
+
+
+
 
     def __sort_results_rules(self,result):
         """

@@ -1,46 +1,54 @@
 nop(Si) :- serviceInstance(Si, S, N),
-           service(S, _, _, _),
-           node(N, _, _),
+           service(S, HwReqs, MaxReqs, MaxLatency),
+           node(N, Hw, Neighbours),
            findall(route(Si, P, PathLatency, UReqs), route(Si, P, PathLatency, UReqs), Routes),
-		   forall(member(route(_,path(_,_,P),_,_),Routes), (length(P,L),L==0)).
+           checkLatencies(Routes, MaxLatency, SumReqs),
+           SumReqs =< MaxReqs.
 
-suicide(Si) :- serviceInstance(Si, S, _),
-               service(S, _, _, _),
+fusion(Si1,Si2):- serviceInstance(Si1, S, N),
+                serviceInstance(Si2, S, N),
+                Si1 \== Si2,
+                service(S, HwReqs, MaxReqs, MaxLatency),
+                node(N, Hw, Neighbours),
+                route(Si1,path(_, N1, NodesPath1), PathLatency1,UReqs1),
+                route(Si2,path(_, N2, NodesPath2), PathLatency2,UReqs2),
+                UReqs1 + UReqs2 < MaxReqs.
+
+migrate(Si,TargetNode,MaxLatency):-
+                serviceInstance(Si, S, N),
+				service(S, HwReqs, MaxReqs, MaxLatency),
+                node(N, Hw, Neighbours),
+                node(TargetNode,HwTarget,_),
+                member(TargetNode,Neighbours),
+                link(N,TargetNode,L,B),
+                route(Si,path(_, N, NodesPath), PathLatency,_),
+                member(TargetNode,NodesPath),
+                L > MaxLatency.
+
+replicate(Si,TargetNodes):- serviceInstance(Si, S, N),
+				service(S, HwReqs, MaxReqs, MaxLatency),
+                node(N, Hw, Neighbours),
+                selectTargets(Neighbours,TargetNodes).
+
+replicate(Si,[N]):- serviceInstance(Si, S, N),
+                service(S, HwReqs, MaxReqs, MaxLatency),
+                node(N, Hw, Neighbours),
+                route(Si,path(_, N, NodesPath), PathLatency,UReqs),
+                UReqs > MaxReqs.
+
+suicide(Si) :- serviceInstance(Si, S, N),
+               service(S, HwReqs, MaxReqs, MaxLatency),
                findall(route(Si, P, PathLatency, UReqs), route(Si, P, PathLatency, UReqs), Routes),
                length(Routes,L),
                L is 0.
-% (fig3) The service receives requests and the requests arrives from more than one edge link.
-% → Scale by creating instances in each next hop of each user path and keep an instance
-%   in the current node.
-%  AND
-% (fig4) The service receives requests and the paths for the user requests arrives by an unique
-% connection and the path to the user request is longer than 1 hop
-% →  Scale by creating an instance in the next hop in the user path and keep a instance in the current node.
-replicate(Si,M):- serviceInstance(Si, S, N),
-				service(S, _, _, _),
-                node(N, _, _),
-    			route(Si, path(_, N, P), _, _),
-			    length(P,L),
-    			L > 0,
-    			PS is L-1,
-    			nth0(PS,P,M).
 
-migrate(Si,M):- serviceInstance(Si, S, N), service(S, HwReqs, _, _),
-        node(N, _, Neighbours),
-        member(M,Neighbours), node(M, HwM, _), HwM >= HwReqs,
-        route(Si, path(_, N, P), _, _),
-		isPenultimateHop(M,P).
+selectTargets([],[]).
+selectTargets([N|Ns],[N|Ts]):-selectTargets(Ns,Ts).
 
+checkLatencies([],_,0).
+checkLatencies([route(Si, P, PathLatency, UReqs)|Ps], MaxLatency, SumReqs) :-
+                            PathLatency =< MaxLatency,
+                            checkLatencies(Ps, MaxLatency, SumReqsOld),
+                            SumReqs is SumReqsOld + UReqs.
 
-% migrate(Si,M):-
-%        serviceInstance(Si, S, N), service(S, HwReqs, _, _),
-%        node(N, _, Neighbours),
-%        member(M,Neighbours), node(M, HwM, _), HwM >= HwReqs,
-%        forall(route(Si, path(Source, N, P), Lat, Reqs), isPenultimateHop(M,P)).
-
-isPenultimateHop(M, [M|Last]):- length(Last, Len), Len is 1.
-isPenultimateHop(M, [P|Ps]) :-
-            P \== M,
-            isPenultimateHop(M, Ps).
-
-priority([nop,suicide,replicate,migrate]).
+priority([replicate,nop,migrate,suicide]).

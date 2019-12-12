@@ -13,6 +13,8 @@ import scipy
 import sys
 import os
 
+PROBLOG = False #TODO def like global var on the project
+
 class Mario():
 
     def __init__(self, common_rules, service_rule_profile, path_csv_files, app_number, period, render):
@@ -85,13 +87,13 @@ class Mario():
                 if rule[1] not in take_last_action: # One rule for agent
                     take_last_action.append(rule[1])
                     for i,act in enumerate(rule[3]): # actions are ordered
-                        print(" ++ action #:%i rule: %s"%(i,act))
+                        # print(" ++ action #:%i rule: %s"%(i,act))
                         if act != None:
                             tuple_action = (rule[0],rule[1],rule[2],act)
                             if self.render_action:
                                 image_file = self.render(sim,path,routing,tuple_action)
                             done = self.perfom_action(sim,tuple_action,routing,path)
-                            print("\t action confirmed: %s"%done)
+                            # print("\t action confirmed: %s"%done)
                             if not done and self.render_action: # try to execute the rule
                                 try:
                                     # in case of failure the render is eliminated
@@ -99,7 +101,7 @@ class Mario():
                                     os.remove(image_file)
                                 except:
                                     self.logger.critical("Image file not exists")
-                                    print("CRITICAL - Image file not exists")
+                                    # print("CRITICAL - Image file not exists")
                             else:
                                 break
             self.memory = []
@@ -200,7 +202,7 @@ class Mario():
             return True
 
     def undeploy_module(self,sim,service,node,id_service):
-        sim.undeploy_module(self.get_app_identifier(service), service, node)
+        sim.undeploy_module(self.get_app_identifier(service), service, id_service)
         #Remove stop process
         del self.active_monitor[id_service]
         sim.stop_process(id_service)
@@ -251,8 +253,8 @@ class Mario():
             self.__draw_controlUser[node] = 0
         total = self.__draw_controlUser[node]
         line = int(total / 4) + 1
-        duy = 0.12 * line
-        dux = 0.06 * (total % 4)
+        duy = 0.06 * line
+        dux = 0.01 * (total % 4)
         self.__draw_controlUser[node] += 1
         ax.scatter(self.pos[node][0] + dux, self.pos[node][1] + duy, s=100.0, marker='o', color=newcolors[service])
 
@@ -340,7 +342,11 @@ class Mario():
         action_text = "Node N%i + Service: %i(%s) -> Action: %s" % (action[2], action[1], action[0], action[3])
         plt.text(width/1.55,top*1.22,action_text, {'color': 'black', 'fontsize': 14})
 
-        action_text = "rules_UID%i_n%i_s%i_X.pl" % (self.UID, action[2], action[1])
+        if PROBLOG:
+            action_text = "rules_UID%i_n%i_s%i_X_%i.pl" % (self.UID, action[2], action[1],sim.env.now)
+        else:
+            action_text = "rules_swi_UID%i_n%i_s%i_X_%i.pl" % (self.UID, action[2], action[1],sim.env.now)
+
         plt.text(width/1.35,top*1.18,action_text, {'color': 'pink', 'fontsize': 16})
 
 

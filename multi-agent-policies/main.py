@@ -125,6 +125,7 @@ def main(simulated_time, experiment_path,case,it):
     MARIO app controler & Agent generator
     """
     time_activation = deterministic_distribution(time=100, name="Deterministic")
+    PROBLOG = False
     appOp = Mario(globalrules,service_rule_profile, path_csv_files, app_number=len(dataApp),period=300,render=True)
     s.deploy_monitor("App-Operator", appOp, time_activation, **{"sim": s, "routing": selectorPath, "path":experiment_path})
 
@@ -145,7 +146,7 @@ if __name__ == '__main__':
     import logging.config
     logging.config.fileConfig(os.getcwd() + '/logging.ini')
 
-    experiment_path = "scenarios/prototype1/"
+    experiment_path = "scenarios/prototype2/"
     print("Scenario definition: ",experiment_path)
 
     nSimulations = 1
@@ -156,6 +157,7 @@ if __name__ == '__main__':
         random.seed(i)
         np.random.seed(i)
         logging.info("Running multi-agent-policies - %s" %experiment_path)
+
 
         main(simulated_time=timeSimulation, experiment_path=experiment_path, case='prot1',it=i)
 

@@ -48,6 +48,7 @@ priority([nop,suicide,replicate,migrate]).
 service(meteo, 1, 200, 50).
 serviceInstance(s1, meteo, n1).
 serviceInstance(s2, meteo, n4).
+serviceInstance(s3, meteo, n3).
 
 node(n1, 3, [n3, n2, n4]). %node(identifier, HW-capacity,neigh)
 node(n2, 1, [n1]).
