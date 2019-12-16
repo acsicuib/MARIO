@@ -53,3 +53,4 @@ for i in range(max_images):
 
     new_im.save('images/network_%05d.png'%i)
 
+# ffmpeg -r 1 -i images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p out2.mp4
