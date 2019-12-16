@@ -26,3 +26,8 @@ export PYTHONPATH=$PYTHONPATH/multi-agent-policies/environment:$PYTHONPATH
 python main.py
 ```
 
+
+TODO
+----
+- Integrate priority rule in JSON: agent.py -> self.order_prot3,
+- Include fact: "desiredUser(%s,2)." in JSON

@@ -11,6 +11,7 @@ from pathlib import Path
 import re
 
 PROBLOG = False #TODO def like global var on the project
+
 class PolicyManager():
 
     def get_app_identifier(self,nameservice):
@@ -146,16 +147,21 @@ class PolicyManager():
             policy_rules = f.read()
 
         modelrules = """
+           :- discontiguous route/4.
            route(xxxxxx, path(xxxx, xxx, []), 10, 10).
+           desiredUser(%s,2).
         %s
 
-        """ % (policy_rules + "\n" + str(rules))
+        """ % (service_name,policy_rules) + "\n" + str(rules)
 
         #Writing the model.pl
         rules_dir = Path(experiment_path + "results/models/")
         rules_dir.mkdir(parents=True, exist_ok=True)
         rules_dir = str(rules_dir)
         path_file = rules_dir + "/rules_swi_UID%i_n%i_s%s_%i_%i.pl" % (self.app_operator.UID + 1, current_node, service_name, self.action_on_render,sim.env.now)
+
+        # print("Path_file")
+        # print(path_file)
         with open(path_file, "w") as f:
             f.write(modelrules)
 
@@ -172,6 +178,8 @@ class PolicyManager():
             replicate = list(prolog.query("replicate(%i,M)"%service_name))
             migrate = list(prolog.query("migrate(%i,M)"%service_name))
 
+            # priority = list(prolog.query("priority(M)")) # Priority query doesnot work
+
 
             # DEBUG INFO
             # print("Actions taken by service:%i"%service_name)
@@ -179,53 +187,107 @@ class PolicyManager():
             # print(suicide)
             # print(replicate)
             # print(migrate)
+            # print(priority) # Priority query doesnot work
 
-            # Priority query doesnot work
-            numberRules = 5 #TODO Fix this var as global
-            order_actions = [None] * numberRules
+            # sys.exit()
 
-            #the Order is defined by a sequential dealing of the results
-            if len(suicide) == 0:  # nop(sX) is false => None %EXPECTED: boolean
-                order_actions[0] = None
-            else:
-                order_actions[0] = 'suicide(%i)' % service_name
 
-            if len(nop) == 0:  # nop(sX) is false => None %EXPECTED: boolean
-                order_actions[1] = None
-            else:
-                order_actions[1] = 'nop(%i)' % service_name
+            #TODO exportar this function into json data.
+            order_actions = self.order_prot3(migrate, nop, replicate, service_name, suicide)
 
-            # replicate predicate
-            # replicate(1,[3, 2])
-            tonodes = set()
-            for rep in replicate:
-                tonodes.add(rep["M"])
-            if len(tonodes)>0:
-                order_actions[2] = 'replicate(%i,%s)' % (service_name,list(tonodes))
-            else:
-                order_actions[2] = None
-
-            # migrate predicate
-            # migrate(s42,X2,1) ...
-            ## NOTE: current swi-migrate rule return an array like replicate statement.
-            ##       in this case, we only get the first one value of that array
-            tonodes = []
-            for rep in migrate:
-                tonodes.append(rep["M"])
-                break
-            if len(tonodes)>0:
-                order_actions[3] = 'migrate(%i,X,%s)' % (service_name,tonodes[0])
-            else:
-                order_actions[3] = None
-
-            order_actions[4] = None
-
+            # order_actions = self.order_prot4(migrate, nop, replicate, service_name, suicide)
 
             return order_actions
 
         except:
             raise "Error running PYSWIP model: %s" % path_file
 
+    def order_prot3(self, migrate, nop, replicate, service_name, suicide):
+        numberRules = 5  # TODO Fix this var as global
+        order_actions = [None] * numberRules
+        # the Order is defined by a sequential dealing of the results
+        if len(suicide) == 0:  # nop(sX) is false => None %EXPECTED: boolean
+            order_actions[0] = None
+        else:
+            order_actions[0] = 'suicide(%i)' % service_name
+        if len(nop) == 0:  # nop(sX) is false => None %EXPECTED: boolean
+            order_actions[1] = None
+        else:
+            order_actions[1] = 'nop(%i)' % service_name
+        # replicate predicate
+        # replicate(1,[3, 2])
+        tonodes = set()
+        for rep in replicate:
+            tonodes.add(rep["M"])
+        if len(tonodes) > 0:
+            order_actions[2] = 'replicate(%i,%s)' % (service_name, list(tonodes))
+        else:
+            order_actions[2] = None
+        # migrate predicate
+        # migrate(s42,X2,1) ...
+        ## NOTE: current swi-migrate rule return an array like replicate statement.
+        ##       in this case, we only get the first one value of that array
+        tonodes = []
+        for rep in migrate:
+            tonodes.append(rep["M"])
+            break
+        if len(tonodes) > 0:
+            order_actions[3] = 'migrate(%i,X,%s)' % (service_name, tonodes[0])
+        else:
+            order_actions[3] = None
+        order_actions[4] = None
+        return order_actions
+
+    def order_prot4(self, migrate, nop, replicate, service_name, suicide):
+        #priority([migrate,nop,replicate,suicide]).
+        numberRules = 5  # TODO Fix this var as global
+        order_actions = [None] * numberRules
+
+        # migrate predicate
+        # migrate(s42,X2,1) ...
+        ## NOTE: current swi-migrate rule return an array like replicate statement.
+        ##       in this case, we only get the first one value of that array
+        tonodes = []
+        for rep in migrate:
+            tonodes.append(rep["M"])
+            break
+        if len(tonodes) > 0:
+            order_actions[0] = 'migrate(%i,X,%s)' % (service_name, tonodes[0])
+        else:
+            order_actions[0] = None
+
+        if len(nop) == 0:  # nop(sX) is false => None %EXPECTED: boolean
+            order_actions[1] = None
+        else:
+            order_actions[1] = 'nop(%i)' % service_name
+
+        # replicate predicate
+        # replicate(1,[3, 2])
+        tonodes2 = set()
+        print("Replicate ")
+        print(replicate)
+        for rep in replicate:
+            print ("REP",rep)
+            if type(rep["M"]) == list:
+                for r in rep["M"]:
+                    tonodes2.add(r)
+            else:
+                tonodes2.add(rep["M"])
+
+        if len(tonodes2) > 0:
+            order_actions[2] = 'replicate(%i,%s)' % (service_name, list(tonodes2))
+        else:
+            order_actions[2] = None
+
+        # the Order is defined by a sequential dealing of the results
+        if len(suicide) == 0:  # nop(sX) is false => None %EXPECTED: boolean
+            order_actions[3] = None
+        else:
+            order_actions[3] = 'suicide(%i)' % service_name
+
+        order_actions[4] = None
+
+        return order_actions
 
     def run_problog_model(self, rules, service_name,current_node,experiment_path):
         """
@@ -270,9 +332,6 @@ class PolicyManager():
             return best_actions
         except:
             raise Exception(" A problem running problog ")
-
-
-
 
     def __sort_results_rules(self,result):
         """

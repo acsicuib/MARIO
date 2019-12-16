@@ -207,7 +207,6 @@ class Mario():
         del self.active_monitor[id_service]
         sim.stop_process(id_service)
 
-
     def deploy_module(self, sim, service, node,routing,path):
         # Allocation the module in the simulator
         app_name = self.get_app_identifier(service)
@@ -216,7 +215,6 @@ class Mario():
         des = sim.deploy_module(app_name, service, services[service], [node])[0]
         # Creating a new monitor associated to the module
         self.create_monitor_of_module(des, path, routing, service, sim)
-
 
     def create_monitor_of_module(self, des, path, routing, service, sim):
         period = deterministic_distribution(self.period, name="Deterministic")
@@ -239,7 +237,6 @@ class Mario():
         """
         self.memory.append(something)
 
-
     def __draw_user(self, node, service, ax, newcolors):
         """
         Draw a dot for each user, plus sort the dots for each node
@@ -253,11 +250,12 @@ class Mario():
             self.__draw_controlUser[node] = 0
         total = self.__draw_controlUser[node]
         line = int(total / 4) + 1
-        duy = 0.06 * line
-        dux = 0.01 * (total % 4)
+        # duy = 0.06 * line
+        # dux = 0.01 * (total % 4)
+        duy = 0.46 * line
+        dux = 0.15 * (total % 4)
         self.__draw_controlUser[node] += 1
         ax.scatter(self.pos[node][0] + dux, self.pos[node][1] + duy, s=100.0, marker='o', color=newcolors[service])
-
 
     def get_app_identifier(self,nameservice):
         return int(nameservice[0:nameservice.index("_")])
@@ -301,14 +299,15 @@ class Mario():
             try:
                 currentOccupation[node] = np.array(currentOccupation[node]).reshape(eval(shape[node]))
             except ValueError:
-                self.logger.error("Network node: %i defined with a bad shape "%node)
-                print("Network node: %i defined with a bad shape "%node)
-                currentOccupation[node] = np.zeros(shape(1,1))
+                raise "Network node: %i defined with a bad shape "%node
+                # print("Network node: %i defined with a bad shape "%node)
+                # currentOccupation[node] = np.zeros(shape(1,1))
 
         return currentOccupation
 
-
     def render(self,sim,path,routing,action):
+        #TODO Introduce Label/legend app -=-
+
         # print("\t All paths [wl-node,service-node: ", routing.controlServices)
         # print("Performing action")
         # print("\t Service: ", action[0])
@@ -318,14 +317,17 @@ class Mario():
 
         if self.pos == None: #first time
             # self.pos = nx.kamada_kawai_layout(sim.topology.G)  # el layout podria ser una entrada?
-            self.pos = nx.random_layout(sim.topology.G)  # el layout podria ser una entrada?
+            pos = nx.get_node_attributes(sim.topology.G,'pos')
+            if len(pos)>0:
+                for k in pos.keys():
+                    pos[k] = np.array(eval(pos[k]))
+                self.pos = pos
+            else:
+                self.pos = nx.random_layout(sim.topology.G)  # el layout podria ser una entrada?
+
             image_dir = Path(path+"results/images/")
             image_dir.mkdir(parents=True, exist_ok=True)
             self.image_dir = str(image_dir)
-
-        # Some viz. vars.
-        piesize = .08
-        p2 = piesize / 2.5
 
         tab20 = plt.cm.get_cmap('tab20', self.total_services+5)
         bounds = range(self.total_services+5)
@@ -335,35 +337,51 @@ class Mario():
         norm = mpl.colors.BoundaryNorm(bounds, newcmp.N)
 
         fig, ax = plt.subplots(figsize=(16.0, 10.0))
-        left, bottom, width, height = ax.get_position().bounds
-        top = bottom + height
-        plt.text(width/1.3, top*1.25, "Step: %i - Time:%i" % (self.step,sim.env.now), {'color': 'black', 'fontsize': 16})
-
-        action_text = "Node N%i + Service: %i(%s) -> Action: %s" % (action[2], action[1], action[0], action[3])
-        plt.text(width/1.55,top*1.22,action_text, {'color': 'black', 'fontsize': 14})
-
-        if PROBLOG:
-            action_text = "rules_UID%i_n%i_s%i_X_%i.pl" % (self.UID, action[2], action[1],sim.env.now)
-        else:
-            action_text = "rules_swi_UID%i_n%i_s%i_X_%i.pl" % (self.UID, action[2], action[1],sim.env.now)
-
-        plt.text(width/1.35,top*1.18,action_text, {'color': 'pink', 'fontsize': 16})
-
+        # left, bottom, width, height = ax.get_position().bounds
+        #
 
         nx.draw(sim.topology.G, self.pos, with_labels=False, node_size=1, node_color="#1260A0", edge_color="gray", node_shape="o",
                 font_size=7, font_color="white", ax=ax)
 
+        width = ax.get_xlim()[1]
+        top = ax.get_ylim()[1]
+        # Some viz. vars.
+        piesize = .08
+        p2 = piesize / 2.5
+
+        plt.text(width / 7.55, top / 1.03, "Step: %i on Time: %i" % (self.step, sim.env.now),
+                 {'color': 'black', 'fontsize': 16})
+
+        action_text = "Node N%i, Service: S%i(%s) -> Action: %s" % (action[2], action[1], action[0], action[3])
+        plt.text(width / 7.55, top / 1.07, action_text, {'color': 'black', 'fontsize': 14})
+
+        #TODO for DEBUG
+        if PROBLOG:
+            action_text = "rules_UID%i_n%i_s%i_X_%i.pl" % (self.UID, action[2], action[1], sim.env.now)
+        else:
+            action_text = "rules_swi_UID%i_n%i_s%i_X_%i.pl" % (self.UID, action[2], action[1], sim.env.now)
+        plt.text(width / 7.55, top / 1.18, action_text, {'color': 'pink', 'fontsize': 16})
+
         # Labels on nodes
         for x in sim.topology.G.nodes:
-            ax.text(self.pos[x][0] + p2, self.pos[x][1] + p2 , "N%i" % (x), fontsize=10)
+            ax.text(self.pos[x][0] + (width/25), self.pos[x][1] + (width/25) , "N%i" % (x), fontsize=10)
 
         # Plotting users dots
         self.__draw_controlUser = {}
         nodes_with_users = self.get_nodes_with_users(routing)
+
+        # DEBUG CODE
         # print("Nodes with users",nodes_with_users)
+        # print("ROUTING",routing.controlServices)
+
         for node in nodes_with_users:
+            # print(node)
             for app in nodes_with_users[node]:
                 self.__draw_user(node, int(app), ax, newcolors)
+
+        if (sim.env.now > 5100):
+            print("time 5100")
+            sys.exit()
 
         # LAST step:
         # Displaying capacity, changing node shape

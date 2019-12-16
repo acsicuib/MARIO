@@ -146,7 +146,7 @@ if __name__ == '__main__':
     import logging.config
     logging.config.fileConfig(os.getcwd() + '/logging.ini')
 
-    experiment_path = "scenarios/prototype2/"
+    experiment_path = "scenarios/prototype3/"
     print("Scenario definition: ",experiment_path)
 
     nSimulations = 1
@@ -158,10 +158,10 @@ if __name__ == '__main__':
         np.random.seed(i)
         logging.info("Running multi-agent-policies - %s" %experiment_path)
 
-
         main(simulated_time=timeSimulation, experiment_path=experiment_path, case='prot1',it=i)
 
         print("\n--- %s seconds ---" % (time.time() - start_time))
+
     print("All simulations done")
 
 # ffmpeg -r 1 -i images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p out2.mp4
