@@ -43,9 +43,7 @@ for i in range(max_images):
       x_offset += im.size[0]
 
     draw = ImageDraw.Draw(new_im)
-    # font = ImageFont.truetype(<font-file>, <font-size>)
     font = ImageFont.truetype("Langdon.otf", 40)
-    # draw.text((x, y),"Sample Text",(r,g,b))
     # print(total_width)
     # print(max_height)
     draw.text((200, 400),description[0],(0,0,0),font=font)

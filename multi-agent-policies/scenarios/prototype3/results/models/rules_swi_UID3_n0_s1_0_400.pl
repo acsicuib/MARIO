@@ -2,7 +2,7 @@
            :- discontiguous route/4.
            route(xxxxxx, path(xxxx, xxx, []), 10, 10).
            desiredUser(1,2).
-        nop(Si) :- serviceInstance(Si, S, N),
+nop(Si) :- serviceInstance(Si, S, N),
            service(S, _, _, _),
            node(N, _, _),
            findall(route(Si, P, PathLatency, UReqs), route(Si, P, PathLatency, UReqs), Routes),
