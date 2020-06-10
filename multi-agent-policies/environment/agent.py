@@ -194,7 +194,6 @@ class PolicyManager():
 
             #TODO exportar this function into json data.
             order_actions = self.order_prot3(migrate, nop, replicate, service_name, suicide)
-
             # order_actions = self.order_prot4(migrate, nop, replicate, service_name, suicide)
 
             return order_actions
