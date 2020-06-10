@@ -17,8 +17,12 @@ Installation
 ```bash
    (your environment)$  pip install -r requirements.txt
 ```
+3. Configure SWI-Prolog
 
-3. Update your python path according with your OS and run: 
+https://github.com/yuce/pyswip/blob/master/INSTALL.md
+
+
+4. Update your python path according with your OS and run: 
 ```bash
 cd multi-agent-policies
 PYTHONPATH=~/PycharmProjects/DistributedPolicies/
