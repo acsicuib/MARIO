@@ -33,3 +33,4 @@ smopy==0.0.7
 tqdm==4.38.0
 traitlets==4.3.3
 wcwidth==0.1.7
+simpy==3.0.11

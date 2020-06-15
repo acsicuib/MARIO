@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <gexf version="1.2" xmlns="http://www.gexf.net/1.2draft" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd">
-  <meta lastmodifieddate="2020-06-10">
+  <meta lastmodifieddate="2020-06-15">
     <creator>NetworkX 2.4</creator>
   </meta>
   <graph defaultedgetype="directed" mode="static" name="stochastic_block_model">
