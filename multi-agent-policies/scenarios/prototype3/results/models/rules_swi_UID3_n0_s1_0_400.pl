@@ -2,17 +2,14 @@
            :- discontiguous route/4.
            route(xxxxxx, path(xxxx, xxx, []), 10, 10).
            desiredUser(1,2).
-nop(Si) :- serviceInstance(Si, S, N),
+        nop(Si) :- serviceInstance(Si, S, N),
            service(S, _, _, _),
            node(N, _, _),
            findall(route(Si, P, PathLatency, UReqs), route(Si, P, PathLatency, UReqs), Routes),
 		   forall(member(route(_,path(_,_,P),_,_),Routes), (length(P,L),L==0)).
 
-suicide(Si) :- serviceInstance(Si, S, _),
-               service(S, _, _, _),
-               findall(route(Si, P, PathLatency, UReqs), route(Si, P, PathLatency, UReqs), Routes),
-               length(Routes,L),
-               L is 0.
+suicide(Si) :- serviceInstance(Si, _, _),
+                \+ route(Si, _, _, _).
 
 replicate(Si,M):- serviceInstance(Si, S, N),
 				service(S, _, _, _),
