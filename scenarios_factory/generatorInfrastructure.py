@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
@@ -113,8 +114,7 @@ shapes = dict(zip(G.nodes(),values))
 nx.set_node_attributes(G, name='shape', values=shapes)
 
 # POS attribute - "pos": "(4,4)"
-loc = np.array(pos.values())
-print(loc)
+loc = np.array(list(pos.values()))
 minXvalue = loc[:,0].min()
 maxXvalue = loc[:,0].max()
 minYvalue = loc[:,1].min()
@@ -122,7 +122,8 @@ maxYvalue = loc[:,1].max()
 future_draw_dim = 150
 normalizedX = (future_draw_dim * (loc[:, 0] - minXvalue) / (maxXvalue - minXvalue)).astype(int)
 normalizedY = (future_draw_dim * (loc[:, 0] - minYvalue) / (maxYvalue - minYvalue)).astype(int)
-posTopo = dict(zip(G.nodes(),zip(normalizedX,normalizedY)))
+inlabels = ["(%i,%i)"%(normalizedX[x],normalizedY[x]) for x in range(len(normalizedX))]
+posTopo = dict(zip(G.nodes(),inlabels))
 nx.set_node_attributes(G, name='pos', values=posTopo)
 
 
