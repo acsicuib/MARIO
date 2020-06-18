@@ -4,5 +4,7 @@
 /lib
 pyenv.cfg
 /multi-agent-policies/scenarios/prototype3/results/
-/multi-agent-policies/scenarios/prototype3/results/
-/multi-agent-policies/scenarios/prototype3/results/images/
+/multi-agent-policies/scenarios/prototype1/results/
+/multi-agent-policies/scenarios/prototype2/results/
+/multi-agent-policies/scenarios/prototype4/results/
+
