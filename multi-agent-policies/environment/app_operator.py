@@ -16,6 +16,10 @@ import os
 PROBLOG = False #TODO def like global var on the project
 
 class Mario():
+    """
+    We called it Mario in honour to our video game moustached character ;)
+
+    """
 
     def __init__(self, common_rules, service_rule_profile, path_csv_files, app_number, period, render):
         self.create_initial_services = True
@@ -349,18 +353,18 @@ class Mario():
         piesize = .08
         p2 = piesize / 2.5
 
-        plt.text(width / 7.55, top / 1.03, "Step: %i on Time: %i" % (self.step, sim.env.now),
+        plt.text(width / 3.55, top / 1.03, "Step: %i on Time: %i" % (self.step, sim.env.now),
                  {'color': 'black', 'fontsize': 16})
 
         action_text = "Node N%i, Service: S%i(%s) -> Action: %s" % (action[2], action[1], action[0], action[3])
-        plt.text(width / 7.55, top / 1.07, action_text, {'color': 'black', 'fontsize': 14})
+        plt.text(width / 3.55, top / 1.07, action_text, {'color': 'black', 'fontsize': 14})
 
         #TODO for DEBUG
-        if PROBLOG:
-            action_text = "rules_UID%i_n%i_s%i_X_%i.pl" % (self.UID, action[2], action[1], sim.env.now)
-        else:
-            action_text = "rules_swi_UID%i_n%i_s%i_X_%i.pl" % (self.UID, action[2], action[1], sim.env.now)
-        plt.text(width / 7.55, top / 1.18, action_text, {'color': 'pink', 'fontsize': 16})
+        # if PROBLOG:
+        #     action_text = "rules_UID%i_n%i_s%i_X_%i.pl" % (self.UID, action[2], action[1], sim.env.now)
+        # else:
+        action_text = "rules_swi_UID%i_n%i_s%i_X_%i.pl" % (self.UID, action[2], action[1], sim.env.now)
+        plt.text(width / 3.55, top / 1.18, action_text, {'color': 'pink', 'fontsize': 16})
 
         # Labels on nodes
         for x in sim.topology.G.nodes:

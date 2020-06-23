@@ -1,5 +1,7 @@
+"""
+A interface to generate string SWI rules
+"""
 class Rules():
-
     def __init__(self,rules=None):
         if rules == None:
             self.common = []

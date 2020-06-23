@@ -8,3 +8,8 @@ pyenv.cfg
 /multi-agent-policies/scenarios/prototype2/results/
 /multi-agent-policies/scenarios/prototype4/results/
 
+/multi-agent-policies/test/
+/multi-agent-policies/test_rules/
+/multi-agent-policies/scenarios/policy_ecobalance/results/
+/multi-agent-policies/scenarios/old_prototypes/prototype4/results/
+
