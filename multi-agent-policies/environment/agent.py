@@ -122,11 +122,10 @@ class PolicyManager():
             if len(df)>0:
                 # print("Number of samples: %i (from: %i)" % (len(df.index)-1, self.previous_number_samples))
                 if len(routes)>0:
-                    # print(routes)
                     # print(df[["TOPO.src","TOPO.dst"]])
                     for r in routes:
                         assert r[1][-1] == currentNode, "Last path node and source target are different"
-                        n_user = r[1][0]
+                        n_user = r[1][0] # The last node. It is not the ID-user.
                         n_messages = len(df[df["TOPO.src"] == n_user])
                         if n_messages >= 0:
                             path = Rules()
@@ -145,7 +144,10 @@ class PolicyManager():
                             path.inner_rule("path", r[1][::-1])
 
                             print("PATH: %s"%path)
-                            self.rules.and_rule("route", self.DES, path, r[0],n_messages)
+                            print(r[0])
+                            print(n_messages)
+
+                            self.rules.and_rule("route", self.DES, path, r[0], n_messages)
             else:
                 print("INFO - No messages among users and service")
                 self.logger.warning("INFO - There are not new messages among users and service")
@@ -161,47 +163,32 @@ class PolicyManager():
             # print("Sending new rules to MARIO: %s",actions)
             self.app_operator.get_actions_from_agents((self.name,self.DES,currentNode,actions))
 
-    def run_swi_model(self, rules, service_name, current_node, experiment_path,sim):
+    def run_swi_model(self, facts, service_name, current_node, experiment_path, sim):
         # Load policy rules
-
-        policy_rules = ""
+        rule_file = ""
         with open(self.rule_profile, "r") as f:
-            policy_rules = f.read()
+            rule_file = f.read()
 
-        modelrules = """
-           :- discontiguous route/4.
-           route(xxxxxx, path(xxxx, xxx, []), 10, 10).
-           desiredUser(%s,2).
-        %s
+        rules_and_facts = ":- discontiguous route/4.\n%s\n%s"%(rule_file,str(facts))
 
-        """ % (service_name,policy_rules) + "\n" + str(rules)
-
-        #Writing the model.pl
+        # Write rules and facts in a Prolog file *.pl
         rules_dir = Path(experiment_path + "results/models/")
         rules_dir.mkdir(parents=True, exist_ok=True)
         rules_dir = str(rules_dir)
-        path_file = rules_dir + "/rules_swi_UID%i_n%i_s%s_%i_%i.pl" % (self.app_operator.UID + 1, current_node, service_name, self.action_on_render,sim.env.now)
-
-        # print("Path_file")
-        # print(path_file)
-        with open(path_file, "w") as f:
-            f.write(modelrules)
-
+        model_file = rules_dir + "/rules_swi_UID%i_n%i_s%s_%i_%i.pl" % (self.app_operator.UID + 1, current_node, service_name, self.action_on_render,sim.env.now)
         self.action_on_render += 1
 
+        with open(model_file, "w") as f:
+            f.write(rules_and_facts)
+
         try:
+
             from pyswip import Prolog
             # swipl - -dump - runtime - variables
             prolog = Prolog()
-            prolog.consult(path_file)
+            prolog.consult(model_file)
 
-            # nop = list(prolog.query("nop(%i)"%service_name))
-            # suicide = list(prolog.query("suicide(%i)"%service_name))
-            # replicate = list(prolog.query("replicate(%i,M)"%service_name))
-            # migrate = list(prolog.query("migrate(%i,M)"%service_name))
-
-
-            #Return the actions in priority order
+            # Return the actions following the Priority-rule
             priority = list(prolog.query("priority(M)")) # Priority query does not work
 
             order_actions = [None] * len(priority[0]["M"])
@@ -276,7 +263,7 @@ class PolicyManager():
             return order_actions
 
         except:
-            raise "Error running PYSWIP model: %s" % path_file
+            raise "Error running PYSWIP model on file: %s" % model_file
 
     # def order_prot3(self, priority, migrate, nop, replicate, service_name, suicide):
     #     numberRules = 5  # TODO Fix this var as global
