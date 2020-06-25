@@ -9,16 +9,17 @@ suicide(Si) :-
    sumAll(AllUserRequests,TotalUserRequests),
    TotalUserRequests =< (MaxUserRequests * (NumberOfSj-1)).
 
-replicate(Si, [M]):-
+replicate(Si, Ms):-
    serviceInstance(Si, S, N),
    service(S, RequiredHW, MaxUserRequests, _),
-   findall(Sj, serviceInstance(Sj, S, N), L),
-   length(L,NumberOfSj),
-   findall(UserRequests, route(Si, _, _, UserRequests), L1),
+   findall(UserRequests, route(Si, path([N|_]), _, UserRequests), L1),
    sumAll(L1,TotalUserRequests),
-   TotalUserRequests > (MaxUserRequests * NumberOfSj),
-   node(M, FeaturedHW, _),
-   FeaturedHW >= RequiredHW.
+   TotalUserRequests > MaxUserRequests,
+   findall(M,
+          (route(Si, path([N, M| _]), _, _),
+           node(M, FeaturedHW, _), FeaturedHW >= RequiredHW),
+           LMs),
+   sort(LMs,Ms).
 
 migrate(Si, [M]):-
    serviceInstance(Si, S, N),
