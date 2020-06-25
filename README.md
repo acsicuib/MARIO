@@ -48,15 +48,17 @@ Finally, MARIO (our app_operator.py) periodically performs each action in order 
 
 The facts come from a simulation window. A period of time that includes the previous execution and the current moment. Some facts may not exist at any given time like routes.
 
-- A service: service(ServiceIdentifier, AppIdentifier, MaxUserRequests, MaxLatency)
-````text
-service(s1,meteo,5,50).
-````
 - A service instance: serviceInstance(ServiceIdentifier, AppIdentifier, current_deployed_node)
 ````text
 serviceInstance(s1, meteo, n1).
 serviceInstance(s2, meteo, n4).
 ````
+
+- A service: service(ServiceIdentifier, RequiredHW, MaxUserMessages, MaxLatency)
+````text
+service(s1,10,5,50).
+````
+
 - A node: node(Identifier,HwCapacity,Neighbors)
 ````text
 node(n1, 6, [n2,n4]).
@@ -68,8 +70,8 @@ node(n2, 1, [n1,n3]).
 link(n1, n2, 10, 300).
 ```` 
 
-- A route represent a communication between the service instance and a set of users : route(serviceIdentifier,path([L]),latency,number of requests)
-The path represent the nodes between the service instance and a set of users 
+- A route represent a communication between the service instance and a set of users : route(serviceIdentifier, path([L]), latency, number of messages)
+The path represents the nodes between the service instance and a set of users 
 ````text
 serviceInstance(s1, meteo, n1).
 route(s1,path([n1,n2,n3,n4]),10,200).
@@ -86,7 +88,7 @@ priority(["nop","suicide","replicate","migrate"]).
 
 - Action: nop - do nothing
 - Action: suicide(Si) - undeploy the service instance
-- Action: migrate(Si,[M]) - migrate the service in a specific list of nodes
+- Action: migrate(Si,M) - migrate the service in a specific node
 - Action: replicate(Si,[M]) - deploy more service in a specific list of nodes
 
 # Definition of a scenario

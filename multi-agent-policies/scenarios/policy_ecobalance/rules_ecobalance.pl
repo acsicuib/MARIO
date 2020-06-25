@@ -9,32 +9,29 @@ suicide(Si) :-
    sumAll(AllUserRequests,TotalUserRequests),
    TotalUserRequests =< (MaxUserRequests * (NumberOfSj-1)).
 
-replicate(Si, [N]):-
+replicate(Si, [M]):-
    serviceInstance(Si, S, N),
    service(S, RequiredHW, MaxUserRequests, _),
    findall(Sj, serviceInstance(Sj, S, N), L),
    length(L,NumberOfSj),
-   findall(UserRequests, route(Si, _, _, UserRequests), L),
-   sumAll(L,TotalUserRequests),
+   findall(UserRequests, route(Si, _, _, UserRequests), L1),
+   sumAll(L1,TotalUserRequests),
    TotalUserRequests > (MaxUserRequests * NumberOfSj),
    node(M, FeaturedHW, _),
    FeaturedHW >= RequiredHW.
-replicate(Si, Ms):-
-   serviceInstance(Si, S, N),
-   service(S, RequiredHW, _, MaxLatency),
-   findall(M, (path(N, _, [M|_]), PathLatency, _), PathLatency > MaxLatency, node(M, FeaturedHW, _), FeaturedHW >= RequiredHW ), Ms).
 
-migrate(Si, M):-
+migrate(Si, [M]):-
    serviceInstance(Si, S, N),
    service(S, RequiredHW, _, MaxLatency),
-   route(Si, path(N, _, [M|_]), PathLatency, _),
+   route(Si, path([N,M|_]), PathLatency, _),
    PathLatency > MaxLatency,
    node(M, FeaturedHW, _),
    FeaturedHW >= RequiredHW.
-migrate(Si, M):-
+
+migrate(Si, [M]):-
    serviceInstance(Si, S, N),
    service(S, RequiredHW, _, MaxLatency),
-   route(Si, path(N, _, L), PathLatency, _),
+   route(Si, path([N| _]), PathLatency, _),
    PathLatency =< MaxLatency/2,
    link(N, M, LatencyMN, _),
    LatencyMN+PathLatency =< MaxLatency,
@@ -49,7 +46,8 @@ nop(Si):-
    TotalUserRequests =< MaxUserRequests.
 
 sumAll([],0).
-sumaAll([X|Xs], Tot) :- sumAll(Xs, T), Tot is X+T.
+sumAll([X|Xs], Tot) :- sumAll(Xs, T), Tot is X+T.
+
 
 %”self-referential” KPIs:
 % number of users that are provided and not provided with the service

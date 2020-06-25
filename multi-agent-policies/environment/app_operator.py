@@ -166,9 +166,9 @@ class Mario():
                         self.deploy_module(sim, service, n, routing, path)
                 return feasible
 
-        elif type_action == "migrate": # migrate(Si,TargetNode,MaxLatency):-
+        elif type_action == "migrate":
             # Example
-            # parameters: 0,3
+            # parameters: 0,[3, 2]
             parameters = parameters.split(",")
             try:
                 target_node = int(parameters[-1])

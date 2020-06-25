@@ -217,32 +217,37 @@ class PolicyManager():
                     print("MIGRATE")
                     print(migrate)
                     # RETURNS a NUMBER
-                    # tonodes = []
-                    # for rep in migrate:
-                    #     tonodes.append(rep["M"])
-                    #     break
-                    # if len(tonodes) > 0:
-                    #     order_actions[e] = 'migrate(%i,X,%s)' % (service_name, tonodes[0])
-                    # else:
-                    #     order_actions[e] = None
-
-                    #RETURN A LIST
-                    if len(migrate) > 0:
-                        tonodes = migrate[0]["M"]
+                    tonodes = []
+                    for rep in migrate:
+                        tonodes.append(rep["M"])
+                        break
+                    if len(tonodes) > 0:
                         order_actions[e] = 'migrate(%i,X,%s)' % (service_name, tonodes[0])
                     else:
                         order_actions[e] = None
+
+                    #RETURN A LIST
+                    # if len(migrate) > 0:
+                    #     tonodes =[]
+                    #     # tonodes = migrate[0]["M"]
+                    #     for choice in migrate:
+                    #         tonodes.append((choice["M"][0]))
+                    #     order_actions[e] = 'migrate(%i,X,%s)' % (service_name, tonodes[0]) # ALERT only works with the first
+                    # else:
+                    #     order_actions[e] = None
 
                 if act == b"replicate":
                     replicate = list(prolog.query("replicate(%i,M)" % service_name))
                     tonodes = set()
                     print("REPLICATE")
                     print(replicate)
+                    order_actions[e] = None
                     if len(replicate)>0:
                         tonodes = replicate[0]["M"]
-                        order_actions[e] = 'replicate(%i,%s)' % (service_name, list(tonodes))
-                    else:
-                        order_actions[e] = None
+                        if len(tonodes)>0:
+                            order_actions[e] = 'replicate(%i,%s)' % (service_name, list(tonodes))
+
+
 
             #
             # # DEBUG INFO

@@ -3,7 +3,7 @@
     "id": 1,
     "name": 1,
     "HwReqs": 1,
-    "MaxReqs": 200,
+    "MaxReqs": 5,
     "MaxLatency": 50,
     "profile_rules": "rules_ecobalance.pl",
 
