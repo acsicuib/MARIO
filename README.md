@@ -37,7 +37,8 @@ TODO
 - environment/app_operator.py (aka MARIO)
 
 
-# Prolog Simulation Syntax
+
+#Prolog Simulation Syntax
 
 The policy rules and the facts are generated and performed  by each service instance controller (agent.py)
 Finally, MARIO (our app_operator.py) periodically performs each action in order from all the service instance controller.
