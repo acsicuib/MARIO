@@ -383,9 +383,10 @@ class Mario():
             for app in nodes_with_users[node]:
                 self.__draw_user(node, int(app), ax, newcolors)
 
-        if (sim.env.now > 5100):
-            print("time 5100")
-            sys.exit()
+        # DEBUG CODE
+        # if (sim.env.now > 5100):
+        #     print("time 5100")
+        #     sys.exit()
 
         # LAST step:
         # Displaying capacity, changing node shape

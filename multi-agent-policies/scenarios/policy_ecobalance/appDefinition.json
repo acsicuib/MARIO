@@ -5,7 +5,7 @@
     "HwReqs": 1,
     "MaxReqs": 200,
     "MaxLatency": 50,
-    "profile_rules": "profile_swi_s1.pl",
+    "profile_rules": "rules_ecobalance.pl",
 
     "transmission": [
       {

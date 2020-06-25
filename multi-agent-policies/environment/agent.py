@@ -136,8 +136,14 @@ class PolicyManager():
                             # the user is on node 1
                             # the path of nodes between both is the array: [4,2,3,5,1]
                             # r[1] contains the reversed path and contains the initial and end node, we need to remove them
-                            # path.inner_rule("path", currentNode, n_user, r[1][::-1][1:-1])
-                            path.inner_rule("path", currentNode, n_user, r[1][::-1][1:])
+
+                            #Initial v0
+                            #path.inner_rule("path", currentNode, n_user, r[1][::-1][1:])
+
+                            # Example: path(4, 1, [2, 3, 5])
+                            # the path of nodes between both is the array: [4,2,3,5,1]
+                            path.inner_rule("path", r[1][::-1])
+
                             print("PATH: %s"%path)
                             self.rules.and_rule("route", self.DES, path, r[0],n_messages)
             else:
@@ -203,11 +209,15 @@ class PolicyManager():
                 print(str(act))
                 if act == b"suicide":
                     suicide = list(prolog.query("suicide(%i)"%service_name))
+                    print("SUICIDE")
+                    print(suicide)
                     if len(suicide) > 0:
                         order_actions[e] = 'suicide(%i)' % service_name
 
                 if act == b"nop":
                     nop = list(prolog.query("nop(%i)" % service_name))
+                    print("Nop")
+                    print(nop)
                     if len(nop) > 0:
                         order_actions[e] = 'nop(%i)' % service_name
 
@@ -217,11 +227,21 @@ class PolicyManager():
                     # migrate(s42,X2,1) ...
                     ## NOTE: current swi-migrate rule return an array like replicate statement.
                     ##       in this case, we only get the first one value of that array
-                    tonodes = []
-                    for rep in migrate:
-                        tonodes.append(rep["M"])
-                        break
-                    if len(tonodes) > 0:
+                    print("MIGRATE")
+                    print(migrate)
+                    # RETURNS a NUMBER
+                    # tonodes = []
+                    # for rep in migrate:
+                    #     tonodes.append(rep["M"])
+                    #     break
+                    # if len(tonodes) > 0:
+                    #     order_actions[e] = 'migrate(%i,X,%s)' % (service_name, tonodes[0])
+                    # else:
+                    #     order_actions[e] = None
+
+                    #RETURN A LIST
+                    if len(migrate) > 0:
+                        tonodes = migrate[0]["M"]
                         order_actions[e] = 'migrate(%i,X,%s)' % (service_name, tonodes[0])
                     else:
                         order_actions[e] = None
@@ -229,7 +249,7 @@ class PolicyManager():
                 if act == b"replicate":
                     replicate = list(prolog.query("replicate(%i,M)" % service_name))
                     tonodes = set()
-                    print("HERE")
+                    print("REPLICATE")
                     print(replicate)
                     if len(replicate)>0:
                         tonodes = replicate[0]["M"]

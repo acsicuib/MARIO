@@ -13,3 +13,5 @@ pyenv.cfg
 /multi-agent-policies/scenarios/policy_ecobalance/results/
 /multi-agent-policies/scenarios/old_prototypes/prototype4/results/
 
+/multi-agent-policies/scenarios/policy_getcloser/results/
+/multi-agent-policies/scenarios/policy_ecobalance/results/

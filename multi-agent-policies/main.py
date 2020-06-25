@@ -137,6 +137,7 @@ def main(simulated_time, experiment_path,case,it):
 
     """
     Storing results from other monitors
+    & Render the last movement
     """
     appOp.render(s,experiment_path,selectorPath,["END",-1,-1,"NONE"])
     s.print_debug_assignaments()
