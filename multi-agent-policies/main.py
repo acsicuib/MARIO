@@ -148,8 +148,8 @@ if __name__ == '__main__':
     logging.config.fileConfig(os.getcwd() + '/logging.ini')
 
 
-    experiment_path = "scenarios/policy_getcloser/"
-    # experiment_path = "scenarios/policy_ecobalance/"
+    # experiment_path = "scenarios/policy_getcloser/"
+    experiment_path = "scenarios/policy_ecobalance/"
     print("Scenario definition: ",experiment_path)
 
     nSimulations = 1

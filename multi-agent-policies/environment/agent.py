@@ -143,9 +143,9 @@ class PolicyManager():
                             # the path of nodes between both is the array: [4,2,3,5,1]
                             path.inner_rule("path", r[1][::-1])
 
-                            print("PATH: %s"%path)
-                            print(r[0])
-                            print(n_messages)
+                            # print("PATH: %s"%path)
+                            # print(r[0])
+                            # print(n_messages)
 
                             self.rules.and_rule("route", self.DES, path, r[0], n_messages)
             else:
@@ -197,14 +197,14 @@ class PolicyManager():
                 if act == b"suicide":
                     suicide = list(prolog.query("suicide(%i)"%service_name))
                     print("SUICIDE")
-                    print(suicide)
+                    # print(suicide)
                     if len(suicide) > 0:
                         order_actions[e] = 'suicide(%i)' % service_name
 
                 if act == b"nop":
                     nop = list(prolog.query("nop(%i)" % service_name))
                     print("Nop")
-                    print(nop)
+                    # print(nop)
                     if len(nop) > 0:
                         order_actions[e] = 'nop(%i)' % service_name
 
@@ -215,7 +215,7 @@ class PolicyManager():
                     ## NOTE: current swi-migrate rule return an array like replicate statement.
                     ##       in this case, we only get the first one value of that array
                     print("MIGRATE")
-                    print(migrate)
+                    # print(migrate)
                     # RETURNS a NUMBER
                     tonodes = []
                     for rep in migrate:
@@ -240,7 +240,7 @@ class PolicyManager():
                     replicate = list(prolog.query("replicate(%i,M)" % service_name))
                     tonodes = set()
                     print("REPLICATE")
-                    print(replicate)
+                    # print(replicate)
                     order_actions[e] = None
                     if len(replicate)>0:
                         tonodes = replicate[0]["M"]
