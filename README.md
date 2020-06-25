@@ -34,15 +34,22 @@ python main.py
 TODO
 - main.py
 - environment/agent.py
-- environment/app_operator.py
+- environment/app_operator.py (aka MARIO)
 
 
 # Prolog Simulation Syntax
 
+The policy rules and the facts are generated and performed  by each service instance controller (agent.py)
+Finally, MARIO (our app_operator.py) periodically performs each action in order from all the service instance controller.
+
+
 ## Facts from the simulation
+
+The facts come from a simulation window. A period of time that includes the previous execution and the current moment. Some facts may not exist at any given time like routes.
+
 - A service: service(ServiceIdentifier, AppIdentifier, MaxUserRequests, MaxLatency)
 ````text
-service(s1,app1,5,50).
+service(s1,meteo,5,50).
 ````
 - A service instance: serviceInstance(ServiceIdentifier, AppIdentifier, current_deployed_node)
 ````text
@@ -68,15 +75,18 @@ route(s1,path([n1,n2,n3,n4]),10,200).
 ```` 
 
 ## Actions from the simulation
+
+The environment modeller has to define the rules in a specific file inside the scenario folder. These rules controls the service instance actions.
+
 - Priority rule indicates the order of preference in the execution of various possible rules.
 ````text
 priority(["nop","suicide","replicate","migrate"]).
 ```` 
 
-- nop
-- suicide(Si)
-- migrate(Si,[M])
-- replicate(Si,[M])
+- Action: nop - do nothing
+- Action: suicide(Si) - undeploy the service instance
+- Action: migrate(Si,[M]) - migrate the service in a specific list of nodes
+- Action: replicate(Si,[M]) - deploy more service in a specific list of nodes
 
 # Definition of a scenario
 - Application
