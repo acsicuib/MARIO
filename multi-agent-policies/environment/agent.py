@@ -193,17 +193,17 @@ class PolicyManager():
 
             order_actions = [None] * len(priority[0]["M"])
             for e,act in enumerate(priority[0]["M"]):
-                print(str(act))
+                # print(str(act))
                 if act == b"suicide":
                     suicide = list(prolog.query("suicide(%i)"%service_name))
-                    print("SUICIDE")
+                    # print("SUICIDE")
                     # print(suicide)
                     if len(suicide) > 0:
                         order_actions[e] = 'suicide(%i)' % service_name
 
                 if act == b"nop":
                     nop = list(prolog.query("nop(%i)" % service_name))
-                    print("Nop")
+                    # print("Nop")
                     # print(nop)
                     if len(nop) > 0:
                         order_actions[e] = 'nop(%i)' % service_name
@@ -214,7 +214,7 @@ class PolicyManager():
                     # migrate(s42,X2,1) ...
                     ## NOTE: current swi-migrate rule return an array like replicate statement.
                     ##       in this case, we only get the first one value of that array
-                    print("MIGRATE")
+                    # print("MIGRATE")
                     # print(migrate)
                     # RETURNS a NUMBER
                     tonodes = []
@@ -239,7 +239,7 @@ class PolicyManager():
                 if act == b"replicate":
                     replicate = list(prolog.query("replicate(%i,M)" % service_name))
                     tonodes = set()
-                    print("REPLICATE")
+                    # print("REPLICATE")
                     # print(replicate)
                     order_actions[e] = None
                     if len(replicate)>0:

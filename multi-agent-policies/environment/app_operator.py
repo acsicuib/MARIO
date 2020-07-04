@@ -12,6 +12,10 @@ import matplotlib as mpl
 import scipy
 import sys
 import os
+import json
+from collections import Counter
+
+import matplotlib.patches as mpatches
 
 PROBLOG = False #TODO def like global var on the project
 
@@ -44,6 +48,8 @@ class Mario():
         self.active_monitor = {}
         # key: id_service (DES), value: id_monitor (DES)
 
+        #STATS
+        self.dump_stats = 0
 
     def __call__(self, sim, routing, path):
         """
@@ -51,14 +57,13 @@ class Mario():
 
         First time, it generates the initial DES-process//agents for the initial deployment services
         Second time and so one, it controls and perfoms the agent actions
-
-
         :param sim:
         :param routing:
         :param path:
         :return:
         """
         # The occupation of a node can be managed by the simulator but to easy integration with the visualization both structures are different
+
         if self.create_initial_services:
             self.service_calls = defaultdict(list)
             for app in sim.alloc_module:
@@ -66,6 +71,9 @@ class Mario():
                     for des in sim.alloc_module[app][service]:
                         self.create_monitor_of_module(des, path, routing, service, sim)
             self.create_initial_services = False #only one time
+
+            self.action_stats = open(path+"results/action_stats.txt","w")
+            self.action_stats.write("time,suicide,nop,migrate,replicate,none\n")
         else:
             if len(self.memory)>0:
                 self.step += 1
@@ -80,6 +88,9 @@ class Mario():
             # current implementation FCFS
             self.UID += 1
             take_last_action = [] # It perfoms the last set of agent rules
+
+            counter_actions = Counter()
+
             for rule in reversed(self.memory): #(self.name,self.DES,currentNode,actions,action_priority)
                 acts, prob = [], []
                 print("+ Actions from DES_service: %i"%(rule[1]))
@@ -97,19 +108,39 @@ class Mario():
                             if self.render_action:
                                 image_file = self.render(sim,path,routing,tuple_action)
                             done = self.perfom_action(sim,tuple_action,routing,path)
+
                             # print("\t action confirmed: %s"%done)
                             if not done and self.render_action: # try to execute the rule
                                 try:
                                     # in case of failure the render is eliminated
                                     # not possible remove the agent.render file (model.pl)
                                     os.remove(image_file)
+                                    counter_actions["none"] += 1
                                 except:
                                     self.logger.critical("Image file not exists")
                                     # print("CRITICAL - Image file not exists")
+                            elif done:
+                                type_action = str(act)[0:act.index("(")]
+                                print(type_action)
+                                if type_action == "nop":
+                                    None
+
+                                counter_actions[type_action] += 1
+                                break
                             else:
                                 break
             self.memory = []
             routing.clear_routing_cache() # Cache data is stored to improve the execution time of the simulator
+            #writing stats
+            if len(counter_actions)>0:
+                print(counter_actions)
+                line = ""
+                for k in ["suicide","nop","migrate","replicate","none"]:
+                    line += "%i,"%counter_actions[k]
+
+                # print(line[:-1])
+                self.action_stats.write("%i,%s\n"%(sim.env.now,line[:-1]))
+                self.action_stats.flush()
 
 
     def perfom_action(self,sim,action,routing,path):
@@ -152,19 +183,26 @@ class Mario():
                 return False
             else:
                 space_on_node = self.get_free_space_on_nodes(sim)
-                feasible = True
+                # All these comments made mandatory that all nodes have capacity to host the all instances.
+                # feasible = True #
+                nodes_with_space = []
                 for n in nodes_to_replicate:
                     if space_on_node[n]<=0:
                         self.logger.warning("There is not more free space on node: %i"%n)
                         print("\t WARNING: NO FREE SPACE ON NODE:%i"%n)
-                        feasible = False
-                        break
-                if feasible:
-                    for n in nodes_to_replicate:
+                        # feasible = False
+                        # break
+                    else:
+                        nodes_with_space.append(n)
+                # if feasible:
+                if True:
+                    for n in nodes_with_space:
+                    # for n in nodes_to_replicate:
                         self.logger.info("Action Replicate new instance of %s on node: %i" % (service, n))
                         print("\t\t+Action Replicate new instance of %s on node: %i" % (service, n))
                         self.deploy_module(sim, service, n, routing, path)
-                return feasible
+                # return feasible
+                return len(nodes_with_space)>0
 
         elif type_action == "migrate":
             # Example
@@ -256,10 +294,19 @@ class Mario():
         line = int(total / 4) + 1
         # duy = 0.06 * line
         # dux = 0.01 * (total % 4)
-        duy = 0.46 * line
-        dux = 0.15 * (total % 4)
-        self.__draw_controlUser[node] += 1
+
+        #simple policies
+        duy = -0.26 * line
+        dux = -0.15 * (total % 4)
+        # #
+        # # new
+        # duy = 4.56 * line
+        # dux = 2.55 * (total % 4)
+        # self.__draw_controlUser[node] += 1
+
         ax.scatter(self.pos[node][0] + dux, self.pos[node][1] + duy, s=100.0, marker='o', color=newcolors[service])
+
+        self.__draw_controlUser[node]+=1
 
     def get_app_identifier(self,nameservice):
         return int(nameservice[0:nameservice.index("_")])
@@ -318,6 +365,7 @@ class Mario():
         # print("\t ID_S: ", action[1])
         # print("\t Node: ", action[2])
         # print("Action: ", action[3])
+        # sys.exit()
 
         if self.pos == None: #first time
             # self.pos = nx.kamada_kawai_layout(sim.topology.G)  # el layout podria ser una entrada?
@@ -345,30 +393,63 @@ class Mario():
         #
 
         nx.draw(sim.topology.G, self.pos, with_labels=False, node_size=1, node_color="#1260A0", edge_color="gray", node_shape="o",
-                font_size=7, font_color="white", ax=ax)
+                 font_size=7, font_color="white", ax=ax)
 
         width = ax.get_xlim()[1]
         top = ax.get_ylim()[1]
         # Some viz. vars.
-        piesize = .08
+        piesize = .06
         p2 = piesize / 2.5
 
-        plt.text(width / 3.55, top / 1.03, "Step: %i on Time: %i" % (self.step, sim.env.now),
-                 {'color': 'black', 'fontsize': 16})
+        try:
+            idApp = int(action[0].split("_")[0])
 
-        action_text = "Node N%i, Service: S%i(%s) -> Action: %s" % (action[2], action[1], action[0], action[3])
-        plt.text(width / 3.55, top / 1.07, action_text, {'color': 'black', 'fontsize': 14})
+        except ValueError: #It triggers when the simulation ends: action(null)
+            idApp = 0
 
-        #TODO for DEBUG
-        # if PROBLOG:
-        #     action_text = "rules_UID%i_n%i_s%i_X_%i.pl" % (self.UID, action[2], action[1], sim.env.now)
-        # else:
-        action_text = "rules_swi_UID%i_n%i_s%i_X_%i.pl" % (self.UID, action[2], action[1], sim.env.now)
-        plt.text(width / 3.55, top / 1.18, action_text, {'color': 'pink', 'fontsize': 16})
+        color_app = newcmp(idApp)
+
+
+        ##########
+        # Textual data
+        ##########
+        plt.text(0, top, "Simulation time: %i" % sim.env.now,{'color': color_app, 'fontsize': 12})
+
+        info_text = "Action: %s" % action[3]
+        plt.text(0 , top-0.2, info_text, {'color': color_app, 'fontsize': 14})
+
+        info_text = "by Service: S%i on Node: N%i" % (action[1], action[2])
+        plt.text(0, top -0.4, info_text, {'color': color_app, 'fontsize': 14})
+
+
+        # Get the POLICY FILE
+        # As the service is named: "idApp_IdModule", we can get the app id from there.
+        dataApps = json.load(open(path + 'appDefinition.json'))
+        rule_policy = ""
+        try:
+            for app in dataApps:
+                if app["id"] == idApp:
+                    rule_policy = app["profile_rules"]
+                    break
+        except UnboundLocalError:
+            None #Render the last case
+
+        info_text = "App: %i with policy: %s" % (idApp, rule_policy)
+        plt.text(0, top -0.6, info_text, {'color': color_app, 'fontsize': 12})
+
+        info_text = "Debug file: rules_swi_UID%i_n%i_s%i_X_%i.pl" % (self.UID, action[2], action[1], sim.env.now)
+        plt.text(0, top - 0.8, info_text, {'color': color_app, 'fontsize': 12})
+
 
         # Labels on nodes
         for x in sim.topology.G.nodes:
-            ax.text(self.pos[x][0] + (width/25), self.pos[x][1] + (width/25) , "N%i" % (x), fontsize=10)
+            ax.text(self.pos[x][0] + (width/45), self.pos[x][1] + (width/45) , "N%i" % (x), fontsize=10)
+
+
+        #Legends apps
+        #
+        # red_patch = mpatches.Patch(color='red', label='The red data')
+        # plt.legend(handles=[red_patch])
 
         # Plotting users dots
         self.__draw_controlUser = {}
@@ -378,10 +459,12 @@ class Mario():
         # print("Nodes with users",nodes_with_users)
         # print("ROUTING",routing.controlServices)
 
+        #PRINT ALL USERS
         for node in nodes_with_users:
             # print(node)
             for app in nodes_with_users[node]:
                 self.__draw_user(node, int(app), ax, newcolors)
+
 
         # DEBUG CODE
         # if (sim.env.now > 5100):
@@ -393,11 +476,22 @@ class Mario():
         trans = ax.transData.transform
         trans2 = fig.transFigure.inverted().transform
         data_occupation = self.get_nodes_with_services(sim)
+
+
         for n in sim.topology.G.nodes():
             xx, yy = trans(self.pos[n])  # figure coordinates
             xa, ya = trans2((xx, yy))  # axes coordinates
             a = plt.axes([xa - p2, ya - p2, piesize, piesize])
             a.set_aspect('equal')
+            # print(data_occupation[n])
+            # print(idApp)
+            if idApp in data_occupation[n]:
+                # print("HERE")
+                # plt.text(self.pos[n][0]+1,self.pos[n][1]+1, "HEREEEEE", {'color': color_app, 'fontsize': 16})
+                plt.text(xa+piesize*10,ya+(piesize*30), "S%i"%action[1], {'color': color_app, 'fontsize': 16})
+                # ax.annotate('%i'%action[1], xy=(self.pos[n][0],self.pos[n][1]), xytext=(self.pos[n][0],self.pos[n][1]-1.),
+                #             arrowprops=dict(facecolor=color_app, shrink=0.05),                            )
+
             a.imshow(data_occupation[n], cmap=newcmp, interpolation='none', norm=norm)
             a.axes.get_yaxis().set_visible(False)
             a.axes.get_xaxis().set_visible(False)

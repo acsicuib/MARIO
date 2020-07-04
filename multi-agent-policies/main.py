@@ -126,7 +126,7 @@ def main(simulated_time, experiment_path,case,it):
     """
     time_activation = deterministic_distribution(time=100, name="Deterministic")
     PROBLOG = False
-    appOp = Mario(globalrules,service_rule_profile, path_csv_files, app_number=len(dataApp),period=300,render=True)
+    appOp = Mario(globalrules,service_rule_profile, path_csv_files, app_number=len(dataApp),period=1000,render=True)
     s.deploy_monitor("App-Operator", appOp, time_activation, **{"sim": s, "routing": selectorPath, "path":experiment_path})
 
     """
@@ -149,11 +149,13 @@ if __name__ == '__main__':
 
 
     # experiment_path = "scenarios/policy_getcloser/"
-    experiment_path = "scenarios/policy_ecobalance/"
+    # experiment_path = "scenarios/policy_ecobalance/"
+    experiment_path = "scenarios/FOCLASA2020/policy_getcloser/"
+
     print("Scenario definition: ",experiment_path)
 
     nSimulations = 1
-    timeSimulation = 100000
+    timeSimulation = 15000
 
     for i in range(nSimulations):
         start_time = time.time()
@@ -167,4 +169,4 @@ if __name__ == '__main__':
 
     print("All simulations done")
 
-# ffmpeg -r 1 -i images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p out2.mp4
+# ffmpeg -r 1 -i results/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p results/out2.mp4

@@ -6,7 +6,7 @@ class DeviceSpeedAwareRouting(Selection):
 
     def __init__(self):
         self.cache = {}
-        self.counter = Counter()
+        self.counter = Counter(list())
         self.invalid_cache_value = True
 
         self.controlServices = {}
@@ -56,7 +56,7 @@ class DeviceSpeedAwareRouting(Selection):
 
         except (nx.NetworkXNoPath, nx.NodeNotFound) as e:
             self.logger.warning("There is no path between two nodes: %s - %s " % (node_src, node_dst))
-            # print "Simulation ends?"
+            # print("Simulation must ends?)"
             return [], None
 
     def get_path(self, sim, app_name, message, topology_src, alloc_DES, alloc_module, traffic, from_des):
@@ -70,9 +70,16 @@ class DeviceSpeedAwareRouting(Selection):
 
         #The number of nodes control the updating of the cache. If the number of nodes changes, the cache is totally cleaned.
         # if (node_src,tuple(DES_dst)) not in self.cache.keys():
-
         path, des = self.compute_BEST_DES(node_src, alloc_DES, sim, DES_dst,message)
-        self.counter[des] += 1
+
+        # print(self.counter)
+        # print(type(self.counter))
+        # print(des)
+        # print(type(des))
+
+        dc = int(des)
+        self.counter[dc] += 1
+
         self.controlServices[(node_src, service)] = (path, des)
 
         return [path], [des]
@@ -80,7 +87,7 @@ class DeviceSpeedAwareRouting(Selection):
     def clear_routing_cache(self):
         self.invalid_cache_value = False
         self.cache = {}
-        self.counter = Counter()
+        self.counter = Counter(list())
         self.controlServices = {}
 
     def get_path_from_failure(self, sim, message, link, alloc_DES, alloc_module, traffic, ctime, from_des):
