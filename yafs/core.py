@@ -507,7 +507,7 @@ class Sim:
         except KeyError:
             # The node can be removed
             self.logger.critical("Make sure that this node has been removed or it has all mandatory attributes - Node: DES:%i" % des)
-            return 0
+            return 1
 
 
         # self.logger.debug("TS[%s] - DES: %i - %d"%(module,des,time_service))
