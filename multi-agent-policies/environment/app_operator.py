@@ -17,8 +17,6 @@ from collections import Counter
 
 import matplotlib.patches as mpatches
 
-PROBLOG = False #TODO def like global var on the project
-
 class Mario():
     """
     We called it Mario in honour to our video game moustached character ;)
@@ -217,8 +215,8 @@ class Mario():
                 space_on_node = self.get_free_space_on_nodes(sim)
                 feasible = True
                 if space_on_node[target_node] <= 0:
-                    self.logger.warning("There is not more free space on node: %i" % n)
-                    print("\t WARNING: NO FREE SPACE ON NODE:%i" % n)
+                    self.logger.warning("There is not more free space on node: %i" % target_node)
+                    print("\t WARNING: NO FREE SPACE ON NODE:%i" % target_node)
                     return False
                 else:
                     self.logger.info("Action Migrate new instance of %s on node: %i" % (service, target_node))
