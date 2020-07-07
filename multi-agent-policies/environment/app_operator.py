@@ -72,28 +72,30 @@ class Mario():
                         self.create_monitor_of_module(des, path, routing, service, sim)
             self.create_initial_services = False #only one time
 
-            self.action_stats = open(path+"results/action_stats.txt","w")
+            self.action_stats = open(path+"results/action_stats.txt",'w+')
             self.action_stats.write("time,suicide,nop,migrate,replicate,none\n")
         else:
             if len(self.memory)>0:
                 self.step += 1
                 # DEBUG
                 print("+"*20)
-                print("\nMARIOOOOOOOOOO is here!! - STEP: %i" % self.step)
+                print("\nMARIOOOOOOOOOO is here!! - Activation: %i  - Time: %i" %(self.step,sim.env.now))
                 print("- Size buffer of actions: %i" % len(self.memory))
                 print("- Current situation:")
                 sim.print_debug_assignaments()
 
+
+            if sim.env.now == 4100:
+                print("DEBUG")
             # TODO v2 Control actions from all agents & select the best option
             # current implementation FCFS
             self.UID += 1
             take_last_action = [] # It perfoms the last set of agent rules
-
             counter_actions = Counter()
 
             for rule in reversed(self.memory): #(self.name,self.DES,currentNode,actions,action_priority)
                 acts, prob = [], []
-                print("+ Actions from DES_service: %i"%(rule[1]))
+                # print("+ Actions from DES_service: %i"%(rule[1]))
                 # print("\tService:"+rule[0])
                 # print("\tID_Service:%i"%rule[1])
                 # print("\tNode:%i"%rule[2])
@@ -114,6 +116,7 @@ class Mario():
                                 try:
                                     # in case of failure the render is eliminated
                                     # not possible remove the agent.render file (model.pl)
+                                    self.logger.warning("Image removed")
                                     os.remove(image_file)
                                     counter_actions["none"] += 1
                                 except:
@@ -121,7 +124,8 @@ class Mario():
                                     # print("CRITICAL - Image file not exists")
                             elif done:
                                 type_action = str(act)[0:act.index("(")]
-                                print(type_action)
+                                # print(type_action)
+                                self.logger.info("Action taken! %s"%type_action)
                                 if type_action == "nop":
                                     None
 
@@ -152,7 +156,7 @@ class Mario():
         :return:
         """
 
-        # print(" + Perfom action")
+        # print(" + Perfom action on time: %i"%sim.env.now)
         # print("\t Service: ",action[0])
         # print("\t ID_S: ",action[1])
         # print("\t Node: ",action[2])
@@ -221,7 +225,7 @@ class Mario():
                     print("\t\t+Action Migrate new instance of %s on node: %i" % (service, target_node))
                     self.deploy_module(sim, service, target_node, routing, path)
                     self.logger.info("\t Remove current instance %s on node: %i" % (service, on_node))
-                    print("\t\t+Remove current instance of %s on node: %i" % (service, target_node))
+                    print("\t\t+Remove current instance of %s on node: %i" % (service, on_node))
                     self.undeploy_module(sim, service, on_node, id_service)
                     return True
             except:
@@ -357,10 +361,8 @@ class Mario():
         return currentOccupation
 
     def render(self,sim,path,routing,action):
-        #TODO Introduce Label/legend app -=-
-
         # print("\t All paths [wl-node,service-node: ", routing.controlServices)
-        # print("Performing action")
+        # print("RENDERING  action")
         # print("\t Service: ", action[0])
         # print("\t ID_S: ", action[1])
         # print("\t Node: ", action[2])
@@ -403,7 +405,6 @@ class Mario():
 
         try:
             idApp = int(action[0].split("_")[0])
-
         except ValueError: #It triggers when the simulation ends: action(null)
             idApp = 0
 
@@ -426,12 +427,14 @@ class Mario():
         # As the service is named: "idApp_IdModule", we can get the app id from there.
         dataApps = json.load(open(path + 'appDefinition.json'))
         rule_policy = ""
+
         try:
             for app in dataApps:
                 if app["id"] == idApp:
                     rule_policy = app["profile_rules"]
                     break
         except UnboundLocalError:
+            print("- WARNING - Rendering the image of the last case")
             None #Render the last case
 
         info_text = "App: %i with policy: %s" % (idApp, rule_policy)
@@ -447,9 +450,11 @@ class Mario():
 
 
         #Legends apps
-        #
-        # red_patch = mpatches.Patch(color='red', label='The red data')
-        # plt.legend(handles=[red_patch])
+        legendItems = []
+        for i in range(1,len(dataApps)+1):
+            color_app = newcmp(i)
+            legendItems.append(mpatches.Patch(color=color_app, label='App: %i'%i))
+        plt.legend(handles=legendItems)
 
         # Plotting users dots
         self.__draw_controlUser = {}
@@ -464,12 +469,6 @@ class Mario():
             # print(node)
             for app in nodes_with_users[node]:
                 self.__draw_user(node, int(app), ax, newcolors)
-
-
-        # DEBUG CODE
-        # if (sim.env.now > 5100):
-        #     print("time 5100")
-        #     sys.exit()
 
         # LAST step:
         # Displaying capacity, changing node shape
@@ -486,7 +485,6 @@ class Mario():
             # print(data_occupation[n])
             # print(idApp)
             if idApp in data_occupation[n]:
-                # print("HERE")
                 # plt.text(self.pos[n][0]+1,self.pos[n][1]+1, "HEREEEEE", {'color': color_app, 'fontsize': 16})
                 plt.text(xa+piesize*10,ya+(piesize*30), "S%i"%action[1], {'color': color_app, 'fontsize': 16})
                 # ax.annotate('%i'%action[1], xy=(self.pos[n][0],self.pos[n][1]), xytext=(self.pos[n][0],self.pos[n][1]-1.),
@@ -505,8 +503,5 @@ class Mario():
         self.image_id += 1
 
         plt.close(fig)
+        print("Rendering fILE: %s"%(self.image_dir + "/network_%05d.png" % self.image_id))
         return self.image_dir + "/network_%05d.png" % self.image_id
-
-        #TODO DEBUG
-        # if self.image_id >5:
-        #     sys.exit()

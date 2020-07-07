@@ -81,22 +81,38 @@ class PolicyManager():
             self.rules.and_rule("serviceInstance",self.DES,self.app_name,currentNode)
 
              # print("\t All paths [wl-node,service-node: ",routing.controlServices)
+            alllinkedNodes = []
             routes = []
             neighbours = [currentNode]
             for (path,des) in routing.controlServices.values():
                 if des==self.DES:
                     routes.append([self.get_latency(path, sim.topology), path])
+                    alllinkedNodes.append(path)
                     # neighbours += path # Uncomment in case of considering nodes from user-paths
 
-            neighbours += [e[1] for e in sim.topology.G.edges(currentNode)]
-            neighbours = list(dict.fromkeys(neighbours))
-            assert len(neighbours)>0,"Node without edges?"
-            # print("All neighbours ",neighbours)
-            # NODE FACTS
-            node_hreqs = nx.get_node_attributes(G=sim.topology.G,name="HwReqs")
-            for n in neighbours:
+            ## DIRECT NODES FACTS
+            # neighbours += [e[1] for e in sim.topology.G.edges(currentNode)]
+            # neighbours = list(dict.fromkeys(neighbours))
+            # assert len(neighbours)>0,"Node without edges?"
+            # # print("All neighbours ",neighbours)
+            # # NODE FACTS
+            # node_hreqs = nx.get_node_attributes(G=sim.topology.G,name="HwReqs")
+            # for n in neighbours:
+            #     n_neigh = [e[1] for e in sim.topology.G.edges(n)]
+            #     self.rules.and_rule("node",n,node_hreqs[n],n_neigh)
+
+            #Generating NODE facts from all the nodes in the path
+            node_hreqs = nx.get_node_attributes(G=sim.topology.G, name="HwReqs")
+            setNodes = set()
+            for path in alllinkedNodes:
+                for node in path:
+                    setNodes.add(node)
+            for n in setNodes:
+                neighbours += [e[1] for e in sim.topology.G.edges(n)]
+                neighbours = list(dict.fromkeys(neighbours))
                 n_neigh = [e[1] for e in sim.topology.G.edges(n)]
-                self.rules.and_rule("node",n,node_hreqs[n],n_neigh)
+                self.rules.and_rule("node", n, node_hreqs[n], n_neigh)
+
 
             # LINK FACTS
             lat = nx.get_edge_attributes(sim.topology.G,"PR")

@@ -82,6 +82,7 @@ class DeviceSpeedAwareRouting(Selection):
 
         self.controlServices[(node_src, service)] = (path, des)
 
+
         return [path], [des]
 
     def clear_routing_cache(self):
