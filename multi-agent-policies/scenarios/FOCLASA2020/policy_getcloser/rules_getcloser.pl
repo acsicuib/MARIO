@@ -1,16 +1,13 @@
-priority(["suicide","nop","migrate","replicate"]).
+action(Si,suicide,_):- suicide(Si).
+action(Si,migrate,M):- migrate(Si,M).
+action(Si,replicate,M):- replicate(Si,M).
+action(_,nop,_).
 
 %%suicide of service instance Si
 % if Si is a service instance and there are no requests routed towards Si then Si suicides
 suicide(Si) :-
   serviceInstance(Si, _, _),
   \+ route(Si, _, _, _).
-
-%%nop for service instance Si
-% if Si is a service instance and there are no request routes longer then 1 then Si performs nop
-nop(Si) :-
-  serviceInstance(Si, _, M),
-  foreach(route(Si, path([M|L]), _,_),L==[]).
 
 %%migration of service instance Si from node N to node M
 % if Si is a service instance running on node N and node M is the next hop of N in all request routes for Si

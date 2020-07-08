@@ -105,32 +105,32 @@ class Mario():
                         # print(" ++ action #:%i rule: %s"%(i,act))
                         if act != None:
                             tuple_action = (rule[0],rule[1],rule[2],act)
+
+                            # The render of the action is done the state of the simulator changes
                             if self.render_action:
                                 image_file = self.render(sim,path,routing,tuple_action)
+
                             done = self.perfom_action(sim,tuple_action,routing,path)
 
                             # print("\t action confirmed: %s"%done)
-                            if not done and self.render_action: # try to execute the rule
+                            # print("type: ",type(done))
+                            # print(tuple_action)
+
+                            if self.render_action and not done:
                                 try:
-                                    # in case of failure the render is eliminated
-                                    # not possible remove the agent.render file (model.pl)
                                     self.logger.warning("Image removed")
                                     os.remove(image_file)
-                                    counter_actions["none"] += 1
-                                except:
-                                    self.logger.critical("Image file not exists")
-                                    # print("CRITICAL - Image file not exists")
-                            elif done:
-                                type_action = str(act)[0:act.index("(")]
-                                # print(type_action)
-                                self.logger.info("Action taken! %s"%type_action)
-                                if type_action == "nop":
+                                except FileNotFoundError:
                                     None
 
-                                counter_actions[type_action] += 1
-                                break
+                            if not done:
+                                self.logger.debug("Action taken!: None")
+                                counter_actions["none"] += 1
                             else:
-                                break
+                                type_action = str(act)[0:act.index("(")]
+                                self.logger.debug("Action taken!: %s"%type_action)
+                                counter_actions[type_action] += 1
+
             self.memory = []
             routing.clear_routing_cache() # Cache data is stored to improve the execution time of the simulator
             #writing stats
@@ -367,15 +367,14 @@ class Mario():
         # print("Action: ", action[3])
         # sys.exit()
 
-        if self.pos == None: #first time
-            # self.pos = nx.kamada_kawai_layout(sim.topology.G)  # el layout podria ser una entrada?
+        if self.pos == None: # Only the first time
             pos = nx.get_node_attributes(sim.topology.G,'pos')
             if len(pos)>0:
                 for k in pos.keys():
                     pos[k] = np.array(eval(pos[k]))
                 self.pos = pos
             else:
-                self.pos = nx.random_layout(sim.topology.G)  # el layout podria ser una entrada?
+                self.pos = nx.random_layout(sim.topology.G)
 
             image_dir = Path(path+"results/images/")
             image_dir.mkdir(parents=True, exist_ok=True)
@@ -474,25 +473,19 @@ class Mario():
         trans2 = fig.transFigure.inverted().transform
         data_occupation = self.get_nodes_with_services(sim)
 
-
+        # Generate node shape
         for n in sim.topology.G.nodes():
             xx, yy = trans(self.pos[n])  # figure coordinates
             xa, ya = trans2((xx, yy))  # axes coordinates
             a = plt.axes([xa - p2, ya - p2, piesize, piesize])
             a.set_aspect('equal')
-            # print(data_occupation[n])
-            # print(idApp)
-            if idApp in data_occupation[n]:
-                # plt.text(self.pos[n][0]+1,self.pos[n][1]+1, "HEREEEEE", {'color': color_app, 'fontsize': 16})
-                plt.text(xa+piesize*10,ya+(piesize*30), "S%i"%action[1], {'color': color_app, 'fontsize': 16})
-                # ax.annotate('%i'%action[1], xy=(self.pos[n][0],self.pos[n][1]), xytext=(self.pos[n][0],self.pos[n][1]-1.),
-                #             arrowprops=dict(facecolor=color_app, shrink=0.05),                            )
+            # Include the current instance service identificator close to the node
+            if idApp in data_occupation[n] and action[2]==n:
+                plt.text(xa+piesize*10,ya+(piesize*30), "S%i"%action[1], {'color': newcmp(idApp), 'fontsize': 16})
 
             a.imshow(data_occupation[n], cmap=newcmp, interpolation='none', norm=norm)
             a.axes.get_yaxis().set_visible(False)
             a.axes.get_xaxis().set_visible(False)
-
-        #plt.text(2, 1000, "Step: %i" % self.activation, {'color': 'C0', 'fontsize': 16})
 
         canvas = plt.get_current_fig_manager().canvas
         canvas.draw()
@@ -501,5 +494,5 @@ class Mario():
         self.image_id += 1
 
         plt.close(fig)
-        print("Rendering fILE: %s"%(self.image_dir + "/network_%05d.png" % self.image_id))
+        # print("Rendering fILE: %s"%(self.image_dir + "/network_%05d.png" % self.image_id))
         return self.image_dir + "/network_%05d.png" % self.image_id

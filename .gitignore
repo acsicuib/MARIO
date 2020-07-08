@@ -17,4 +17,5 @@ pyenv.cfg
 /multi-agent-policies/scenarios/policy_getcloser/results/
 /multi-agent-policies/scenarios/policy_ecobalance/results/
 /multi-agent-policies/environment/app_operator_vold.py
+/multi-agent-policies/environment/agent_vOldSemantic_NOP_Priorities.py
 /multi-agent-policies/environment/path_routing_OLD.py

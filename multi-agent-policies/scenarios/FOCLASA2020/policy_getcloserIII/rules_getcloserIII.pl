@@ -1,4 +1,7 @@
-priority(["suicide","nop","migrate","replicate"]).
+action(Si,suicide,_):- suicide(Si).
+action(Si,migrate,M):- migrate(Si,M).
+action(Si,replicate,M):- replicate(Si,M).
+action(_,nop,_).
 
 %%suicide of service instance Si
 % if Si is a service instance and there are no requests routed towards Si then Si suicides
@@ -6,13 +9,9 @@ suicide(Si) :-
   serviceInstance(Si, _, _),
   \+ route(Si, _, _, _).
 
-%%nop for service instance Si
-% if Si is a service instance and there are no request routes longer then 1 then Si performs nop
-nop(Si) :-
-  serviceInstance(Si, _, M),
-  foreach(route(Si, path([M|L]), _,_),L==[]).
-
-%  same as “get closer” but migrating service instance Si to the farthest hop common to all request routes for Si
+%%migration of service instance Si from node N to node M
+% if Si is a service instance running on node N and node M is the next hop of N in all request routes for Si
+% and M features the HW required by Si then Si is migrated to M
 migrate(Si,M) :-
   serviceInstance(Si, S, N),
   service(S, RequiredHW, _, _),
@@ -24,15 +23,12 @@ farthest(LL, RequiredHW, M) :- longestPrefix(LL,P), farthestwithHW(P, RequiredHW
 longestPrefix([P],P).
 longestPrefix([P|LL],P) :- prefixOfAll(P,LL).
 longestPrefix([P|LL],Q) :- append(Q,[_],P), prefixOfAll(Q,LL).
+
 prefixOfAll(_,[]).
 prefixOfAll(P,[P2|LL]) :- append(P,_,P2), prefixOfAll(P,LL).
 
-farthestwithHW(P, RequiredHW, M) :-
-append(_,[M],P), node(M, FeaturedHW, _), FeaturedHW >= RequiredHW.
-farthestwithHW(P, RequiredHW, M) :-
-append(Ms,[M],P), node(M, FeaturedHW, _), FeaturedHW < RequiredHW, farthestwithHW(Ms, RequiredHW, M).
-
-
+farthestwithHW(P, RequiredHW, M) :- append(_,[M],P), node(M, FeaturedHW, _), FeaturedHW >= RequiredHW.
+farthestwithHW(P, RequiredHW, M) :- append(Ms,[M],P), node(M, FeaturedHW, _), FeaturedHW < RequiredHW, farthestwithHW(Ms, RequiredHW, M).
 
 
 %%replication of service instance Si on the list of nodes [F1,F2|Fs]
