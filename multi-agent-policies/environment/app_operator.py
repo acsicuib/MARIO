@@ -445,13 +445,37 @@ class Mario():
         for x in sim.topology.G.nodes:
             ax.text(self.pos[x][0] + (width/45), self.pos[x][1] + (width/45) , "N%i" % (x), fontsize=10)
 
+        #TODO IMPROVE THE GENERATION OF THE LEGEND according with APP & Policies
+        # APP Legend
+        if not "closers" in self.image_dir:
+        # DEFAULT Legends apps
+            legendItems = []
+            for i in range(1,len(dataApps)+1):
+                color_app = newcmp(i)
+                legendItems.append(mpatches.Patch(color=color_app, label='App: %i'%i))
+            plt.legend(handles=legendItems, title="title")
 
-        #Legends apps
-        legendItems = []
-        for i in range(1,len(dataApps)+1):
-            color_app = newcmp(i)
-            legendItems.append(mpatches.Patch(color=color_app, label='App: %i'%i))
-        plt.legend(handles=legendItems)
+        else:
+            # SPECIFIC LEGEND for experiment: I_II_III
+            offset = 0
+            text=["Get_Closer","Get_Closer_II","Get_Closer_III"]
+            for i in range(0, len(dataApps) ):
+                color_app = newcmp(i+1)
+                if (i%2 == 0):
+                    ax.annotate("%s" % text[offset],
+                                xy=(0.95, 1.0 - ((i + offset) * 0.05)), xycoords='axes fraction',
+                                textcoords='offset points',
+                                size=14,
+                                bbox=dict(boxstyle="round", fc="white", ec="none"))
+                    offset+=1
+
+                ax.annotate("App: %i"%(i+1),
+                    xy=(0.95, 1.0-((i+offset)*0.05)), xycoords='axes fraction',
+                    textcoords='offset points',
+                    size=14,
+                    bbox=dict(boxstyle="round", fc=color_app, ec="none"))
+
+
 
         # Plotting users dots
         self.__draw_controlUser = {}

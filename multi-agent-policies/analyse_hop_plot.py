@@ -10,24 +10,27 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 
-#From MARIO render style:
+# Color palette from MARIO render style
 total_apps = 6
 tab20 = plt.cm.get_cmap('tab20',total_apps+5)
 bounds = range(total_apps+5)
 newcolors = tab20(np.linspace(0, 1, total_apps+5))
 newcolors[0] = np.array([250.0 / 256.0, 250. / 256., 250. / 256., 1])
 newcmp = mpl.colors.ListedColormap(newcolors)
-#
-#
+##
 
+# Parameters
+timeSimulation = 20000
 
-timeSimulation = 10000
+sampling = 1000 # aggregation periods of messages
 
 experiment_path = "scenarios/FOCLASA2020/policy_getcloser/"
-# experiment_path = "scenarios/FOCLASA2020/policy_getcloserII/"
+experiment_path = "scenarios/FOCLASA2020/policy_getcloserII/"
 # experiment_path = "scenarios/FOCLASA2020/policy_getcloserIII/"
+# experiment_path = "scenarios/FOCLASA2020/policy_getclosers_I_II_III/"
 
 
+# Load the simulation trace
 df = pd.read_csv(experiment_path + "results/Results_%s_%s_%i.csv" % ("prot1", timeSimulation, 0))
 df.index = df["time_out"].astype('datetime64[s]')
 
@@ -37,18 +40,17 @@ df.index = df["time_out"].astype('datetime64[s]')
 # =============================================================================
 # #Get the node.src and node.dst resampling the samples and we get the most frequent values.
 # =============================================================================
-sampling = 1000
+
 df2 = df.groupby('app')["TOPO.src","TOPO.dst"].resample("%ss"%sampling).agg(lambda x:x.value_counts().index[0])
 df2.reset_index(inplace=True)
 
 
+# We need the infrastructure to compute the path between the nodes
 t = Topology()
 dataNetwork = json.load(open(experiment_path + 'networkDefinition.json'))
 t.load_all_node_attr(dataNetwork)
 
- 
 app_hop = defaultdict(list)
-
 for row in df2.iterrows():
     idApp = row[1]["app"]
     src = row[1]["TOPO.src"]
@@ -61,20 +63,20 @@ print(app_hop)
 fig, ax = plt.subplots()
 for k in app_hop:
     plt.plot(app_hop[k],color=newcmp(k))
-plt.title('Total number of hops by app')
-plt.xlabel(r"Messages by periods of (%i time units)"%sampling)
+plt.title('Hops')
+plt.xlabel(r"Simulation periods (%i time units)"%sampling)
 plt.ylabel(r"Hop")
 # plt.xticks(np.arange(0, len(app_hop[k]), 1))
 # plt.yticks(np.arange(0, 7), 1)
 fig.savefig(experiment_path+"results/hops.png", dpi=300)        
 
-app_hop=np.array(list(app_hop.values()))
 
+app_hop=np.array(list(app_hop.values()))
 print(app_hop)
 fig, ax = plt.subplots()
 ax.boxplot(app_hop)
-plt.title('Total number of hops by app')
-plt.xlabel(r"Messages by periods of (%i time units)"%sampling)
+plt.title('Hops')
+plt.xlabel(r"Simulation periods (%i time units)"%sampling)
 plt.ylabel(r"Hop")
 # plt.xticks(np.arange(0, len(app_hop[k]), 1))
 # plt.yticks(np.arange(0, 7), 1)

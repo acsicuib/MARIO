@@ -151,13 +151,14 @@ if __name__ == '__main__':
     # experiment_path = "scenarios/policy_getcloser/"
     # experiment_path = "scenarios/policy_ecobalance/"
     # experiment_path = "scenarios/FOCLASA2020/policy_getcloser/"
-    # experiment_path = "scenarios/FOCLASA2020/policy_getcloserII/"
-    experiment_path = "scenarios/FOCLASA2020/policy_getcloserIII/"
+    experiment_path = "scenarios/FOCLASA2020/policy_getcloserII/"
+    # experiment_path = "scenarios/FOCLASA2020/policy_getcloserIII/"
+    # experiment_path = "scenarios/FOCLASA2020/policy_getclosers_I_II_III/"
 
     print("Scenario definition: ",experiment_path)
 
     nSimulations = 1
-    timeSimulation = 10000
+    timeSimulation = 20000
 
     for i in range(nSimulations):
         start_time = time.time()

@@ -21,16 +21,34 @@ migrate(Si,M) :-
 %%replication of service instance Si on the list of nodes [F1,F2|Fs]
 % if Si is a service instance running on node N and there is more than one request route
 % then Si is replicated on each first hop of such routes that feature HW required by si
+%replicate(Si,[F1,F2|Fs]) :-
+%   serviceInstance(Si, S, N),
+%   service(S, RequiredHW, MaxUserRequests, _),
+%   findall((M,UserReqs), ( route(Si,path([N,M|_]),_,UserReqs), node(M,FeatHW,_), FeatHW >= RequiredHW ), Ms),
+%   sort(Ms,NewMs),
+%   Threshold is MaxUserRequests*0,
+%   filter(NewMs,Threshold,[F1,F2|Fs]).
+
+filter([],_,[]).
+filter([(N,R)|L],T,NewL) :- filter2(L,T,(N,R),NewL).
+%filter2([],T,(N,R),[N]) :- R > T.
+%filter2([],T,(_,R),[]) :- R =< T.
+%filter2([(N,R1)|L],T,(N,R),NewL) :- NewR is R+R1, filter2(L,T,(N,NewR),NewL).
+%filter2([(N1,R1)|L],T,(N,R),[N|NewL]) :- N1 \== N, R>T, filter2(L,T,(N1,R1),NewL).
+%filter2([(N1,R1)|L],T,(N,R),NewL) :- N1 \== N, R=<T, filter2(L,T,(N1,R1),NewL).
+
+
 replicate(Si,[F1,F2|Fs]) :-
    serviceInstance(Si, S, N),
    service(S, RequiredHW, MaxUserRequests, _),
    findall((M,UserReqs), ( route(Si,path([N,M|_]),_,UserReqs), node(M,FeatHW,_), FeatHW >= RequiredHW ), Ms),
    sort(Ms,NewMs),
-   Threshold is MaxUserRequests*0,
+   replicateThreshold(MaxUserRequests,Threshold),
    filter(NewMs,Threshold,[F1,F2|Fs]).
 
-filter([],_,[]).
-filter([(N,R)|L],T,NewL) :- filter2(L,T,(N,R),NewL).
+
+replicateThreshold(MaxUserRequests,Threshold) :- Threshold is MaxUserRequests*2.2. 	%threshold definition
+
 filter2([],T,(N,R),[N]) :- R > T.
 filter2([],T,(_,R),[]) :- R =< T.
 filter2([(N,R1)|L],T,(N,R),NewL) :- NewR is R+R1, filter2(L,T,(N,NewR),NewL).

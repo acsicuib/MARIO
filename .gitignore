@@ -1,21 +1,14 @@
-/multi-agent-policies/test/
 /bin
 /include
 /lib
 pyenv.cfg
-/multi-agent-policies/logFile.log
-/multi-agent-policies/scenarios/prototype3/results/
-/multi-agent-policies/scenarios/prototype1/results/
-/multi-agent-policies/scenarios/prototype2/results/
-/multi-agent-policies/scenarios/prototype4/results/
 
 /multi-agent-policies/test/
+/multi-agent-policies/logFile.log
 /multi-agent-policies/test_rules/
-/multi-agent-policies/scenarios/policy_ecobalance/results/
-/multi-agent-policies/scenarios/old_prototypes/prototype4/results/
+/multi-agent-policies/scenarios/old_prototypes/
 
-/multi-agent-policies/scenarios/policy_getcloser/results/
-/multi-agent-policies/scenarios/policy_ecobalance/results/
-/multi-agent-policies/environment/app_operator_vold.py
-/multi-agent-policies/environment/agent_vOldSemantic_NOP_Priorities.py
-/multi-agent-policies/environment/path_routing_OLD.py
+network_*.png
+models/*.pl
+*.csv
+

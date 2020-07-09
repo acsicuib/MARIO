@@ -4,7 +4,9 @@ from matplotlib.ticker import MaxNLocator
 
 experiment_path = "scenarios/FOCLASA2020/policy_getcloser/"
 #experiment_path = "scenarios/FOCLASA2020/policy_getcloserII/"
-#experiment_path = "scenarios/FOCLASA2020/policy_getcloserIII/"
+experiment_path = "scenarios/FOCLASA2020/policy_getcloserIII/"
+experiment_path = "scenarios/FOCLASA2020/policy_getclosers_I_II_III/"
+
 fig, ax = plt.subplots()
 df = pd.read_csv(experiment_path+"results/action_stats.txt")
 del df["time"]
