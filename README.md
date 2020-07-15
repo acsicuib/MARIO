@@ -3,7 +3,7 @@
 TODO: describe the project
 This is an animated gif of the movement of instances along the simulation. It combines three different policies: scenarios/FOCLASA2020/policy_getclosers_I_II_III/
 
-<img src="https://github.com/acsicuib/YAFS/raw/master/src/examples/mobileTutorial/exp/results_20190326/out2.gif" width="350" height="350"/></a>
+<img src="https://github.com/acsicuib/DistributedPolicies/raw/foclasa2020/multi-agent-policies/scenarios/FOCLASA2020/policy_getclosers_I_II_III/results/out.gif" width="550" height="350"/></a>
 
 # Installation Steps
 0. Requires: Python 3.6
