@@ -299,14 +299,14 @@ class Mario():
 
         #simple policies
         duy = -0.26 * line
-        dux = -0.15 * (total % 4)
+        dux = (.0 * (total % 4))+(0.2*total)
         # #
         # # new
         # duy = 4.56 * line
         # dux = 2.55 * (total % 4)
         # self.__draw_controlUser[node] += 1
 
-        ax.scatter(self.pos[node][0] + dux, self.pos[node][1] + duy, s=100.0, marker='o', color=newcolors[service])
+        ax.scatter(self.pos[node][0] + dux, self.pos[node][1] + duy, s=600.0, marker='o', color=newcolors[service])
 
         self.__draw_controlUser[node]+=1
 
@@ -388,6 +388,7 @@ class Mario():
         norm = mpl.colors.BoundaryNorm(bounds, newcmp.N)
 
         fig, ax = plt.subplots(figsize=(16.0, 10.0))
+        plt.tight_layout(h_pad=0.55)
         # left, bottom, width, height = ax.get_position().bounds
         #
 
@@ -398,6 +399,7 @@ class Mario():
         top = ax.get_ylim()[1]
         # Some viz. vars.
         piesize = .06
+        # piesize = .08
         p2 = piesize / 2.5
 
         try:
@@ -411,13 +413,14 @@ class Mario():
         ##########
         # Textual data
         ##########
-        plt.text(0, top, "Simulation time: %i" % sim.env.now,{'color': color_app, 'fontsize': 12})
-
-        info_text = "Action: %s" % action[3]
-        plt.text(0 , top-0.2, info_text, {'color': color_app, 'fontsize': 14})
-
-        info_text = "by Service: S%i on Node: N%i" % (action[1], action[2])
-        plt.text(0, top -0.4, info_text, {'color': color_app, 'fontsize': 14})
+        # TODO UNCOMMENT
+        # plt.text(0, top, "Simulation time: %i" % sim.env.now,{'color': color_app, 'fontsize': 12})
+        #
+        # info_text = "Action: %s" % action[3]
+        # plt.text(0 , top-0.2, info_text, {'color': color_app, 'fontsize': 14})
+        #
+        # info_text = "by Service: S%i on Node: N%i" % (action[1], action[2])
+        # plt.text(0, top -0.4, info_text, {'color': color_app, 'fontsize': 14})
 
 
         # Get the POLICY FILE
@@ -434,47 +437,150 @@ class Mario():
             print("- WARNING - Rendering the image of the last case")
             None #Render the last case
 
-        info_text = "App: %i with policy: %s" % (idApp, rule_policy)
-        plt.text(0, top -0.6, info_text, {'color': color_app, 'fontsize': 12})
-
-        info_text = "Debug file: rules_swi_UID%i_n%i_s%i_X_%i.pl" % (self.UID, action[2], action[1], sim.env.now)
-        plt.text(0, top - 0.8, info_text, {'color': color_app, 'fontsize': 12})
+        # TODO UNCOMMENT
+        # info_text = "App: %i with policy: %s" % (idApp, rule_policy)
+        # plt.text(0, top -0.6, info_text, {'color': color_app, 'fontsize': 12})
+        #
+        # info_text = "Debug file: rules_swi_UID%i_n%i_s%i_X_%i.pl" % (self.UID, action[2], action[1], sim.env.now)
+        # plt.text(0, top - 0.8, info_text, {'color': color_app, 'fontsize': 12})
 
 
         # Labels on nodes
         for x in sim.topology.G.nodes:
-            ax.text(self.pos[x][0] + (width/45), self.pos[x][1] + (width/45) , "N%i" % (x), fontsize=10)
+            if x ==0:
+                ax.text(self.pos[x][0]- (width/12), self.pos[x][1] , "N%i" % (x), fontsize=30,
+                        fontweight="bold")
+            else:
+                ax.text(self.pos[x][0] - (width/75), self.pos[x][1] + (width/55) , "N%i" % (x), fontsize=30,fontweight="bold")
 
         #TODO IMPROVE THE GENERATION OF THE LEGEND according with APP & Policies
+            # TODO UNCOMMENT
         # APP Legend
-        if not "closers" in self.image_dir:
-        # DEFAULT Legends apps
-            legendItems = []
-            for i in range(1,len(dataApps)+1):
-                color_app = newcmp(i)
-                legendItems.append(mpatches.Patch(color=color_app, label='App: %i'%i))
-            plt.legend(handles=legendItems, title="title")
+        # if not "closers" in self.image_dir:
+        # # DEFAULT Legends apps
+        #     legendItems = []
+        #     for i in range(1,len(dataApps)+1):
+        #         color_app = newcmp(i)
+        #         legendItems.append(mpatches.Patch(color=color_app, label='App: %i'%i))
+        #     # plt.legend(handles=legendItems, title=rule_policy)
+        #     plt.legend(handles=legendItems)
+        #
+        # else:
+        #     # SPECIFIC LEGEND for experiment: I_II_III
+        #     offset = 0
+        #     text=["Get_Closer","Get_Closer_II","Get_Closer_III"]
+        #     for i in range(0, len(dataApps) ):
+        #         color_app = newcmp(i+1)
+        #         if (i%2 == 0):
+        #             ax.annotate("%s" % text[offset],
+        #                         xy=(0.95, 1.0 - ((i + offset) * 0.05)), xycoords='axes fraction',
+        #                         textcoords='offset points',
+        #                         size=14,
+        #                         bbox=dict(boxstyle="round", fc="white", ec="none"))
+        #             offset+=1
+        #
+        #         ax.annotate("App: %i"%(i+1),
+        #             xy=(0.95, 1.0-((i+offset)*0.05)), xycoords='axes fraction',
+        #             textcoords='offset points',
+        #             size=14,
+        #             bbox=dict(boxstyle="round", fc=color_app, ec="none"))
+        #
+        #         # TODO IMPROVE THE GENERATION OF THE LEGEND according with APP & Policies
+        #         # APP Legend
 
-        else:
-            # SPECIFIC LEGEND for experiment: I_II_III
-            offset = 0
-            text=["Get_Closer","Get_Closer_II","Get_Closer_III"]
-            for i in range(0, len(dataApps) ):
-                color_app = newcmp(i+1)
-                if (i%2 == 0):
-                    ax.annotate("%s" % text[offset],
-                                xy=(0.95, 1.0 - ((i + offset) * 0.05)), xycoords='axes fraction',
-                                textcoords='offset points',
-                                size=14,
-                                bbox=dict(boxstyle="round", fc="white", ec="none"))
-                    offset+=1
 
-                ax.annotate("App: %i"%(i+1),
-                    xy=(0.95, 1.0-((i+offset)*0.05)), xycoords='axes fraction',
+        #TODO INDIVIDUAL POLKICIES IMAGE LABEL
+        # offset = 0
+        # # text = ["GetCloser"]
+        # # text = ["Eco_GetCloser"]
+        # text = ["Turbo_GetCloser"]
+        # ax.annotate("%s" % text[offset],
+        #             xy=(0.01, 0.96 - ((0 + offset) * 0.08)), xycoords='axes fraction',
+        #             textcoords='offset points',
+        #             size=38,
+        #             weight="bold",
+        #             bbox=dict(boxstyle="round", fc="white", ec="none"))
+        # offset += 1
+        #
+        # for i in range(0, len(dataApps),2):
+        #     color_app = newcmp(i + 1)
+        #     ax.annotate("  App: %i " % (i + 1),
+        #                 xy=(0.01, 0.92 - ((i + offset) * 0.05)), xycoords='axes fraction',
+        #                 textcoords='offset points',
+        #                 size=30,
+        #                 weight="bold",
+        #                 bbox=dict(boxstyle="round", fc=color_app, ec="none",alpha=0.8))
+        #
+        #     color_app = newcmp(i + 2)
+        #     ax.annotate("  App: %i " % (i + 2),
+        #                 xy=(0.16, 0.92 - ((i + offset) * 0.05)), xycoords='axes fraction',
+        #                 textcoords='offset points',
+        #                 size=30,
+        #                 weight="bold",
+        #                 bbox=dict(boxstyle="round", fc=color_app, ec="none",alpha=0.8))
+        #
+
+        ### END INDIVIDUAL LEGEND
+
+        ## MANUAL LEGEND FOR MIX I II III Cases
+
+        offset = 0
+        text = ["GetCloser"]
+        ax.annotate("%s" % text[offset],
+                    xy=(0.05, 0.96), xycoords='axes fraction',
                     textcoords='offset points',
-                    size=14,
-                    bbox=dict(boxstyle="round", fc=color_app, ec="none"))
+                    size=34,
+                    weight="bold",
+                    bbox=dict(boxstyle="round", fc="white", ec="none"))
+        offset += 1
 
+        for i in range(0, 2):
+            color_app = newcmp(i + 1)
+            ax.annotate("  App: %i " % (i + 1),
+                        xy=(0.05+(i * 0.13), 0.90 ) , xycoords='axes fraction',
+                        textcoords='offset points',
+                        size=28,
+                        # weight="bold",
+                        bbox=dict(boxstyle="round", fc=color_app, ec="none"))
+
+
+        offset = 0
+        text = ["Eco_GetCloser"]
+        ax.annotate("%s" % text[offset],
+                    xy=(0.05, 0.82), xycoords='axes fraction',
+                    textcoords='offset points',
+                    size=34,
+                    weight="bold",
+                    bbox=dict(boxstyle="round", fc="white", ec="none"))
+        offset += 1
+
+        for i in range(0, 2):
+            color_app = newcmp(i + 3)
+            ax.annotate("  App: %i " % (i + 3),
+                       xy=(0.05+(i * 0.13), 0.76 ), xycoords='axes fraction',
+                        textcoords='offset points',
+                        size=28,
+                        # weight="bold",
+                        bbox=dict(boxstyle="round", fc=color_app, ec="none"))
+
+        offset = 0
+        text = ["Turbo_GetCloser"]
+        ax.annotate("%s" % text[offset],
+                    xy=(0.05, 0.68), xycoords='axes fraction',
+                    textcoords='offset points',
+                    size=34,
+                    weight="bold",
+                    bbox=dict(boxstyle="round", fc="white", ec="none"))
+        offset += 1
+
+        for i in range(0, 2):
+            color_app = newcmp(i + 5)
+            ax.annotate("  App: %i " % (i + 5),
+                    xy=(0.05 + (i * 0.13), 0.62), xycoords='axes fraction',
+                    textcoords='offset points',
+                    size=28,
+                    # weight="bold",
+                    bbox=dict(boxstyle="round", fc=color_app, ec="none"))
 
 
         # Plotting users dots
@@ -504,8 +610,9 @@ class Mario():
             a = plt.axes([xa - p2, ya - p2, piesize, piesize])
             a.set_aspect('equal')
             # Include the current instance service identificator close to the node
-            if idApp in data_occupation[n] and action[2]==n:
-                plt.text(xa+piesize*10,ya+(piesize*30), "S%i"%action[1], {'color': newcmp(idApp), 'fontsize': 16})
+            #TODO UNCOMMENT
+            # if idApp in data_occupation[n] and action[2]==n:
+            #     plt.text(xa+piesize*10,ya+(piesize*30), "S%i"%action[1], {'color': newcmp(idApp), 'fontsize': 16})
 
             a.imshow(data_occupation[n], cmap=newcmp, interpolation='none', norm=norm)
             a.axes.get_yaxis().set_visible(False)
@@ -514,9 +621,9 @@ class Mario():
         canvas = plt.get_current_fig_manager().canvas
         canvas.draw()
         pil_image = Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
-        pil_image.save(self.image_dir + "/network_%05d.png" % self.image_id)
+        pil_image.save(self.image_dir + "/network_%05d.pdf" % self.image_id)
         self.image_id += 1
 
         plt.close(fig)
         # print("Rendering fILE: %s"%(self.image_dir + "/network_%05d.png" % self.image_id))
-        return self.image_dir + "/network_%05d.png" % self.image_id
+        return self.image_dir + "/network_%05d.pdf" % self.image_id

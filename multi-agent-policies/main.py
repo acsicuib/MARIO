@@ -148,12 +148,10 @@ if __name__ == '__main__':
     logging.config.fileConfig(os.getcwd() + '/logging.ini')
 
 
-    # experiment_path = "scenarios/policy_getcloser/"
-    # experiment_path = "scenarios/policy_ecobalance/"
     # experiment_path = "scenarios/FOCLASA2020/policy_getcloser/"
-    experiment_path = "scenarios/FOCLASA2020/policy_getcloserII/"
-    # experiment_path = "scenarios/FOCLASA2020/policy_getcloserIII/"
-    # experiment_path = "scenarios/FOCLASA2020/policy_getclosers_I_II_III/"
+    # experiment_path = "scenarios/FOCLASA2020/policy_eco_getcloser/"
+    # experiment_path = "scenarios/FOCLASA2020/policy_turbo_getcloser/"
+    experiment_path = "scenarios/FOCLASA2020/policy_getclosers_I_II_III/"
 
     print("Scenario definition: ",experiment_path)
 
