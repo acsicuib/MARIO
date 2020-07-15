@@ -1,5 +1,6 @@
 # Description
-TODO
+
+ 
 
 # Installation Steps
 0. Requires: Python 3.6
@@ -88,6 +89,7 @@ priority(["nop","suicide","replicate","migrate"]).
 
 - Action: nop - do nothing
 - Action: suicide(Si) - undeploy the service instance
+    Note: this implementation keeps the original name of this action (suicide). In future reviews, we rename this action to `undeploy`
 - Action: migrate(Si,M) - migrate the service in a specific node
 - Action: replicate(Si,[M]) - deploy more service in a specific list of nodes
 
