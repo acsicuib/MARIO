@@ -1,6 +1,6 @@
 # Description
 
- 
+ <img src="https://github.com/acsicuib/YAFS/raw/master/src/examples/mobileTutorial/exp/results_20190326/out2.gif" width="350" height="350"/></a>
 
 # Installation Steps
 0. Requires: Python 3.6
