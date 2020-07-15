@@ -1,7 +1,8 @@
 # Description
 
 TODO: describe the project
-This is an animated gif of the movement of instances along the simulation. It combines three different policies: scenarios/FOCLASA2020/policy_getclosers_I_II_III/
+
+This is an animated gif of the movement of instances along the simulation. It combines three different policies. Source: /scenarios/FOCLASA2020/policy_getclosers_I_II_III/
 
 <img src="https://github.com/acsicuib/DistributedPolicies/raw/foclasa2020/multi-agent-policies/scenarios/FOCLASA2020/policy_getclosers_I_II_III/results/out.gif" width="550" height="350"/></a>
 
@@ -35,10 +36,8 @@ python main.py
 
 
 # Main simulation entities
-TODO
-- main.py
-- environment/agent.py
-- environment/app_operator.py (aka MARIO)
+TODO items:
+- Figure legend and text is created by appOperator.py manually. It should be automatic.
 
 
 
@@ -91,7 +90,7 @@ priority(["nop","suicide","replicate","migrate"]).
 ```` 
 
 - Action: nop - do nothing
-- Action: suicide(Si) - undeploy the service instance
+- Action: undeploy(Si) (old name in the code is `suicide(Si)`) - undeploy the service instance
     Note: this implementation keeps the original name of this action (suicide). In future reviews, we rename this action to `undeploy`
 - Action: migrate(Si,M) - migrate the service in a specific node
 - Action: replicate(Si,[M]) - deploy more service in a specific list of nodes
