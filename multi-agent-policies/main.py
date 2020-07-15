@@ -147,7 +147,6 @@ if __name__ == '__main__':
     import logging.config
     logging.config.fileConfig(os.getcwd() + '/logging.ini')
 
-
     # experiment_path = "scenarios/FOCLASA2020/policy_getcloser/"
     # experiment_path = "scenarios/FOCLASA2020/policy_eco_getcloser/"
     # experiment_path = "scenarios/FOCLASA2020/policy_turbo_getcloser/"
