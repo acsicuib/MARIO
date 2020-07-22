@@ -154,8 +154,8 @@ if __name__ == '__main__':
 
     exps = [
         # "scenarios/FOCLASA2020/policy_getcloser/",
-        "scenarios/FOCLASA2020/policy_eco_getcloser/",
-        # "scenarios/FOCLASA2020/policy_turbo_getcloser/",
+        # "scenarios/FOCLASA2020/policy_eco_getcloser/",
+        "scenarios/FOCLASA2020/policy_turbo_getcloser/",
         # "scenarios/FOCLASA2020/policy_getclosers_I_II_III/"
     ]
     for experiment_path in exps:
