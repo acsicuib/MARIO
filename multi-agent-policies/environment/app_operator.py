@@ -83,8 +83,7 @@ class Mario():
                 sim.print_debug_assignaments()
 
 
-            if sim.env.now == 4100:
-                print("DEBUG")
+
             # TODO v2 Control actions from all agents & select the best option
             # current implementation FCFS
             self.UID += 1
@@ -189,7 +188,7 @@ class Mario():
                 # feasible = True #
                 nodes_with_space = []
                 for n in nodes_to_replicate:
-                    if space_on_node[n]<=0:
+                    if space_on_node[n]==0:
                         self.logger.warning("There is not more free space on node: %i"%n)
                         print("\t WARNING: NO FREE SPACE ON NODE:%i"%n)
                         # feasible = False
@@ -328,6 +327,10 @@ class Mario():
                     currentOccupation[sim.alloc_DES[des]] -= 1
         return currentOccupation
 
+
+
+
+
     def get_nodes_with_services(self,sim):
         """
         It returns a dictionary for node with a np.array with the occupation for visualization purporse
@@ -398,7 +401,7 @@ class Mario():
         width = ax.get_xlim()[1]
         top = ax.get_ylim()[1]
         # Some viz. vars.
-        piesize = .06
+        piesize = .078
         # piesize = .08
         p2 = piesize / 2.5
 
@@ -518,7 +521,7 @@ class Mario():
         #                 size=30,
         #                 weight="bold",
         #                 bbox=dict(boxstyle="round", fc=color_app, ec="none",alpha=0.8))
-        #
+
 
         ### END INDIVIDUAL LEGEND
 
@@ -609,12 +612,53 @@ class Mario():
             xa, ya = trans2((xx, yy))  # axes coordinates
             a = plt.axes([xa - p2, ya - p2, piesize, piesize])
             a.set_aspect('equal')
-            # Include the current instance service identificator close to the node
-            #TODO UNCOMMENT
-            # if idApp in data_occupation[n] and action[2]==n:
-            #     plt.text(xa+piesize*10,ya+(piesize*30), "S%i"%action[1], {'color': newcmp(idApp), 'fontsize': 16})
 
-            a.imshow(data_occupation[n], cmap=newcmp, interpolation='none', norm=norm)
+            #For labelling cells in the imshow
+            nrows, ncols = data_occupation[n].shape
+            real_x = np.array(range(0,ncols))
+            real_y = np.array(range(0,nrows))
+            if len(real_x) > 1:
+                dx = (real_x[1] - real_x[0]) / 2.
+            else:
+                dx = 0.5
+            if len(real_y)>1:
+                dy = (real_y[1] - real_y[0]) / 2.
+            else:
+                dy = 0.5
+            extent = [real_x[0] - dx, real_x[-1] + dx, real_y[0] - dy, real_y[-1] + dy]
+
+            # Include the current instance service identificator close to the node
+            a.imshow(data_occupation[n], cmap=newcmp, interpolation='none', norm=norm,extent=extent)
+
+            # DEBUG BORDERS of the imshow
+            # a.text(extent[0],extent[2], "%i,%i"%(extent[0],extent[2]), ha="center", va="center", color="yellow") #esquina inferior izquierda
+            # a.text(extent[1],extent[2], "%i,%i"%(extent[1],extent[2]), ha="center", va="center", color="black") #esquina inferior derecha
+            # a.text(extent[1],extent[3], "%i,%i"%(extent[1],extent[3]), ha="center", va="center", color="green") #esquina superior derecha
+
+            sizerow = 0.5
+            if nrows==0:
+                sizerow = (extent[3]+abs(extent[2]))/float(nrows)
+
+            sizecol = 0.5
+            if ncols-1>0:
+                sizecol = (extent[1]+abs(extent[0]))/float(ncols)
+
+            # DEBUG
+            # a.text(extent[0]+sizecol-0.5,extent[2]+sizerow, "11", ha="center", va="center", color="black") #esquina inferior izquierda
+            # a.text(extent[0]+(sizecol*2)-0.5,extent[2]+sizerow, "21", ha="center", va="center", color="black") #esquina inferior izquierda
+            # a.text(extent[0]+(sizecol*3)-0.5,extent[2]+sizerow, "31", ha="center", va="center", color="black") #esquina inferior izquierda
+            # a.text(extent[0]+(sizecol)-0.5,extent[2]+(sizerow*2)+0.5, "12", ha="center", va="center", color="black") #esquina inferior izquierda
+
+
+            for irow,row in enumerate(data_occupation[n],start=1):
+                irev_row = (nrows+1)-irow
+                py = extent[2]+(sizerow*irev_row)
+                if irev_row>=2: py += 0.5
+                for icol,value in enumerate(row,start=1):
+                    if value==0: break
+                    px = extent[0]+(sizecol*icol)-0.5
+                    a.text(px,py, value, ha="center", va="center", color="w",weight="bold", size=18)
+
             a.axes.get_yaxis().set_visible(False)
             a.axes.get_xaxis().set_visible(False)
 
@@ -622,6 +666,7 @@ class Mario():
         canvas.draw()
         pil_image = Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
         pil_image.save(self.image_dir + "/network_%05d.pdf" % self.image_id)
+        # pil_image.save(self.image_dir + "/network__UID%i_n%i_s%i_X_%i.png" % (self.UID, action[2], action[1], sim.env.now))
         self.image_id += 1
 
         plt.close(fig)

@@ -62,6 +62,18 @@ class PolicyManager():
         self.render_action = render
         # data = json.load(open(path + 'usersDefinition.json'))
 
+
+    def get_free_space_on_nodes(self,sim):
+        currentOccupation = dict([a, int(x)] for a,x in nx.get_node_attributes(G=sim.topology.G, name="HwReqs").items())
+
+        sim.print_debug_assignaments()
+        for app in sim.alloc_module:
+            dict_module_node = sim.alloc_module[app]  # modules deployed
+            for module in dict_module_node:
+                for des in dict_module_node[module]:
+                    currentOccupation[sim.alloc_DES[des]] -= 1
+        return currentOccupation
+
     """
     When a new instance of a service is deployed in the infrastructure, a DES process will be generated within the simulator that manages the facts of the logical model.
     This DES process is an instance of agent. 
@@ -103,6 +115,11 @@ class PolicyManager():
 
             #Generating NODE facts from all the nodes in the path
             node_hreqs = nx.get_node_attributes(G=sim.topology.G, name="HwReqs")
+
+            #INFO: free space on a node
+            # available_space_on_node = self.get_free_space_on_nodes(sim)
+
+
             setNodes = set()
             for path in alllinkedNodes:
                 for node in path:

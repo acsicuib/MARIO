@@ -150,22 +150,31 @@ if __name__ == '__main__':
     # experiment_path = "scenarios/FOCLASA2020/policy_getcloser/"
     # experiment_path = "scenarios/FOCLASA2020/policy_eco_getcloser/"
     # experiment_path = "scenarios/FOCLASA2020/policy_turbo_getcloser/"
-    experiment_path = "scenarios/FOCLASA2020/policy_getclosers_I_II_III/"
+    # experiment_path = "scenarios/FOCLASA2020/policy_getclosers_I_II_III/"
 
-    print("Scenario definition: ",experiment_path)
+    exps = [
+        # "scenarios/FOCLASA2020/policy_getcloser/",
+        "scenarios/FOCLASA2020/policy_eco_getcloser/",
+        # "scenarios/FOCLASA2020/policy_turbo_getcloser/",
+        # "scenarios/FOCLASA2020/policy_getclosers_I_II_III/"
+    ]
+    for experiment_path in exps:
+        print("Scenario definition: ",experiment_path)
 
-    nSimulations = 1
-    timeSimulation = 20000
+        nSimulations = 1
+        timeSimulation = 20000
 
-    for i in range(nSimulations):
-        start_time = time.time()
-        random.seed(i)
-        np.random.seed(i)
-        logging.info("Running multi-agent-policies - %s" %experiment_path)
+        for i in range(nSimulations):
+            start_time = time.time()
+            random.seed(i)
+            np.random.seed(i)
+            logging.info("Running multi-agent-policies - %s" %experiment_path)
 
-        main(simulated_time=timeSimulation, experiment_path=experiment_path, case='prot1',it=i)
+            main(simulated_time=timeSimulation, experiment_path=experiment_path, case='prot1',it=i)
 
-        print("\n--- %s seconds ---" % (time.time() - start_time))
+            print("\n--- %s seconds ---" % (time.time() - start_time))
+
+
 
     print("All simulations done")
 

@@ -1,6 +1,6 @@
 action(Si,suicide,_):- suicide(Si).
-action(Si,migrate,M):- migrate(Si,M).
 action(Si,replicate,M):- replicate(Si,M).
+action(Si,migrate,M):- migrate(Si,M).
 action(_,nop,_).
 
 %%suicide of service instance Si
@@ -26,6 +26,7 @@ replicate(Si,[F1,F2|Fs]) :-
   service(S, RequiredHW, _, _),
   findall(M, ( route(Si, path([N,M|_]), _, _), node(M, FeaturedHW, _), FeaturedHW >= RequiredHW ), Ms),
   sort(Ms,[F1,F2|Fs]).
+
 
 %”self-referential” KPI: measuring how many instances are “getting closer”
 

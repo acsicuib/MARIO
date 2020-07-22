@@ -25,7 +25,7 @@ timeSimulation = 20000
 sampling = 1000 # aggregation periods of messages
 
 experiment_path = "scenarios/FOCLASA2020/policy_getcloser/"
-experiment_path = "scenarios/FOCLASA2020/policy_eco_getcloser/"
+# experiment_path = "scenarios/FOCLASA2020/policy_eco_getcloser/"
 # experiment_path = "scenarios/FOCLASA2020/policy_turbo_getcloser/"
 # experiment_path = "scenarios/FOCLASA2020/policy_getclosers_I_II_III/"
 

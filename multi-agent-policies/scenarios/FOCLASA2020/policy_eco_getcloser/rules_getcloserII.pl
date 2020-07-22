@@ -47,7 +47,7 @@ replicate(Si,[F1,F2|Fs]) :-
    filter(NewMs,Threshold,[F1,F2|Fs]).
 
 
-replicateThreshold(MaxUserRequests,Threshold) :- Threshold is MaxUserRequests*2.2. 	%threshold definition
+replicateThreshold(MaxUserRequests,Threshold) :- Threshold is MaxUserRequests*0.2. 	%threshold definition
 
 filter2([],T,(N,R),[N]) :- R > T.
 filter2([],T,(_,R),[]) :- R =< T.
