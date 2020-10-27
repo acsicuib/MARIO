@@ -1,8 +1,20 @@
 # Description
 
-TODO: describe the project
+This version is published in the 2nd International Workshop on Governing Adaptive and Unplanned Systems of Systems [GAUSS2020](http://gauss2020.disim.univaq.it/)  Co-located with the 31st International Symposium on Software Reliability Engineering (ISSRE 2020).
 
-This is an animated gif of the movement of instances along the simulation. It combines three different policies. Source: /scenarios/FOCLASA2020/policy_getclosers_I_II_III/
+```latex
+@inproceedings{MARIOonGAUSS,
+  title={Towards Declarative Decentralised Application Management in the Fog},
+  author={Antonio Brogi and Stefano Forti and Carlos Guerrero and Isaac Lera},
+  booktitle={Proceedings at 2020 IEEE International Symposium on Software Reliability Engineering Workshops (ISSREW) },
+  pages={223--230},
+  year={2020},
+  address = {Coimbra, Portugal},
+  doi = {10.1109/ISSREW51248.2020.00077}
+}
+```
+
+A working example of the simulation is the next animated gif of the movement of instances along the simulation. It combines three different policies. Source: /scenarios/FOCLASA2020/policy_getclosers_I_II_III/
 
 <img src="https://github.com/acsicuib/DistributedPolicies/blob/gauss2020/multi-agent-policies/scenarios/GAUSS2020/policy_getclosers_I_II_III/results/out.gif?raw=true" width="550" height="350"/></a>
 
@@ -36,12 +48,10 @@ python main.py
 
 
 # Main simulation entities
-TODO items:
 - Figure legend and text is created by appOperator.py manually. It should be automatic.
 
 
-
-#Prolog Simulation Syntax
+# Prolog Simulation Syntax
 
 The policy rules and the facts are generated and performed  by each service instance controller (agent.py)
 Finally, MARIO (our app_operator.py) periodically performs each action in order from all the service instance controller.
@@ -95,9 +105,4 @@ priority(["nop","suicide","replicate","migrate"]).
 - Action: migrate(Si,M) - migrate the service in a specific node
 - Action: replicate(Si,[M]) - deploy more service in a specific list of nodes
 
-# Definition of a scenario
-- Application
-- Network
-- Service allocations
-- User allocations
-- Rules file
+
