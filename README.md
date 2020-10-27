@@ -1,5 +1,34 @@
 # Description
-TODO
+This repository contains several incremental and novelty version os MARIO. MARIO is a new fully decentralised and declarative approach for Managing Applications Running In Opportunistic Fog scenarios. 
+
+The proposed management solution, MARIO, has been prototyped and open-sourced by means of the Prolog logic programming language.
+
+Based on the assumption that nodes can monitor contextually available resources and resources along request routes towards each application instance, MARIO moves a step towards the self-adaptive management of next-gen applications in the Fog. A basic set of simple operations (viz. migrate, replicate, undeploy) is identified and proposed to manage applications according to customised policies, declared as Prolog rules. 
+ 
+The MARIO prototype is assessed over a lifelike example by leveraging the YAFS simulation environment and by showcasing its functioning with three management policies aimed at keeping deployed applications suitably close to their end-users.
+
+# Branches and Projects
+
+The master branch is only a default structure of this whole project. Different versions are in the branches of this repo, so the versions of this project can be replicated.
+
+## MARIO in GAUSS2020
+
+[BRANCH](https://github.com/acsicuib/MARIO/tree/gauss2020).
+ 
+This version is published in the 2nd International Workshop on Governing Adaptive and Unplanned Systems of Systems [GAUSS2020](http://gauss2020.disim.univaq.it/)  Co-located with the 31st International Symposium on Software Reliability Engineering (ISSRE 2020).
+
+```latex
+@inproceedings{MARIOonGAUSS,
+  title={Towards Declarative Decentralised Application Management in the Fog},
+  author={Antonio Brogi and Stefano Forti and Carlos Guerrero and Isaac Lera},
+  booktitle={Proceedings at 2020 IEEE International Symposium on Software Reliability Engineering Workshops (ISSREW) },
+  pages={223--230},
+  year={2020},
+  address = {Coimbra, Portugal},
+  doi = {10.1109/ISSREW51248.2020.00077}
+}
+```
+
 
 # Installation Steps
 0. Requires: Python 3.6
@@ -29,16 +58,7 @@ export PYTHONPATH=$PYTHONPATH/multi-agent-policies/environment:$PYTHONPATH
 python main.py
 ```
 
-
-# Main simulation entities
-TODO
-- main.py
-- environment/agent.py
-- environment/app_operator.py (aka MARIO)
-
-
-
-#Prolog Simulation Syntax
+# Prolog Simulation Syntax
 
 The policy rules and the facts are generated and performed  by each service instance controller (agent.py)
 Finally, MARIO (our app_operator.py) periodically performs each action in order from all the service instance controller.
@@ -83,17 +103,13 @@ The environment modeller has to define the rules in a specific file inside the s
 
 - Priority rule indicates the order of preference in the execution of various possible rules.
 ````text
-priority(["nop","suicide","replicate","migrate"]).
+priority(["nop","undeploy","replicate","migrate"]).
 ```` 
 
 - Action: nop - do nothing
-- Action: suicide(Si) - undeploy the service instance
+- Action: undeploy(Si) - undeploy the service instance
 - Action: migrate(Si,M) - migrate the service in a specific node
 - Action: replicate(Si,[M]) - deploy more service in a specific list of nodes
 
-# Definition of a scenario
-- Application
-- Network
-- Service allocations
-- User allocations
-- Rules file
+## How it works the simulation:
+Take a look to [YAFS](https://github.com/acsicuib/YAFS) simulator to undestand how it works.
