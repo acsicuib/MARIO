@@ -11,7 +11,7 @@ This module unifies the event-discrete simulation environment with the rest of m
 import logging
 import random
 import copy
-
+import warnings
 import simpy
 from tqdm import tqdm
 import networkx as nx
@@ -22,10 +22,10 @@ from yafs.metrics import Metrics
 from yafs.distribution import *
 from yafs import utils
 
-# from trackanimation.animation import AnimationTrack
+from trackanimation.animation import AnimationTrack
 
 import numpy as np
-# import smopy
+import smopy
 from PIL import Image as pimg
 
 EVENT_UP_ENTITY = "node_up"
@@ -265,7 +265,10 @@ class Sim:
                 self.consumer_pipes[pipe_id].put(message)
             else:
                 # The message is sent at first time or it sent more times.
-                if message.dst_int < 0:
+                # if message.dst_int < 0:
+
+                if (isinstance(message.dst_int , str) and len(message.dst_int ) == 0) or \
+                        (isinstance(message.dst_int , int) and message.dst_int  < 0):
                     src_int = message.path[0]
                     message.dst_int = message.path[1]
                 else:
@@ -764,7 +767,7 @@ class Sim:
         """
         idDES = self.__get_id_process()
         self.des_process_running[idDES] = True
-        self.env.process(self.__add_monitor(idDES,name, function, distribution, **param))
+        self.env.process(self.__add_monitor(idDES, name, function, distribution, **param))
         return idDES
 
 
@@ -912,9 +915,7 @@ class Sim:
         """
         self.des_process_running[id] = True
 
-
-
-    def deploy_app(self, app, placement, population, selector):
+    def deploy_app(self, app, placement, selector):
         """
         This process is responsible for linking the *application* to the different algorithms (placement, population, and service)
 
@@ -922,8 +923,6 @@ class Sim:
             app (object): :mod:`Application` class
 
             placement (object): :mod:`Placement` class
-
-            population (object): :mod:`Population` class
 
             selector (object): :mod:`Selector` class
         """
@@ -937,20 +936,51 @@ class Sim:
         if not placement.name in self.placement_policy.keys():  # First Time
             self.placement_policy[placement.name] = {"placement_policy": placement, "apps": []}
             if placement.activation_dist is not None:
-                print("ENV ADD PLACEMENT")
                 self.env.process(self.__add_placement_process(placement))
         self.placement_policy[placement.name]["apps"].append(app.name)
 
-        # Add Population control to the App
-
-        if not population.name in self.population_policy.keys():  # First Time
-            self.population_policy[population.name] = {"population_policy": population, "apps": []}
-            if population.activation_dist is not None:
-                self.env.process(self.__add_population_process(population))
-        self.population_policy[population.name]["apps"].append(app.name)
-
         # Add Selection control to the App
         self.selector_path[app.name] = selector
+
+    # def deploy_app(self, app, placement, population, selector):
+    #     warnings.warn("deprecated", DeprecationWarning)
+    #
+    #     """
+    #     This process is responsible for linking the *application* to the different algorithms (placement, population, and service)
+    #
+    #     Args:
+    #         app (object): :mod:`Application` class
+    #
+    #         placement (object): :mod:`Placement` class
+    #
+    #         population (object): :mod:`Population` class
+    #
+    #         selector (object): :mod:`Selector` class
+    #     """
+    #     # Application
+    #     self.apps[app.name] = app
+    #
+    #     # Initialization
+    #     self.alloc_module[app.name] = {}
+    #
+    #     # Add Placement controls to the App
+    #     if not placement.name in self.placement_policy.keys():  # First Time
+    #         self.placement_policy[placement.name] = {"placement_policy": placement, "apps": []}
+    #         if placement.activation_dist is not None:
+    #             print("ENV ADD PLACEMENT")
+    #             self.env.process(self.__add_placement_process(placement))
+    #     self.placement_policy[placement.name]["apps"].append(app.name)
+    #
+    #     # Add Population control to the App
+    #
+    #     if not population.name in self.population_policy.keys():  # First Time
+    #         self.population_policy[population.name] = {"population_policy": population, "apps": []}
+    #         if population.activation_dist is not None:
+    #             self.env.process(self.__add_population_process(population))
+    #     self.population_policy[population.name]["apps"].append(app.name)
+    #
+    #     # Add Selection control to the App
+    #     self.selector_path[app.name] = selector
 
 
     def get_alloc_entities(self):
@@ -1204,7 +1234,7 @@ class Sim:
 
     def generate_animation(self,pathFile):
         if len(self.endpoints)==0: self.__update_connection_points()
-        if self.map == None: self.__load_map()
+        # if self.map == None: self.__load_map()
 
         #map_endpoints = [self.map.to_pixels(i[0], i[1]) for i in self.endpoints]
         #map_endpoints = np.array(map_endpoints)
@@ -1252,9 +1282,8 @@ class Sim:
 
     def set_coverage_class(self, class_name,**kwargs):
         if len(self.endpoints)==0: self.__update_connection_points()
-        if self.map == None: self.__load_map()
-
-        self.coverage = class_name(self.map,self.endpoints,**kwargs)
+        # if self.map == None: self.__load_map()
+        # self.coverage = class_name(self.map,self.endpoints,**kwargs)
 
     def set_mobile_fog_entities(self,mobile_fog_entities):
         self.mobile_fog_entities = mobile_fog_entities

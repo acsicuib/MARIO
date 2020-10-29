@@ -14,16 +14,16 @@ import sys
 import os
 import json
 from collections import Counter
-
+import tiledTopology
 import matplotlib.patches as mpatches
-
+import re
 class Mario():
     """
     We called it Mario in honour to our video game moustached character ;)
 
     """
 
-    def __init__(self, common_rules, service_rule_profile, path_csv_files, app_number, period, render):
+    def __init__(self, common_rules, service_rule_profile, path_csv_files, app_number, period, render, path_results):
         self.create_initial_services = True
         self.logger = logging.getLogger(__name__)
         self.memory = []
@@ -37,7 +37,7 @@ class Mario():
         self.UID = 0 # count all steps (valid or not valid rules)
         self.path_csv_files = path_csv_files
         self.total_services = app_number
-
+        self.path_results = path_results
         #render
         self.render_action = render
         self.image_id =0
@@ -70,14 +70,14 @@ class Mario():
                         self.create_monitor_of_module(des, path, routing, service, sim)
             self.create_initial_services = False #only one time
 
-            self.action_stats = open(path+"results/action_stats.txt",'w+')
+            self.action_stats = open(self.path_results+"action_stats.txt",'w+')
             self.action_stats.write("time,suicide,nop,migrate,replicate,none\n")
         else:
             if len(self.memory)>0:
                 self.step += 1
                 # DEBUG
                 print("+"*20)
-                print("\nMARIOOOOOOOOOO is here!! - Activation: %i  - Time: %i" %(self.step,sim.env.now))
+                print("\nMARIO is here!! - Activation: %i  - Time: %i" %(self.step,sim.env.now))
                 print("- Size buffer of actions: %i" % len(self.memory))
                 print("- Current situation:")
                 sim.print_debug_assignaments()
@@ -165,7 +165,9 @@ class Mario():
         on_node = action[2]
         act = str(action[3])
         type_action = act[0:act.index("(")]
+
         parameters = act[len(type_action+"("):-1]
+
 
         # print("Action type: %s"%type_action)
         # print("parameters: %s"%parameters)
@@ -173,9 +175,15 @@ class Mario():
         if type_action == "replicate": # replicate(Si,[TargetNodes])
             # Example
             # parameters: 0,[3, 2]
-            nodes_to_replicate = np.array(eval(parameters[parameters.index(",") + 1:])).astype(int)
-            # parameters = parameters.replace("[","")
-            # parameters = parameters.replace("]","")
+
+            # nodes_to_replicate = np.array(eval(parameters[parameters.index(",") + 1:])).astype(int)
+            parameters.replace("'", "")
+            parameters = [re.sub(r'[^\w]', ' ', x).replace(" ", "") for x in parameters.split(",")[1:]]
+            parameters[-1] = parameters[-1][:-1]
+            nodes_to_replicate = parameters
+
+
+
             # print("Nodes where replicate: %s"%(nodes_to_replicate))
 
             if len(nodes_to_replicate)==0:
@@ -189,8 +197,8 @@ class Mario():
                 nodes_with_space = []
                 for n in nodes_to_replicate:
                     if space_on_node[n]==0:
-                        self.logger.warning("There is not more free space on node: %i"%n)
-                        print("\t WARNING: NO FREE SPACE ON NODE:%i"%n)
+                        self.logger.warning("There is not more free space on node: %s"%n)
+                        print("\t WARNING: NO FREE SPACE ON NODE:%s"%n)
                         # feasible = False
                         # break
                     else:
@@ -199,8 +207,8 @@ class Mario():
                 if True:
                     for n in nodes_with_space:
                     # for n in nodes_to_replicate:
-                        self.logger.info("Action Replicate new instance of %s on node: %i" % (service, n))
-                        print("\t\t+Action Replicate new instance of %s on node: %i" % (service, n))
+                        self.logger.info("Action Replicate new instance of %s on node: %s" % (service, n))
+                        print("\t\t+Action Replicate new instance of %s on node: %s" % (service, n))
                         self.deploy_module(sim, service, n, routing, path)
                 # return feasible
                 return len(nodes_with_space)>0
@@ -214,15 +222,15 @@ class Mario():
                 space_on_node = self.get_free_space_on_nodes(sim)
                 feasible = True
                 if space_on_node[target_node] <= 0:
-                    self.logger.warning("There is not more free space on node: %i" % target_node)
-                    print("\t WARNING: NO FREE SPACE ON NODE:%i" % target_node)
+                    self.logger.warning("There is not more free space on node: %s" % target_node)
+                    print("\t WARNING: NO FREE SPACE ON NODE:%s" % target_node)
                     return False
                 else:
-                    self.logger.info("Action Migrate new instance of %s on node: %i" % (service, target_node))
-                    print("\t\t+Action Migrate new instance of %s on node: %i" % (service, target_node))
+                    self.logger.info("Action Migrate new instance of %s on node: %s" % (service, target_node))
+                    print("\t\t+Action Migrate new instance of %s on node: %s" % (service, target_node))
                     self.deploy_module(sim, service, target_node, routing, path)
-                    self.logger.info("\t Remove current instance %s on node: %i" % (service, on_node))
-                    print("\t\t+Remove current instance of %s on node: %i" % (service, on_node))
+                    self.logger.info("\t Remove current instance %s on node: %s" % (service, on_node))
+                    print("\t\t+Remove current instance of %s on node: %s" % (service, on_node))
                     self.undeploy_module(sim, service, on_node, id_service)
                     return True
             except:
@@ -232,13 +240,13 @@ class Mario():
 
         elif type_action == "suicide":
             # no arguments
-            self.logger.info("Action Suicide instance %s on node: %i" % (service, on_node))
+            self.logger.info("Action Suicide instance %s on node: %s" % (service, on_node))
             self.undeploy_module(sim,service,on_node,id_service)
             return True
 
         elif type_action == "nop":
             # Doing nothing
-            self.logger.info("Action NOP instance %s on node: %i" % (service, on_node))
+            self.logger.info("Action NOP instance %s on node: %s" % (service, on_node))
             return True
 
         elif type_action == "fusion":
@@ -265,7 +273,7 @@ class Mario():
 
 
         id_monitor = sim.deploy_monitor("Policy Manager %i" % des, pm, period,
-                                        **{"sim": sim, "routing": routing, "experiment_path": path})
+                                        **{"sim": sim, "routing": routing, "experiment_path": path, "path_results":self.path_results})
         pm.id_monitor = id_monitor
         logging.info("Generating a new agent control from: %s with id: %i - Monitor: %i" % (service, des, id_monitor))
         print("Generating a new agent control from: %s with id: %i - Monitor: %i" % (service, des, id_monitor))
@@ -340,6 +348,7 @@ class Mario():
         """
         HwReqs = nx.get_node_attributes(G=sim.topology.G, name="HwReqs")
         currentOccupation = {}
+        #Init. the shape-grid structure to render it with zeros
         for n in sim.topology.G.nodes:
             currentOccupation[n] = np.zeros(int(HwReqs[n])).astype(int)
 
@@ -355,7 +364,7 @@ class Mario():
             try:
                 currentOccupation[node] = np.array(currentOccupation[node]).reshape(eval(shape[node]))
             except ValueError:
-                raise "Network node: %i defined with a bad shape "%node
+                raise "Network node: %s defined with a bad shape "%node
                 # print("Network node: %i defined with a bad shape "%node)
                 # currentOccupation[node] = np.zeros(shape(1,1))
 
@@ -371,15 +380,16 @@ class Mario():
         # sys.exit()
 
         if self.pos == None: # Only the first time
-            pos = nx.get_node_attributes(sim.topology.G,'pos')
-            if len(pos)>0:
-                for k in pos.keys():
-                    pos[k] = np.array(eval(pos[k]))
-                self.pos = pos
-            else:
-                self.pos = nx.random_layout(sim.topology.G)
+            self.pos = nx.get_node_attributes(sim.topology.G,'pos')
+            # if len(pos)>0:
+            #     for k in pos.keys():
+            #         pos[k] = np.array(eval(pos[k]))
+            #     self.pos = pos
+            # else:
+            #
+            # self.pos = nx.random_layout(sim.topology.G)
 
-            image_dir = Path(path+"results/images/")
+            image_dir = Path(self.path_results+"images/")
             image_dir.mkdir(parents=True, exist_ok=True)
             self.image_dir = str(image_dir)
 
@@ -417,13 +427,13 @@ class Mario():
         # Textual data
         ##########
         # TODO UNCOMMENT
-        # plt.text(0, top, "Simulation time: %i" % sim.env.now,{'color': color_app, 'fontsize': 12})
-        #
-        # info_text = "Action: %s" % action[3]
-        # plt.text(0 , top-0.2, info_text, {'color': color_app, 'fontsize': 14})
-        #
-        # info_text = "by Service: S%i on Node: N%i" % (action[1], action[2])
-        # plt.text(0, top -0.4, info_text, {'color': color_app, 'fontsize': 14})
+        plt.text(3.5, top, "Simulation time: %i" % sim.env.now,{'color': color_app, 'fontsize': 10})
+
+        info_text = "Action: %s" % action[3]
+        plt.text(3.5 , top-0.5, info_text, {'color': color_app, 'fontsize': 10})
+
+        info_text = "by Service: S%i on Node: %s" % (action[1], tiledTopology.getAbbrNodeName(action[2]))
+        plt.text(3.5, top -1, info_text, {'color': color_app, 'fontsize': 10})
 
 
         # Get the POLICY FILE
@@ -441,32 +451,31 @@ class Mario():
             None #Render the last case
 
         # TODO UNCOMMENT
-        # info_text = "App: %i with policy: %s" % (idApp, rule_policy)
-        # plt.text(0, top -0.6, info_text, {'color': color_app, 'fontsize': 12})
-        #
-        # info_text = "Debug file: rules_swi_UID%i_n%i_s%i_X_%i.pl" % (self.UID, action[2], action[1], sim.env.now)
-        # plt.text(0, top - 0.8, info_text, {'color': color_app, 'fontsize': 12})
+        info_text = "App: %i with policy: %s" % (idApp, rule_policy)
+        plt.text(3.5, top -1.5, info_text, {'color': color_app, 'fontsize': 10})
+        info_text = "Debug file: rules_swi_UID%i_n%s_s%i_X_%i.pl" % (self.UID, tiledTopology.getAbbrNodeName(action[2]), action[1], sim.env.now)
+        plt.text(3.5, top - 2., info_text, {'color': color_app, 'fontsize': 10})
 
 
         # Labels on nodes
         for x in sim.topology.G.nodes:
-            if x ==0:
-                ax.text(self.pos[x][0]- (width/12), self.pos[x][1] , "N%i" % (x), fontsize=30,
+            if x == 0:
+                ax.text(self.pos[x][0]- (width/12), self.pos[x][1] , tiledTopology.getAbbrNodeName(x), fontsize=10,
                         fontweight="bold")
             else:
-                ax.text(self.pos[x][0] - (width/75), self.pos[x][1] + (width/55) , "N%i" % (x), fontsize=30,fontweight="bold")
+                ax.text(self.pos[x][0] - (width/75), self.pos[x][1] + (width/35) , tiledTopology.getAbbrNodeName(x), fontsize=10,fontweight="bold")
 
         #TODO IMPROVE THE GENERATION OF THE LEGEND according with APP & Policies
             # TODO UNCOMMENT
         # APP Legend
-        # if not "closers" in self.image_dir:
-        # # DEFAULT Legends apps
-        #     legendItems = []
-        #     for i in range(1,len(dataApps)+1):
-        #         color_app = newcmp(i)
-        #         legendItems.append(mpatches.Patch(color=color_app, label='App: %i'%i))
-        #     # plt.legend(handles=legendItems, title=rule_policy)
-        #     plt.legend(handles=legendItems)
+        if not "closers" in self.image_dir:
+        # DEFAULT Legends apps
+            legendItems = []
+            for i in range(1,len(dataApps)+1):
+                color_app = newcmp(i)
+                legendItems.append(mpatches.Patch(color=color_app, label='App: %i'%i))
+            # plt.legend(handles=legendItems, title=rule_policy)
+            plt.legend(handles=legendItems)
         #
         # else:
         #     # SPECIFIC LEGEND for experiment: I_II_III
@@ -527,63 +536,63 @@ class Mario():
 
         ## MANUAL LEGEND FOR MIX I II III Cases
 
-        offset = 0
-        text = ["GetCloser"]
-        ax.annotate("%s" % text[offset],
-                    xy=(0.05, 0.96), xycoords='axes fraction',
-                    textcoords='offset points',
-                    size=34,
-                    weight="bold",
-                    bbox=dict(boxstyle="round", fc="white", ec="none"))
-        offset += 1
-
-        for i in range(0, 2):
-            color_app = newcmp(i + 1)
-            ax.annotate("  App: %i " % (i + 1),
-                        xy=(0.05+(i * 0.13), 0.90 ) , xycoords='axes fraction',
-                        textcoords='offset points',
-                        size=28,
-                        # weight="bold",
-                        bbox=dict(boxstyle="round", fc=color_app, ec="none"))
-
-
-        offset = 0
-        text = ["Eco_GetCloser"]
-        ax.annotate("%s" % text[offset],
-                    xy=(0.05, 0.82), xycoords='axes fraction',
-                    textcoords='offset points',
-                    size=34,
-                    weight="bold",
-                    bbox=dict(boxstyle="round", fc="white", ec="none"))
-        offset += 1
-
-        for i in range(0, 2):
-            color_app = newcmp(i + 3)
-            ax.annotate("  App: %i " % (i + 3),
-                       xy=(0.05+(i * 0.13), 0.76 ), xycoords='axes fraction',
-                        textcoords='offset points',
-                        size=28,
-                        # weight="bold",
-                        bbox=dict(boxstyle="round", fc=color_app, ec="none"))
-
-        offset = 0
-        text = ["Turbo_GetCloser"]
-        ax.annotate("%s" % text[offset],
-                    xy=(0.05, 0.68), xycoords='axes fraction',
-                    textcoords='offset points',
-                    size=34,
-                    weight="bold",
-                    bbox=dict(boxstyle="round", fc="white", ec="none"))
-        offset += 1
-
-        for i in range(0, 2):
-            color_app = newcmp(i + 5)
-            ax.annotate("  App: %i " % (i + 5),
-                    xy=(0.05 + (i * 0.13), 0.62), xycoords='axes fraction',
-                    textcoords='offset points',
-                    size=28,
-                    # weight="bold",
-                    bbox=dict(boxstyle="round", fc=color_app, ec="none"))
+        # offset = 0
+        # text = ["GetCloser"]
+        # ax.annotate("%s" % text[offset],
+        #             xy=(0.05, 0.96), xycoords='axes fraction',
+        #             textcoords='offset points',
+        #             size=34,
+        #             weight="bold",
+        #             bbox=dict(boxstyle="round", fc="white", ec="none"))
+        # offset += 1
+        #
+        # for i in range(0, 2):
+        #     color_app = newcmp(i + 1)
+        #     ax.annotate("  App: %i " % (i + 1),
+        #                 xy=(0.05+(i * 0.13), 0.90 ) , xycoords='axes fraction',
+        #                 textcoords='offset points',
+        #                 size=28,
+        #                 # weight="bold",
+        #                 bbox=dict(boxstyle="round", fc=color_app, ec="none"))
+        #
+        #
+        # offset = 0
+        # text = ["Eco_GetCloser"]
+        # ax.annotate("%s" % text[offset],
+        #             xy=(0.05, 0.82), xycoords='axes fraction',
+        #             textcoords='offset points',
+        #             size=34,
+        #             weight="bold",
+        #             bbox=dict(boxstyle="round", fc="white", ec="none"))
+        # offset += 1
+        #
+        # for i in range(0, 2):
+        #     color_app = newcmp(i + 3)
+        #     ax.annotate("  App: %i " % (i + 3),
+        #                xy=(0.05+(i * 0.13), 0.76 ), xycoords='axes fraction',
+        #                 textcoords='offset points',
+        #                 size=28,
+        #                 # weight="bold",
+        #                 bbox=dict(boxstyle="round", fc=color_app, ec="none"))
+        #
+        # offset = 0
+        # text = ["Turbo_GetCloser"]
+        # ax.annotate("%s" % text[offset],
+        #             xy=(0.05, 0.68), xycoords='axes fraction',
+        #             textcoords='offset points',
+        #             size=34,
+        #             weight="bold",
+        #             bbox=dict(boxstyle="round", fc="white", ec="none"))
+        # offset += 1
+        #
+        # for i in range(0, 2):
+        #     color_app = newcmp(i + 5)
+        #     ax.annotate("  App: %i " % (i + 5),
+        #             xy=(0.05 + (i * 0.13), 0.62), xycoords='axes fraction',
+        #             textcoords='offset points',
+        #             size=28,
+        #             # weight="bold",
+        #             bbox=dict(boxstyle="round", fc=color_app, ec="none"))
 
 
         # Plotting users dots

@@ -8,6 +8,7 @@ from problogRulesGenerator import Rules
 from problog.program import PrologString
 from problog import get_evaluatable
 from pathlib import Path
+from subprocess import Popen, PIPE
 import re
 
 PROBLOG = False #TODO def like global var on the project
@@ -79,7 +80,7 @@ class PolicyManager():
     This DES process is an instance of agent. 
     The _call_ function is called when requested by the app_operator.
     """
-    def __call__(self, sim, routing, experiment_path):
+    def __call__(self, sim, routing, experiment_path, path_results):
         
         if self.id_monitor in self.app_operator.active_monitor.values():# Once a process is finished, the service may run for the last time. The simulator does not control this last call.
             self.rules.clear()
@@ -124,6 +125,9 @@ class PolicyManager():
             for path in alllinkedNodes:
                 for node in path:
                     setNodes.add(node)
+
+            setNodes.add(currentNode) # at least the own node is there
+
             for n in setNodes:
                 neighbours += [e[1] for e in sim.topology.G.edges(n)]
                 neighbours = list(dict.fromkeys(neighbours))
@@ -190,54 +194,71 @@ class PolicyManager():
             # if PROBLOG:
             #     actions = self.run_problog_model(self.rules,self.DES,currentNode,experiment_path)
             # else:
-            action = self.run_swi_model(self.rules,self.DES,currentNode,experiment_path,sim)
+            action = self.run_swi_model(self.rules,self.DES,currentNode,path_results,sim)
 
             #Sending the rules to the app_operator, aka MARIO
             # print("Sending new rules to MARIO: %s",actions)
             self.app_operator.get_actions_from_agents((self.name,self.DES,currentNode,[action]))
 
-    def run_swi_model(self, facts, service_name, current_node, experiment_path, sim):
+    def run_swi_model(self, facts, service_name, current_node, path_results, sim):
         # Load policy rules
         rule_file = ""
         with open(self.rule_profile, "r") as f:
             rule_file = f.read()
 
-        rules_and_facts = ":- discontiguous route/4.\n%s\n%s"%(rule_file,str(facts))
+        rules_and_facts = ":- initialization(main).\n" \
+                          ":- discontiguous route/4.\n\n" \
+                          "%s\n%s\n"%(rule_file,str(facts))
 
         # Write rules and facts in a Prolog file *.pl
-        rules_dir = Path(experiment_path + "results/models/")
+        rules_dir = Path(path_results + "models/")
         rules_dir.mkdir(parents=True, exist_ok=True)
         rules_dir = str(rules_dir)
-        model_file = rules_dir + "/rules_swi_UID%i_n%i_s%s_%i_%i.pl" % (self.app_operator.UID + 1, current_node, service_name, self.action_on_render,sim.env.now)
+        model_file = rules_dir + "/rules_swi_UID%i_n%s_s%s_%i_%i.pl" % (self.app_operator.UID + 1, current_node, service_name, self.action_on_render,sim.env.now)
         self.action_on_render += 1
 
         with open(model_file, "w") as f:
             f.write(rules_and_facts)
+            f.write("main :- current_prolog_flag(argv, Argv),\n" \
+                    "  nth0(0, Argv, Argument0),\n" \
+                    "  atom_number(Argument0, Arg0),\n"\
+                    "  action(Arg0,ACTION,M),\n"\
+                    "  format('~q,~q~n', [ACTION,M]),\n"\
+                    "  halt.\n"\
+                    "main :-\n"\
+                    "  halt(1).\n")
 
         try:
 
-            from pyswip import Prolog
-            # swipl - -dump - runtime - variables
-            prolog = Prolog()
+            # from pyswip import Prolog
+            # # swipl - -dump - runtime - variables
+            # prolog = Prolog()
+            #
+            # # print(model_file)
+            #
+            # prolog.consult(model_file)
+            # action_query = list(prolog.query("action(%i,ACTION,P)"%service_name))
 
-            print(model_file)
+            cmd = ["swipl",model_file,str(service_name)]
+            # cmd = ["swipl","%s/%s"%(gwc,model_file),service_name]
+            p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+            stdout, stderr = p.communicate()
 
-            prolog.consult(model_file)
+            output = stdout.decode("utf-8")
+            action = output.split(",")[0]
+            params = output.split(",")[1:]
 
-            action_query = list(prolog.query("action(%i,ACTION,P)"%service_name))
-            action = ""
-
-            if action_query[0]["ACTION"] == "suicide":
-                action = 'suicide(%i)' % service_name
-            elif action_query[0]["ACTION"] == "nop":
-                action = 'nop(%i)' % service_name
-            elif action_query[0]["ACTION"] == "migrate":
-                action = 'migrate(%i,X,%s)' % (service_name, action_query[0]["P"])
-            elif action_query[0]["ACTION"]  == "replicate":
-                action = 'replicate(%i,%s)' % (service_name, list(action_query[0]["P"]))
+            if action == "suicide":
+               action = 'suicide(%i)' % service_name
+            elif action == "nop":
+               action = 'nop(%i)' % service_name
+            elif action== "migrate":
+               action = 'migrate(%i,X,%s)' % (service_name,params)
+            elif action  == "replicate":
+               action = 'replicate(%i,%s)' % (service_name, params)
             else:
-                self.logger.critical("An action is not defined")
-                print("An action is not defined")
+               self.logger.critical("An action is not defined")
+               print("An action is not defined")
 
             return action
 
@@ -254,11 +275,11 @@ class PolicyManager():
         :param experiment_path:
         :return:
         """
-        rules_dir = Path(experiment_path + "results/models/")
+        rules_dir = Path(experiment_path + "prolog_facts/")
         rules_dir.mkdir(parents=True, exist_ok=True)
         rules_dir = str(rules_dir)
 
-        with open(rules_dir+"/rules_UID%i_n%i_s%s_%i.pl"%(self.app_operator.UID+1,current_node,service_name,self.action_on_render),"w") as f:
+        with open(rules_dir+"/rules_UID%i_n%s_s%s_%i.pl"%(self.app_operator.UID+1,current_node,service_name,self.action_on_render),"w") as f:
             f.write(modeltext)
 
         self.action_on_render +=1
