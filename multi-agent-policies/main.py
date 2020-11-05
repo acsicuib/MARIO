@@ -70,7 +70,39 @@ def do_video_from_execution_snaps(output_file, png_names, framerate):
 
     subprocess.call(cmdstring)
 
-def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folder,temporal_folder,case, tracks,doExecutionVideo, it):
+def parser_CSVTaxiRome_toGPXfiles(inputCSVfile, temporalfolder):
+    df = pd.read_csv(inputCSVfile, ",")
+    df = df.rename(columns={"taxi id": "taxi"})
+    dfg = df.groupby(["taxi"])
+
+    try:
+        os.makedirs(temporalfolder)
+    except OSError:
+        None
+
+    for idx, (group_name, df_group) in enumerate(dfg):
+        # Important taxi routes are sorted by time
+        gpx = gpxpy.gpx.GPX()
+        gpx_track = gpxpy.gpx.GPXTrack()
+        gpx.tracks.append(gpx_track)
+        gpx_segment = gpxpy.gpx.GPXTrackSegment()
+        gpx_track.segments.append(gpx_segment)
+
+        # Create points:
+        for idx in df_group.index:
+            date_time_obj = datetime.datetime.strptime(df_group.loc[idx]["date time"], '%Y-%m-%d %H:%M:%S')
+
+            gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(df_group.loc[idx].latitude, df_group.loc[idx].longitude,
+                                                              time=date_time_obj,
+                                                              elevation=0
+                                                              ))
+
+        with open(temporalfolder+'taxi_%i.gpx' % group_name, 'w') as f:
+            f.write(gpx.to_xml())
+
+    return temporal_folder+'trajectories/'
+
+def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folder,temporal_folder,case, tracks,projection,doExecutionVideo, it):
                                                                               
     stop_time = number_simulation_steps * time_in_each_step
 
@@ -78,12 +110,6 @@ def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folde
     # results_dir.mkdir(parents=True, exist_ok=True)
     # results_dir = str(results_dir)
     path_csv_files = temporal_folder + "/Results_%s_%i" % (case,it)
-
-    """
-    Traces
-    """
-    projection = [[tracks.df.Latitude.min(), tracks.df.Longitude.min()],
-                  [tracks.df.Latitude.max(), tracks.df.Longitude.max()]]
 
     """
     TOPOLOGY
@@ -211,39 +237,8 @@ def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folde
     """
     appOp.render(s,experiment_path,selectorPath,["END",-1,-1,"NONE"])
     s.print_debug_assignaments()
+    print("\nNumber of different connections for user movements: %i"%evol.total_diff_connections)
 
-
-def parser_CSVTaxiRome_toGPXfiles(inputCSVfile, temporalfolder):
-    df = pd.read_csv(inputCSVfile, ",")
-    df = df.rename(columns={"taxi id": "taxi"})
-    dfg = df.groupby(["taxi"])
-
-    try:
-        os.makedirs(temporalfolder)
-    except OSError:
-        None
-
-    for idx, (group_name, df_group) in enumerate(dfg):
-        # Important taxi routes are sorted by time
-        gpx = gpxpy.gpx.GPX()
-        gpx_track = gpxpy.gpx.GPXTrack()
-        gpx.tracks.append(gpx_track)
-        gpx_segment = gpxpy.gpx.GPXTrackSegment()
-        gpx_track.segments.append(gpx_segment)
-
-        # Create points:
-        for idx in df_group.index:
-            date_time_obj = datetime.datetime.strptime(df_group.loc[idx]["date time"], '%Y-%m-%d %H:%M:%S')
-
-            gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(df_group.loc[idx].latitude, df_group.loc[idx].longitude,
-                                                              time=date_time_obj,
-                                                              elevation=0
-                                                              ))
-
-        with open(temporalfolder+'taxi_%i.gpx' % group_name, 'w') as f:
-            f.write(gpx.to_xml())
-
-    return temporal_folder+'trajectories/'
 
 if __name__ == '__main__':
     import logging.config
@@ -251,14 +246,12 @@ if __name__ == '__main__':
 
 
     experiments = [
-        ("Rome","scenarios/TaxiRome/","policy_getcloser/")
+        # Name , folderExperiment, folderPolicy , projection=None
+        ("Rome","scenarios/TaxiRome/","policy_getcloser/",[[41.878037, 12.4462643], [41.919234, 12.5149603]])
     ]
 
-    nSimulations = 1 # iteration for each experiment
-    timeSimulation = 20000
-    number_simulation_steps = 100
 
-    for name,experiment_path,policy_folder in experiments:
+    for name,experiment_path,policy_folder,projection in experiments:
         print("Scenario definition: ",experiment_path)
 
         # Generating a temporal folder to record results
@@ -271,8 +264,7 @@ if __name__ == '__main__':
         except OSError:
             None
 
-        number_simulation_steps = 100
-        time_in_each_step = 1000
+
         ##
         # STEP1:
         # Initializing of the common and static context of each simulation
@@ -296,8 +288,21 @@ if __name__ == '__main__':
             tracks = tracks.time_video_normalize(time=number_simulation_steps, framerate=1)  # framerate must be one
             tracks.export(temporal_folder + "normalized_trajectories")
 
-        
-        
+
+        if projection == None:
+            ## default boundary projection - Using tracks limits
+            projection = [[tracks.df.Latitude.min(), tracks.df.Longitude.min()],
+                      [tracks.df.Latitude.max(), tracks.df.Longitude.max()]]
+        ## else specific boundary
+
+
+        total_movements_in_tracks = tracks.df.VideoFrame.max()
+        print("Total movements in the tracks: %i"%total_movements_in_tracks)
+
+        number_simulation_steps = total_movements_in_tracks
+        time_in_each_step = 2000
+        nSimulations = 1  # iteration for each experiment
+
         # Iteration for each experiment changing the seed of randoms
         for iteration in range(nSimulations):
             random.seed(iteration)
@@ -312,6 +317,7 @@ if __name__ == '__main__':
                  temporal_folder = temporal_folder,
                  case=name,
                  tracks=tracks,
+                 projection=projection,
                  doExecutionVideo=True,  # expensive task
                  it=iteration)
 

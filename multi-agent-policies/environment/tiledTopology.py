@@ -93,9 +93,11 @@ class TiledTopology():
         level = self.levels[:-1][0]
         for posX,x in enumerate(np.linspace(0, 1, int(level)+1)):
             if x>pn[0]:
+                if posX == 0: posX = 1
                 break
         for posY,x in enumerate(np.linspace(0, 1, int(level)+1)):
             if x>pn[1]:
+                if posY == 0: posY = 1
                 break
 
         return self.namenode(len(self.levels)-1,posX-1,posY-1) #lastlevel

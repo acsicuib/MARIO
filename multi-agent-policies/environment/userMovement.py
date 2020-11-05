@@ -13,6 +13,7 @@ from yafs.distribution import *
 
 class UserControlMovement:
 
+
     def __init__(self,pathResults, doExecutionVideo, tiledTopo, users,listIdApps, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.current_step = 0
@@ -25,6 +26,7 @@ class UserControlMovement:
         self.users = users
         self.listIdApps = listIdApps
         self.mapsUser = {}
+        self.total_diff_connections = 0
 
 
     def summarize(self):
@@ -163,6 +165,7 @@ class UserControlMovement:
                 self.mapsUser[code] = idDES
             else:
                 self.logger.info("A new movement of user (#%s) from node %s to node %s" % (code, oldnode,newnode))
+                self.total_diff_connections+=1
                 sim.alloc_DES[self.mapsUser[code]] = newnode
 
 

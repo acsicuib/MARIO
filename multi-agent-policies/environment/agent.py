@@ -180,9 +180,9 @@ class PolicyManager():
                             # the path of nodes between both is the array: [4,2,3,5,1]
                             path.inner_rule("path", r[1][::-1])
 
-                            # print("PATH: %s"%path)
-                            # print(r[0])
-                            # print(n_messages)
+                            print("PATH: %s"%path)
+                            print(r[0])
+                            print(n_messages)
 
                             self.rules.and_rule("route", self.DES, path, r[0], n_messages)
             else:

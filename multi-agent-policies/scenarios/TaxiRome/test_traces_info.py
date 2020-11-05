@@ -3,6 +3,8 @@
 """
 Created on Mon Oct 26 12:04:35 2020
 
+It checks information about the Taxi Rome traces (.csv)
+
 @author: isaaclera
 """
 
