@@ -104,7 +104,7 @@ def parser_CSVTaxiRome_toGPXfiles(inputCSVfile, temporalfolder):
 
 def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folder,temporal_folder,case, tracks,projection,doExecutionVideo, it):
                                                                               
-    stop_time = number_simulation_steps * time_in_each_step
+    simulation_duration = number_simulation_steps * time_in_each_step
 
     # results_dir = Path(experiment_path+"results/")
     # results_dir.mkdir(parents=True, exist_ok=True)
@@ -195,8 +195,12 @@ def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folde
     MARIO app controller & Agent generator
     """
     time_activation = deterministic_distribution(time=100, name="Deterministic")
-    PROBLOG = False
-    appOp = Mario(globalrules,service_rule_profile, path_csv_files, app_number=len(dataApp),period=1000,render=True,path_results=temporal_folder)
+    appOp = Mario(globalrules,service_rule_profile, path_csv_files,
+                  app_number=len(dataApp),
+                  period=1000,
+                  render=True,
+                  path_results=temporal_folder)
+
     s.deploy_monitor("App-Operator", appOp, time_activation,
                      **{"sim": s,
                         "routing": selectorPath,
@@ -206,8 +210,8 @@ def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folde
 
 
     """
-    Creating the custom monitor that manages the user movements in the simulator
-    USER operations that this DES-process manages: CREATION, MOVEMENT & DROP
+    Create the custom monitor that it manages the user movements according with the traces
+    The user operations are: CREATION, MOVEMENT (change associated node)
     """
     users = set(tracks.df.CodeRoute)
     listIdApps = [x["id"] for x in dataApp]
@@ -218,7 +222,7 @@ def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folde
                      **{"sim": s,
                         "routing": selectorPath,
                         "case": case,
-                        "stop_time": stop_time,
+                        "stop_time": simulation_duration,
                         "it": it})
 
     s.set_movement_control(evol)
@@ -229,7 +233,7 @@ def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folde
     """
     logging.info(" Performing simulation: %s %i "%(case,it))
 
-    s.run(stop_time)  # To test deployments put test_initial_deploy a TRUE
+    s.run(simulation_duration)  # To test deployments put test_initial_deploy a TRUE
 
     """
     Storing results from other monitors
@@ -299,7 +303,7 @@ if __name__ == '__main__':
         total_movements_in_tracks = tracks.df.VideoFrame.max()
         print("Total movements in the tracks: %i"%total_movements_in_tracks)
 
-        number_simulation_steps = total_movements_in_tracks
+        number_simulation_steps = total_movements_in_tracks+1 #+1 to enable the last movement
         time_in_each_step = 2000
         nSimulations = 1  # iteration for each experiment
 

@@ -85,7 +85,7 @@ class Topology:
         Returns:
             list: a list of node features
         """
-        return self.G.node[key]
+        return self.G.new_node[key]
 
 
     def get_info(self):
@@ -116,7 +116,7 @@ class Topology:
         """
         try:
             self.G = nxGraphGenerator(*params)
-            self.__idNode = len(self.G.node)
+            self.__idNode = len(self.G.new_node)
         except:
             raise Exception
 
@@ -203,7 +203,7 @@ class Topology:
             attNodes[k] = {"IPT": 1}
         nx.set_node_attributes(self.G, values=attNodes)
         for k in self.G.nodes():
-            self.nodeAttributes[k] = self.G.node[k] #it has "id" att. TODO IMPROVE
+            self.nodeAttributes[k] = self.G.new_node[k] #it has "id" att. TODO IMPROVE
 
 
     def get_nodes_att(self):

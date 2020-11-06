@@ -1,20 +1,23 @@
 """"
 
-It tests the topology and generates a json data to visualize on CESIUM (./Cesium_viewer/index.html).
++ It tests the topology
 
-CESIUM DATA:
-- Generate topology nodes and edges
-- Generate users according with its movement
-- Generate links between users and nodes
++ it generates a json data to visualize on CESIUM (./Cesium_viewer/index.html).
+    CESIUM DATA:
+    - Generate topology nodes and edges
+    - Generate users according with its movement
+    - Generate links between users and nodes
+    - Copy and paste "prints" in the html
 
-Copy and paste "prints" in the html
++ It computes user mobility indicators in the topology according with the projection
 
 """
 
 import numpy as np
 import networkx as nx
-
+from matplotlib import pyplot as plt
 import trackanimation
+import collections
 
 def generateAllLevels(size):
     ls = [size]
@@ -159,26 +162,12 @@ edgesCESIUM = [{"s":list(attLat.keys()).index(x),
 
 
 ## Management the movement of traces
-previous_connections = {}
 
-#FOR
-current_step = 0
-for current_step in range(10):
+# Generating JSON DATA to show it on CESIUM VIEWER
+total_steps  = tracks.df.VideoFrame.max() #
+total_steps  = 10 #
+for current_step in range(total_steps):
     track_code_last_position = currentMovement(tracks.df,current_step)
-    new_current_connection = {}
-    # Get the last user position
-    # for code in track_code_last_position:
-    #     (lat, lng) = track_code_last_position[code]
-    #     point = [lat, lng]
-    #     node = getClosedNode(point,projection,ls)
-    #
-    #     if code in previous_connections:
-    #         if previous_connections[code][0] != node:
-    #             new_current_connection[code] = (point,node,previous_connections[code][0])
-    #     else:
-    #         new_current_connection[code] = (point,node, None)
-
-      # Only update user localization when the user changes of node
 
     edgesTaxis = []
     nodesTaxis = []
@@ -186,28 +175,64 @@ for current_step in range(10):
     for code in track_code_last_position:
         (lat, lng) = track_code_last_position[code]
         point = [lat, lng]
-        node = getClosedNode(point,projection,ls)
+        new_node = getClosedNode(point, projection, ls)
         nodesTaxis.append(
                     {"longitude": point[1], "latitude": point[0], "code":code})
         for posNode in range(len(attLat)):
-            if list(attLat.keys())[posNode] == node:
+            if list(attLat.keys())[posNode] == new_node:
                 break
         edgesTaxis.append({"s": posNode, "t": len(nodesTaxis) - 1})
-
-    # for code,(point,newnode,oldnode) in new_current_connection.items():
-    #     # print("Car %s, from %s to %s"%(code,oldnode,newnode))
-    #     nodesTaxis.append(
-    #             {"longitude": point[1], "latitude": point[0], "code":code})
-    #
-    #     for posNode in range(len(attLat)):
-    #         if list(attLat.keys())[posNode] == newnode:
-    #             break
-    #
-    #     edgesTaxis.append({"s": posNode, "t":len(nodesTaxis)-1})
-
 
     print("STEP : %i"%current_step)
     print("const points = %s"%nodesCESIUM)
     print("const edges = %s"%edgesCESIUM)
     print("const taxis = %s"%nodesTaxis)
     print("const links = %s"%edgesTaxis)
+
+
+
+
+
+# Generating INDICATORS from trajectories
+# - total number of connections for each user
+# - total aggr. and average number of diff connections.
+prev_node = {}
+total_steps  = tracks.df.VideoFrame.max() #
+user = collections.defaultdict(list)
+for current_step in range(total_steps):
+    track_code_last_position = currentMovement(tracks.df,current_step)
+    # Get the last user position
+    for code in track_code_last_position:
+        (lat, lng) = track_code_last_position[code]
+        point = [lat, lng]
+        new_node = getClosedNode(point, projection, ls)
+
+        if code in prev_node:
+            if new_node != prev_node[code]:
+                user[code].append(new_node)
+        else:
+            user[code].append(new_node)
+
+        prev_node[code] = new_node
+
+
+print("User connections",user)
+
+counter = {u:len(user[u]) for u in user}
+hist = np.array(list(counter.values()))
+print("Number of users: ",len(counter))
+print("Average number of movements by user: %i"%hist.mean())
+print("Desviation number of movements by user: %i"%hist.std())
+
+fig, ax = plt.subplots()
+plt.hist(hist)
+start, end = ax.get_xlim()
+ax.xaxis.set_ticks(np.arange(start, end, 1))
+ax.set_xticklabels(list(range(0,hist.max())))
+plt.title("Histogram of user different connections", fontsize=14)
+plt.xlabel(r"Connections", fontsize=14)
+plt.ylabel(r"Users", fontsize=14)
+fig.savefig("hist_user_movements.pdf", dpi=400)
+plt.show()
+
+

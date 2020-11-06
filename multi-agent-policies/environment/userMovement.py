@@ -27,6 +27,7 @@ class UserControlMovement:
         self.listIdApps = listIdApps
         self.mapsUser = {}
         self.total_diff_connections = 0
+        self.prev_node = {} # store connections betw. users and nodes
 
 
     def summarize(self):
@@ -135,46 +136,40 @@ class UserControlMovement:
         # Get the coordinate of each user in this step
         track_code_last_position = self.currentMovement(sim.user_tracks.df,self.current_step)
 
-        # Updating the last user position
-        new_current_connection = {}
+        # # Updating the last user position
         # Get the last user position
         for code in track_code_last_position:
             (lat, lng) = track_code_last_position[code]
             point = [lat, lng]
-            node = self.tiledTopo.getClosedNode(point)
+            new_node = self.tiledTopo.getClosedNode(point)
 
-            if code in self.previous_connections:
-                if self.previous_connections[code][0] != node:
-                    new_current_connection[code] = (node,self.previous_connections[code][0])
+            if code in self.prev_node:
+                if self.prev_node[code] != new_node:
+                    # A change
+                    self.logger.info("A new movement of user (#%s) from node %s to node %s" % (code, self.prev_node[code], new_node))
+                    self.total_diff_connections += 1
+                    sim.alloc_DES[self.mapsUser[code]] = new_node
+
             else:
-                new_current_connection[code] = (node, None)
-
-        # Only update user localization when the user changes of node
-        for code,(newnode,oldnode) in new_current_connection.items():
-            print("Car %s, from %s to %s"%(code,oldnode,newnode))
-            if oldnode == None:
-                # creating new user on node newnode
-                # app?
-                self.logger.info("New user (#%s) on node %s" % (code, newnode))
-                app_name = random.sample(self.listIdApps,1)[0]
+                # creating new user on new_node
+                # Which app?
+                self.logger.info("New user (#%s) on node %s" % (code, new_node))
+                app_name = random.sample(self.listIdApps, 1)[0]
                 app = sim.apps[app_name]
-                msg = app.get_message("M.USER.APP.%i"%app_name)
+                msg = app.get_message("M.USER.APP.%i" % app_name)
                 dist = deterministic_distribution(30, name="Deterministic")
 
-                idDES = sim.deploy_source(app_name, id_node=newnode, msg=msg, distribution=dist)
+                idDES = sim.deploy_source(app_name, id_node=new_node, msg=msg, distribution=dist)
                 self.mapsUser[code] = idDES
-            else:
-                self.logger.info("A new movement of user (#%s) from node %s to node %s" % (code, oldnode,newnode))
-                self.total_diff_connections+=1
-                sim.alloc_DES[self.mapsUser[code]] = newnode
 
+            self.prev_node[code] = new_node
 
-
-        self.previous_connections = new_current_connection
 
 
 
         if self.current_step == 3: exit()
+
+
         ########
         #     # Actualizar vinculo en la red
         #
