@@ -1,18 +1,10 @@
-import ast
-import logging
-from yafs.topology import *
-import json
-import sys
-from collections import defaultdict
 import pandas as pd
-from problogRulesGenerator import Rules
-from problog.program import PrologString
-from problog import get_evaluatable
 from pathlib import Path
+from collections import defaultdict
 from subprocess import Popen, PIPE, TimeoutExpired
-import re
 
-PROBLOG = False #TODO def like global var on the project
+from problogRulesGenerator import Rules
+from yafs.topology import *
 
 class PolicyManager():
 
