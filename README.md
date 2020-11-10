@@ -2,6 +2,8 @@
 
 MARIOII in progress.
 
+How to install Prolog: 
+https://www.swi-prolog.org/build/PPA.html
 
 Run on server
 ```
