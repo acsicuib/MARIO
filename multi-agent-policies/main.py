@@ -83,9 +83,9 @@ def parser_CSVTaxiRome_toGPXfiles(inputCSVfile, temporalfolder):
     except OSError:
         None
 
-    onlyRoutes = {2,37} #TODO TEST
+    # onlyRoutes = {2,37} #TODO TEST
     for idx, (group_name, df_group) in enumerate(dfg):
-        if group_name in onlyRoutes:
+        # if group_name in onlyRoutes:  #TODO TEST
             # Important taxi routes are sorted by time
             gpx = gpxpy.gpx.GPX()
             gpx_track = gpxpy.gpx.GPXTrack()

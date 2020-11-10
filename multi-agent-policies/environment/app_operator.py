@@ -652,10 +652,12 @@ class Mario():
         canvas = plt.get_current_fig_manager().canvas
         canvas.draw()
         pil_image = Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
-        pil_image.save(self.image_dir + "/network_%05d.pdf" % self.image_id)
+
+        # pil_image.save(self.image_dir + "/network_%05d.pdf" % self.image_id)
         # pil_image.save(self.image_dir + "/network__UID%i_n%i_s%i_X_%i.png" % (self.UID, currentNode, serviceID, sim.env.now))
+        pil_image.save(self.image_dir + "/network_%05d.png" % self.image_id)
         self.image_id += 1
 
         plt.close(fig)
         # print("Rendering fILE: %s"%(self.image_dir + "/network_%05d.png" % self.image_id))
-        return self.image_dir + "/network_%05d.pdf" % self.image_id
+        return self.image_dir + "/network_%05d.png" % self.image_id

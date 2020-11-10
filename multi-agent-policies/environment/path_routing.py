@@ -34,21 +34,30 @@ class DeviceSpeedAwareRouting(Selection):
                     candidateDES = []
                 elif long == bestLong:
                     # Another instance service is deployed in the same node
-                    if len(candidateDES) == 0:
+                    # the path is the same
+                    # the DES process is added
+                    if len(candidateDES) == 0: #the first element
                         candidateDES.append(bestDES)
-                    candidateDES.append(dev)
+                    candidateDES.append(dev) #another one
 
-            # There are two or more options in a node: #ROUND ROBIN Schedule
+            # ROUND ROBIN Schedule
+            # There are two or more options in a node:
             if len(candidateDES) > 0:
-                if len(self.freq_use_DES_module) == 0:  # empty
-                    self.freq_use_DES_module = Counter(candidateDES)
+                #we update the list
+                for des in candidateDES:
+                     if des not in self.freq_use_DES_module:
+                         self.freq_use_DES_module[des]=0
 
-                DES_less_used = min(self.freq_use_DES_module,
-                                    key=self.freq_use_DES_module.get)  # A round robing assignment
+                #from the global list. we get only candidateDES values.
+                filterCandidateDES = Counter({x: self.freq_use_DES_module[x] for x in self.freq_use_DES_module if x in candidateDES})
+
+                DES_less_used = min(filterCandidateDES,
+                                    key=filterCandidateDES.get)  # A round robing assignment
                 self.freq_use_DES_module[DES_less_used] += 1
-
                 return minPath, DES_less_used
+
             else:
+                self.freq_use_DES_module[bestDES] += 1
                 return minPath, bestDES
 
         except (nx.NetworkXNoPath, nx.NodeNotFound) as e:
@@ -88,7 +97,7 @@ class DeviceSpeedAwareRouting(Selection):
     def clear_routing_cache(self):
         self.invalid_cache_value = False
         self.cache = {}
-        self.freq_use_DES_module = Counter(list())
+        self.freq_use_DES_module = Counter()
         self.controlServices = {}
 
     def get_path_from_failure(self, sim, message, link, alloc_DES, alloc_module, traffic, ctime, from_des):

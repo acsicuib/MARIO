@@ -264,15 +264,18 @@ class PolicyManager():
             p = Popen(cmd, stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(timeout=10)
 
+
             expr = stdout.decode("utf-8")
             expr = expr.replace("\n","")
             it = iter("".join(c for c in expr if c not in "()[] ").split(","))
             result = [(x, y, z ) for x, y, z in zip(it, it, it)]
             ## result == [('migrate', '2', 'n0lt0ln0'), ('replicate', '2', 'n0lt0ln0')]
 
-            print("Actions :",result)
+            # print("Actions :",result)
 
-            assert len(result)>0, "(agent.py) Prolog return is incorrect"
+            assert len(result)>=0, "(agent.py) Prolog return is incorrect"
+            if len(result)==0:
+                result = [("nop",0,"X")]
             return result[0]
 
         except TimeoutExpired as err:
