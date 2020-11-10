@@ -13,7 +13,6 @@ import random
 import copy
 import warnings
 import simpy
-from tqdm import tqdm
 import networkx as nx
 
 from yafs.topology import Topology
@@ -687,7 +686,8 @@ class Sim:
         myId = self.__get_id_process()
         self.logger.debug("Added_Process - Internal Monitor: %s\t#DES:%i" % (name,myId))
         if show_progress_monitor:
-            self.pbar = tqdm(total=self.until)
+            # self.pbar = tqdm(total=self.until)
+            pass
         while not self.stop:
             yield self.env.timeout(distribution.next())
             function(show_progress_monitor,**param)
@@ -721,11 +721,13 @@ class Sim:
         """
         if self.until:
             if show_progress_monitor:
-                self.pbar.update(time_shift)
+                # self.pbar.update(time_shift)
+                pass
             if self.env.now >= self.until:
                 self.stop = True
                 if show_progress_monitor:
-                    self.pbar.close()
+                    # self.pbar.close()
+                    pass
                 self.logger.info("! Stop simulation at time: %f !" % self.env.now)
 
     """
