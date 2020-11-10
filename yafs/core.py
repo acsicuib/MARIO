@@ -705,7 +705,6 @@ class Sim:
         self.logger.debug("STOP_Process - Internal Monitor: %s\t#DES:%i" % (name, idDES))
 
 
-
     def __add_consumer_service_pipe(self,app_name,module,idDES):
         self.logger.debug("Creating PIPE: %s%s%i "%(app_name,module,idDES))
 
