@@ -132,14 +132,13 @@ class UserControlMovement:
         # self.animation = AnimationTrack(sim, dpi=100, bg_map=True, aspect='equal')
 
 
-
         # Get the coordinate of each user in this step
-        track_code_last_position = self.currentMovement(sim.user_tracks.df,self.current_step)
+        user_positions = self.currentMovement(sim.user_tracks.df,self.current_step)
 
         # # Updating the last user position
         # Get the last user position
-        for code in track_code_last_position:
-            (lat, lng) = track_code_last_position[code]
+        for code in user_positions:
+            (lat, lng) = user_positions[code]
             point = [lat, lng]
             new_node = self.tiledTopo.getClosedNode(point)
 
@@ -167,7 +166,7 @@ class UserControlMovement:
 
 
 
-        if self.current_step == 3: exit()
+        # if self.current_step == 3: exit() #Debug
 
 
         ########

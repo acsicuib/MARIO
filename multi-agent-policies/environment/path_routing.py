@@ -2,25 +2,26 @@ from yafs.selection import Selection
 import networkx as nx
 from collections import Counter
 
+
 class DeviceSpeedAwareRouting(Selection):
 
     def __init__(self):
+        super(DeviceSpeedAwareRouting, self).__init__()
         self.cache = {}
-        self.counter = Counter(list())
+        self.freq_use_DES_module = Counter()
         self.invalid_cache_value = True
 
         self.controlServices = {}
         # key: a service
         # value : a list of idDevices
-        super(DeviceSpeedAwareRouting, self).__init__()
 
-    def compute_BEST_DES(self, node_src, alloc_DES, sim, DES_dst,message):
+    def compute_BEST_DES(self, node_src, alloc_DES, sim, DES_dst, message):
         try:
             bestLong = float('inf')
             minPath = []
             bestDES = []
-            moreDES = []
-            #print len(DES_dst)
+            candidateDES = []
+
             for dev in DES_dst:
                 node_dst = alloc_DES[dev]
                 path = list(nx.shortest_path(sim.topology.G, source=node_src, target=node_dst))
@@ -30,27 +31,23 @@ class DeviceSpeedAwareRouting(Selection):
                     bestLong = long
                     minPath = path
                     bestDES = dev
-                    moreDES = []
+                    candidateDES = []
                 elif long == bestLong:
                     # Another instance service is deployed in the same node
-                    if len(moreDES)==0:
-                        moreDES.append(bestDES)
-                    moreDES.append(dev)
-
+                    if len(candidateDES) == 0:
+                        candidateDES.append(bestDES)
+                    candidateDES.append(dev)
 
             # There are two or more options in a node: #ROUND ROBIN Schedule
-            if len(moreDES)>0:
-                ### RETURN
-                bestValue = 0
-                minCounter =  float('inf')
-                for idx,service in enumerate(moreDES):
-                    if not service in self.counter:
-                        return minPath, service
-                    else:
-                        if minCounter < self.counter[service]:
-                            minCounter = self.counter
-                            bestValue = idx
-                return minPath, moreDES[bestValue]
+            if len(candidateDES) > 0:
+                if len(self.freq_use_DES_module) == 0:  # empty
+                    self.freq_use_DES_module = Counter(candidateDES)
+
+                DES_less_used = min(self.freq_use_DES_module,
+                                    key=self.freq_use_DES_module.get)  # A round robing assignment
+                self.freq_use_DES_module[DES_less_used] += 1
+
+                return minPath, DES_less_used
             else:
                 return minPath, bestDES
 
@@ -60,69 +57,71 @@ class DeviceSpeedAwareRouting(Selection):
             return [], None
 
     def get_path(self, sim, app_name, message, topology_src, alloc_DES, alloc_module, traffic, from_des):
-        node_src = topology_src #entity that sends the message
-        # Name of the service
+        # Entity where the requests comes
+        node_src = topology_src
+        # Service Name
         service = message.dst
 
-        DES_dst = alloc_module[app_name][message.dst] #module sw that can serve the message
+        # List of DES-modules that they can respond to the message
+        DES_dst = alloc_module[app_name][message.dst]
+        # print("Enrouting from SRC: %s  -<->- DES %s"%(str(node_src),DES_dst))
+        # print("FROM DES ",from_des)
+        # print("SERVICE ",service)
 
-        # print("Enrouting from SRC: %i  -<->- DES %s"%(node_src,DES_dst))
+        # There is a cache to store the requests.
+        # The cache is very sensitive. It depends on:
+        # - idDES user: from_des
+        # - node where it the user: node_src
+        # - other DES modules that can respond to the message (DES_dst)
+        if (from_des, node_src, tuple(DES_dst)) not in self.cache.keys():
+            path, des = self.compute_BEST_DES(node_src, alloc_DES, sim, DES_dst, message)
+            self.cache[(from_des, node_src, tuple(DES_dst))] = path, des
 
-        #The number of nodes control the updating of the cache. If the number of nodes changes, the cache is totally cleaned.
-        # if (node_src,tuple(DES_dst)) not in self.cache.keys():
-        path, des = self.compute_BEST_DES(node_src, alloc_DES, sim, DES_dst,message)
+        else:
+            path, des = self.cache[(from_des, node_src, tuple(DES_dst))]
 
-        # print(self.counter)
-        # print(type(self.counter))
-        # print(des)
-        # print(type(des))
 
-        dc = int(des)
-        self.counter[dc] += 1
-
-        self.controlServices[(node_src, service)] = (path, des)
-
+        self.controlServices[(from_des,node_src, service)] = (path, des)
 
         return [path], [des]
 
     def clear_routing_cache(self):
         self.invalid_cache_value = False
         self.cache = {}
-        self.counter = Counter(list())
+        self.freq_use_DES_module = Counter(list())
         self.controlServices = {}
 
     def get_path_from_failure(self, sim, message, link, alloc_DES, alloc_module, traffic, ctime, from_des):
         # print "Example of enrouting"
-        #print message.path # [86, 242, 160, 164, 130, 301, 281, 216]
-        #print message.dst_int  # 301
-        #print link #(130, 301) link is broken! 301 is unreacheble
+        # print message.path # [86, 242, 160, 164, 130, 301, 281, 216]
+        # print message.dst_int  # 301
+        # print link #(130, 301) link is broken! 301 is unreacheble
 
         idx = message.path.index(link[0])
-        #print "IDX: ",idx
+        # print "IDX: ",idx
         if idx == len(message.path):
             # The node who serves ... not possible case
-            return [],[]
+            return [], []
         else:
-            node_src = message.path[idx] #In this point to the other entity the system fail
+            node_src = message.path[idx]  # In this point to the other entity the system fail
             # print "SRC: ",node_src # 164
 
-            node_dst = message.path[len(message.path)-1]
+            node_dst = message.path[len(message.path) - 1]
             # print "DST: ",node_dst #261
             # print "INT: ",message.dst_int #301
 
-            path, des = self.get_path(sim,message.app_name,message,node_src,alloc_DES,alloc_module,traffic,from_des)
-            if len(path[0])>0:
+            path, des = self.get_path(sim, message.app_name, message, node_src, alloc_DES, alloc_module, traffic,
+                                      from_des)
+            if len(path[0]) > 0:
                 # print path # [[164, 130, 380, 110, 216]]
                 # print des # [40]
 
                 concPath = message.path[0:message.path.index(path[0][0])] + path[0]
                 # print concPath # [86, 242, 160, 164, 130, 380, 110, 216]
-                newINT = node_src #path[0][2]
+                newINT = node_src  # path[0][2]
                 # print newINT # 380
 
                 message.dst_int = newINT
                 return [concPath], des
             else:
-                return [],[]
-
-
+                return [], []

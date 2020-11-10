@@ -2,21 +2,18 @@ from collections import defaultdict
 from agent import PolicyManager
 from yafs.distribution import *
 import logging
-from collections import deque
 import matplotlib.pyplot as plt
 import networkx as nx
 from PIL import Image
 from pathlib import Path
 from matplotlib import colors
 import matplotlib as mpl
-import scipy
-import sys
 import os
 import json
 from collections import Counter
 import tiledTopology
 import matplotlib.patches as mpatches
-import re
+
 class Mario():
     """
     We called it Mario in honour to our video game moustached character ;)
@@ -49,6 +46,9 @@ class Mario():
         #STATS
         self.dump_stats = 0
 
+        #Communication channel with the agents
+        self.agent_communication = defaultdict(list) #it keeps a record about the last action taken by the agent and its status: accept or reject
+
     def __call__(self, sim, routing, path):
         """
         This functions is called periodically
@@ -71,7 +71,7 @@ class Mario():
             self.create_initial_services = False #only one time
 
             self.action_stats = open(self.path_results+"action_stats.txt",'w+')
-            self.action_stats.write("time,suicide,nop,migrate,replicate,none\n")
+            self.action_stats.write("time,undeploy,nop,migrate,replicate,none\n")
         else:
             if len(self.memory)>0:
                 self.step += 1
@@ -83,60 +83,78 @@ class Mario():
                 sim.print_debug_assignaments()
 
 
-
-            # TODO v2 Control actions from all agents & select the best option
             # current implementation FCFS
             self.UID += 1
             take_last_action = [] # It perfoms the last set of agent rules
             counter_actions = Counter()
 
-            for rule in reversed(self.memory): #(self.name,self.DES,currentNode,actions,action_priority)
-                acts, prob = [], []
-                # print("+ Actions from DES_service: %i"%(rule[1]))
-                # print("\tService:"+rule[0])
-                # print("\tID_Service:%i"%rule[1])
-                # print("\tNode:%i"%rule[2])
-                # print("\tActions:%s"%rule[3])
+            # (name, DES, currentNode, ('migrate', '2', 'n0lt0ln0'),)
+            for name,DES,currentNode,(action,service_id,onNode) in reversed(self.memory):
+                print("+ Actions from DES_service: ", DES)
+                print("\tService: ", name)
+                print("\tID_Service: ", service_id)
+                print("\tNode: ", currentNode)
+                print("\tAction: ", action)
+                print("\t+ OnNode:", onNode)
 
-                if rule[1] not in take_last_action: # One rule for agent
-                    take_last_action.append(rule[1])
-                    for i,act in enumerate(rule[3]): # actions are ordered
-                        # print(" ++ action #:%i rule: %s"%(i,act))
-                        if act != None:
-                            tuple_action = (rule[0],rule[1],rule[2],act)
+                service_id = int(service_id)
+                if onNode == "self":
+                    onNode = currentNode
 
-                            # The render of the action is done the state of the simulator changes
-                            if self.render_action:
-                                image_file = self.render(sim,path,routing,tuple_action)
 
-                            done = self.perfom_action(sim,tuple_action,routing,path)
+                if DES not in take_last_action: # One rule for agent we get the last one
+                    take_last_action.append(DES)
 
-                            # print("\t action confirmed: %s"%done)
-                            # print("type: ",type(done))
-                            # print(tuple_action)
 
-                            if self.render_action and not done:
-                                try:
-                                    self.logger.warning("Image removed")
-                                    os.remove(image_file)
-                                except FileNotFoundError:
-                                    None
+                    # The render of the action is done the state of the simulator changes
+                    if self.render_action:
+                          image_file = self.render(sim, path, routing,
+                                                   service=name,
+                                                   serviceID=service_id,
+                                                   currentNode=currentNode,
+                                                   action=action,
+                                                   onNode=onNode)
 
-                            if not done:
-                                self.logger.debug("Action taken!: None")
-                                counter_actions["none"] += 1
-                            else:
-                                type_action = str(act)[0:act.index("(")]
-                                self.logger.debug("Action taken!: %s"%type_action)
-                                counter_actions[type_action] += 1
+
+                    done = self.perfom_action(sim,
+                                              service = name,
+                                              serviceID=service_id,
+                                              currentNode = currentNode,
+                                              action = action,
+                                              onNode = onNode,
+                                              routingAlgorithm= routing,
+                                              path = path)
+
+
+
+                    if self.render_action and not done:
+                        try:
+                            self.logger.warning("Image removed")
+                            os.remove(image_file)
+                        except FileNotFoundError:
+                            None
+
+                    status = "accepted"
+                    if not done:
+                        self.logger.debug("Action taken!: None")
+                        counter_actions["none"] += 1
+                        status = "rejected"
+                    else:
+                        self.logger.debug("Action taken!: %s"%action)
+                        counter_actions[action] += 1
+
+                    self.agent_communication[service_id].append(((action, service_id, onNode), status))
+
+                    if action == "undeploy" and service_id in self.agent_communication:
+                        del self.agent_communication[service_id]
 
             self.memory = []
             routing.clear_routing_cache() # Cache data is stored to improve the execution time of the simulator
             #writing stats
             if len(counter_actions)>0:
-                print(counter_actions)
+                # print(counter_actions)
                 line = ""
-                for k in ["suicide","nop","migrate","replicate","none"]:
+                for k in ["undeploy","nop","migrate","replicate","none"]:
                     line += "%i,"%counter_actions[k]
 
                 # print(line[:-1])
@@ -144,7 +162,14 @@ class Mario():
                 self.action_stats.flush()
 
 
-    def perfom_action(self,sim,action,routing,path):
+    def perfom_action(self, sim,
+                      service,
+                      serviceID,
+                      currentNode,
+                      action,
+                      onNode,
+                      routingAlgorithm,
+                      path):
         """
         Decode the action and perfom the action in the simulator
 
@@ -152,73 +177,31 @@ class Mario():
         :param action:
         :return:
         """
+        if action == "replicate": #it is prepared to get a list of nodes
+            nodes_to_replicate = [onNode]
+            space_on_node = self.get_free_space_on_nodes(sim)
+            # All these comments made mandatory that all nodes have capacity to host the all instances.
+            # feasible = True #
+            nodes_with_space = []
+            for n in nodes_to_replicate:
+                if space_on_node[n]==0:
+                    self.logger.warning("There is not more free space on node: %s"%n)
+                    # print("\t WARNING: NO FREE SPACE ON NODE:%s"%n)
+                else:
+                    nodes_with_space.append(n)
 
-        # print(" + Perfom action on time: %i"%sim.env.now)
-        # print("\t Service: ",action[0])
-        # print("\t ID_S: ",action[1])
-        # print("\t Node: ",action[2])
-        # print("\t action: ",action[3])
-        # print("\t ********* ")
+            for n in nodes_with_space:
+                self.logger.info("Action Replicate new instance of %s on node: %s" % (service, n))
+                print("\t\t+Action Replicate new instance of %s on node: %s" % (service, n))
+                self.deploy_module(sim, service, n, routingAlgorithm, path)
 
-        service = action[0]
-        id_service = action[1]
-        on_node = action[2]
-        act = str(action[3])
-        type_action = act[0:act.index("(")]
+            return len(nodes_with_space)>0
 
-        parameters = act[len(type_action+"("):-1]
-
-
-        # print("Action type: %s"%type_action)
-        # print("parameters: %s"%parameters)
-
-        if type_action == "replicate": # replicate(Si,[TargetNodes])
+        elif action == "migrate":
             # Example
             # parameters: 0,[3, 2]
-
-            # nodes_to_replicate = np.array(eval(parameters[parameters.index(",") + 1:])).astype(int)
-            parameters.replace("'", "")
-            parameters = [re.sub(r'[^\w]', ' ', x).replace(" ", "") for x in parameters.split(",")[1:]]
-            parameters[-1] = parameters[-1][:-1]
-            nodes_to_replicate = parameters
-
-
-
-            # print("Nodes where replicate: %s"%(nodes_to_replicate))
-
-            if len(nodes_to_replicate)==0:
-                self.logger.warning("WARNING: a replicate action without target nodes")
-                print("WARNING: a replicate action without target nodes")
-                return False
-            else:
-                space_on_node = self.get_free_space_on_nodes(sim)
-                # All these comments made mandatory that all nodes have capacity to host the all instances.
-                # feasible = True #
-                nodes_with_space = []
-                for n in nodes_to_replicate:
-                    if space_on_node[n]==0:
-                        self.logger.warning("There is not more free space on node: %s"%n)
-                        print("\t WARNING: NO FREE SPACE ON NODE:%s"%n)
-                        # feasible = False
-                        # break
-                    else:
-                        nodes_with_space.append(n)
-                # if feasible:
-                if True:
-                    for n in nodes_with_space:
-                    # for n in nodes_to_replicate:
-                        self.logger.info("Action Replicate new instance of %s on node: %s" % (service, n))
-                        print("\t\t+Action Replicate new instance of %s on node: %s" % (service, n))
-                        self.deploy_module(sim, service, n, routing, path)
-                # return feasible
-                return len(nodes_with_space)>0
-
-        elif type_action == "migrate":
-            # Example
-            # parameters: 0,[3, 2]
-            parameters = parameters.split(",")
             try:
-                target_node = int(parameters[-1])
+                target_node = onNode
                 space_on_node = self.get_free_space_on_nodes(sim)
                 feasible = True
                 if space_on_node[target_node] <= 0:
@@ -228,29 +211,31 @@ class Mario():
                 else:
                     self.logger.info("Action Migrate new instance of %s on node: %s" % (service, target_node))
                     print("\t\t+Action Migrate new instance of %s on node: %s" % (service, target_node))
-                    self.deploy_module(sim, service, target_node, routing, path)
-                    self.logger.info("\t Remove current instance %s on node: %s" % (service, on_node))
-                    print("\t\t+Remove current instance of %s on node: %s" % (service, on_node))
-                    self.undeploy_module(sim, service, on_node, id_service)
+                    self.deploy_module(sim, service, target_node, routingAlgorithm, path)
+                    self.logger.info("\t Remove current instance %s on node: %s" % (service, currentNode))
+                    print("\t\t+Remove current instance of %s on node: %s" % (service, currentNode))
+                    self.undeploy_module(sim, service, currentNode, serviceID)
                     return True
             except:
                 self.logger.critical("A migration rule with no target node")
                 print("A migration rule with no target node")
                 return False
 
-        elif type_action == "suicide":
+        elif action == "undeploy":
             # no arguments
-            self.logger.info("Action Suicide instance %s on node: %s" % (service, on_node))
-            self.undeploy_module(sim,service,on_node,id_service)
+            self.logger.info("Action UNDEPLOY instance %s on node: %s" % (service, currentNode))
+            self.undeploy_module(sim,service,currentNode,serviceID)
+
             return True
 
-        elif type_action == "nop":
+        elif action == "nop":
             # Doing nothing
-            self.logger.info("Action NOP instance %s on node: %s" % (service, on_node))
+            self.logger.info("Action NOP instance %s on node: %s" % (service, currentNode))
             return True
 
-        elif type_action == "fusion":
+        elif action == "fusion":
             return True
+
 
     def undeploy_module(self,sim,service,node,id_service):
         sim.undeploy_module(self.get_app_identifier(service), service, id_service)
@@ -322,8 +307,8 @@ class Mario():
 
     def get_nodes_with_users(self, routing):
         nodes_with_users = defaultdict(list)
-        for user_service in routing.controlServices.keys():
-            nodes_with_users[user_service[0]].append(self.get_app_identifier(user_service[1]))
+        for (_,node_user,user_service) in routing.controlServices.keys():
+            nodes_with_users[node_user].append(self.get_app_identifier(user_service))
         return nodes_with_users
 
     def get_free_space_on_nodes(self,sim):
@@ -370,14 +355,7 @@ class Mario():
 
         return currentOccupation
 
-    def render(self,sim,path,routing,action):
-        # print("\t All paths [wl-node,service-node: ", routing.controlServices)
-        # print("RENDERING  action")
-        # print("\t Service: ", action[0])
-        # print("\t ID_S: ", action[1])
-        # print("\t Node: ", action[2])
-        # print("Action: ", action[3])
-        # sys.exit()
+    def render(self,sim,path,routing,service,serviceID,currentNode,action,onNode):
 
         if self.pos == None: # Only the first time
             self.pos = nx.get_node_attributes(sim.topology.G,'pos')
@@ -416,7 +394,7 @@ class Mario():
         p2 = piesize / 2.5
 
         try:
-            idApp = int(action[0].split("_")[0])
+            idApp = int(service.split("_")[0])
         except ValueError: #It triggers when the simulation ends: action(null)
             idApp = 0
 
@@ -429,10 +407,10 @@ class Mario():
         # TODO UNCOMMENT
         plt.text(3.5, top, "Simulation time: %i" % sim.env.now,{'color': color_app, 'fontsize': 10})
 
-        info_text = "Action: %s" % action[3]
+        info_text = "Action %s on node: %s" % (action,onNode)
         plt.text(3.5 , top-0.5, info_text, {'color': color_app, 'fontsize': 10})
 
-        info_text = "by Service: S%i on Node: %s" % (action[1], tiledTopology.getAbbrNodeName(action[2]))
+        info_text = "by Service: S%i on Node: %s" % (serviceID, tiledTopology.getAbbrNodeName(currentNode))
         plt.text(3.5, top -1, info_text, {'color': color_app, 'fontsize': 10})
 
 
@@ -453,7 +431,7 @@ class Mario():
         # TODO UNCOMMENT
         info_text = "App: %i with policy: %s" % (idApp, rule_policy)
         plt.text(3.5, top -1.5, info_text, {'color': color_app, 'fontsize': 10})
-        info_text = "Debug file: rules_swi_UID%i_n%s_s%i_X_%i.pl" % (self.UID, tiledTopology.getAbbrNodeName(action[2]), action[1], sim.env.now)
+        info_text = "Debug file: rules_swi_UID%i_n%s_s%i_X_%i.pl" % (self.UID, tiledTopology.getAbbrNodeName(currentNode), serviceID, sim.env.now)
         plt.text(3.5, top - 2., info_text, {'color': color_app, 'fontsize': 10})
 
 
@@ -675,7 +653,7 @@ class Mario():
         canvas.draw()
         pil_image = Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
         pil_image.save(self.image_dir + "/network_%05d.pdf" % self.image_id)
-        # pil_image.save(self.image_dir + "/network__UID%i_n%i_s%i_X_%i.png" % (self.UID, action[2], action[1], sim.env.now))
+        # pil_image.save(self.image_dir + "/network__UID%i_n%i_s%i_X_%i.png" % (self.UID, currentNode, serviceID, sim.env.now))
         self.image_id += 1
 
         plt.close(fig)

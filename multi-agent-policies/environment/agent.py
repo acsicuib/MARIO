@@ -1,3 +1,4 @@
+import ast
 import logging
 from yafs.topology import *
 import json
@@ -8,7 +9,7 @@ from problogRulesGenerator import Rules
 from problog.program import PrologString
 from problog import get_evaluatable
 from pathlib import Path
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, TimeoutExpired
 import re
 
 PROBLOG = False #TODO def like global var on the project
@@ -63,7 +64,6 @@ class PolicyManager():
         self.render_action = render
         # data = json.load(open(path + 'usersDefinition.json'))
 
-
     def get_free_space_on_nodes(self,sim):
         currentOccupation = dict([a, int(x)] for a,x in nx.get_node_attributes(G=sim.topology.G, name="HwReqs").items())
 
@@ -75,139 +75,168 @@ class PolicyManager():
                     currentOccupation[sim.alloc_DES[des]] -= 1
         return currentOccupation
 
-    """
-    When a new instance of a service is deployed in the infrastructure, a DES process will be generated within the simulator that manages the facts of the logical model.
-    This DES process is an instance of agent. 
-    The _call_ function is called when requested by the app_operator.
-    """
+
     def __call__(self, sim, routing, experiment_path, path_results):
+        """
+        This is the main function of the AGENT-service-deployed that manages the facts of the logical/prolog model.
+
+        When a new instance of a service is deployed in the infrastructure, a DES process is generated in the simulator.
+        The DES process is an instance of this class.
+        Each agent runs this function to obtain the list of operations/action and it communicates to the appOperator.
+
+        :param sim:
+        :param routing:
+        :param experiment_path:
+        :param path_results:
+        :return: None
+        """
         
         if self.id_monitor in self.app_operator.active_monitor.values():# Once a process is finished, the service may run for the last time. The simulator does not control this last call.
             self.rules.clear()
-            print("\nMonitor ID: %i for service: %i (%s)  running rules "%(self.id_monitor,self.DES,self.name))
+            print("\n(agent.py) Monitor ID: %i for service: %i (%s)  running rules "%(self.id_monitor,self.DES,self.name))
             self.logger.info("\nMonitor ID: %i for service: %i (%s)  running rules "%(self.id_monitor,self.DES,self.name))
 
-            # print("PREVIOUS SERVICES")
+            # print("SERVICE")
             # print(self.app_operator.active_monitor)
 
+            # current node where the service with id (self.DES) is deployed.
             currentNode = sim.alloc_DES[self.DES]
+
+            ################################################################################
+            # SERVICEINSTANCE fact
+            # serviceInstance(ServiceInstanceId, ServiceId, Node).
+            ################################################################################
             self.rules.and_rule("serviceInstance",self.DES,self.app_name,currentNode)
 
-             # print("\t All paths [wl-node,service-node: ",routing.controlServices)
-            alllinkedNodes = []
-            routes = []
-            neighbours = [currentNode]
+            ################################################################################
+            # NODE fact
+            # node(NodeId, AvailableHW, Neighbours).
+            ################################################################################
+
+            # Data about HWReqs of a node
+            node_hreqs = nx.get_node_attributes(G=sim.topology.G, name="HwReqs")
+            # Data about available space of a node
+            available_space_on_node = self.get_free_space_on_nodes(sim)
+
+            ## LIST OF NODES to the CurrentNode from PATH REQUEST
+            # neighbours = [currentNode]
+            # alllinkedNodes = []
+            requests = [] #(latency of the path, path)
+            # print("\t All paths [wl-node,service-node: ",routing.controlServices)
             for (path,des) in routing.controlServices.values():
                 if des==self.DES:
-                    routes.append([self.get_latency(path, sim.topology), path])
-                    alllinkedNodes.append(path)
+                    requests.append([self.get_latency(path, sim.topology), path])
+                    # alllinkedNodes.append(path)
                     # neighbours += path # Uncomment in case of considering nodes from user-paths
-
-            ## DIRECT NODES FACTS
-            # neighbours += [e[1] for e in sim.topology.G.edges(currentNode)]
-            # neighbours = list(dict.fromkeys(neighbours))
-            # assert len(neighbours)>0,"Node without edges?"
-            # # print("All neighbours ",neighbours)
-            # # NODE FACTS
-            # node_hreqs = nx.get_node_attributes(G=sim.topology.G,name="HwReqs")
-            # for n in neighbours:
+            # allRelatedNodes = set()
+            # for path in alllinkedNodes:
+            #     for node in path:
+            #         allRelatedNodes.add(node)
+            # allRelatedNodes.add(currentNode)  # at least the own node is there
+            # for n in allRelatedNodes:
+            #     neighbours += [e[1] for e in sim.topology.G.edges(n)]
+            #     neighbours = list(dict.fromkeys(neighbours))
             #     n_neigh = [e[1] for e in sim.topology.G.edges(n)]
-            #     self.rules.and_rule("node",n,node_hreqs[n],n_neigh)
-
-            #Generating NODE facts from all the nodes in the path
-            node_hreqs = nx.get_node_attributes(G=sim.topology.G, name="HwReqs")
-
-            #INFO: free space on a node
-            # available_space_on_node = self.get_free_space_on_nodes(sim)
+            #     self.rules.and_rule("node", n, available_space_on_node[n], n_neigh)
 
 
-            setNodes = set()
-            for path in alllinkedNodes:
-                for node in path:
-                    setNodes.add(node)
+            ## LIST OF DIRECT NODES to the CurrentNode
+            neighbours = [e[1] for e in sim.topology.G.edges(currentNode)]
+            neighbours = list(dict.fromkeys(neighbours))
+            for n in neighbours:
+                self.rules.and_rule("node", n, available_space_on_node[n], [])
 
-            setNodes.add(currentNode) # at least the own node is there
+            self.rules.and_rule("node", currentNode, available_space_on_node[currentNode], neighbours)
 
-            for n in setNodes:
-                neighbours += [e[1] for e in sim.topology.G.edges(n)]
-                neighbours = list(dict.fromkeys(neighbours))
-                n_neigh = [e[1] for e in sim.topology.G.edges(n)]
-                self.rules.and_rule("node", n, node_hreqs[n], n_neigh)
-
-
-            # LINK FACTS
-            lat = nx.get_edge_attributes(sim.topology.G,"PR")
-            bw = nx.get_edge_attributes(sim.topology.G,"BW")
-
-            for e in sim.topology.G.edges(currentNode):
-                try:
-                    self.rules.and_rule("link", e[0], e[1], lat[e],bw[e])
-                except KeyError:
-                    # G is not a directional Graph
-                    # it doesn't have to be, but it doesn't find the shortestpath
-                    e = (e[1],e[0])
-                    self.rules.and_rule("link", e[0], e[1], lat[e], bw[e])
+            ################################################################################
+            # LINK fact (DEPRECATED)
+            # IN MARIO v1.3 these facts are removed.
+            ################################################################################
+            # lat = nx.get_edge_attributes(sim.topology.G,"PR")
+            # bw = nx.get_edge_attributes(sim.topology.G,"BW")
+            #
+            # for e in sim.topology.G.edges(currentNode):
+            #     try:
+            #         self.rules.and_rule("link", e[0], e[1], lat[e],bw[e])
+            #     except KeyError:
+            #         # G is not a directional Graph
+            #         # it doesn't have to be, but it doesn't find the shortestpath
+            #         e = (e[1],e[0])
+            #         self.rules.and_rule("link", e[0], e[1], lat[e], bw[e])
 
 
-            # Getting the number of user requests == number of  messages in that path
-            # we get the number of msg from a csv file
+
+            ################################################################################
+            # REQUEST fact
+            # requests(ServiceInstanceId, Neighbour, RequestRate, LatencyToClient).
+            ################################################################################
+            # The request rate is the number of  messages in the path's request
+            # To obtain the the number of msg get need to analyse the simulation results on the csv file
             sim.metrics.flush()
-            # Loading samples generated along current period (self.activations-1,self.activation)
-            df = pd.read_csv(self.path_csv_files + ".csv", skiprows=range(1, self.previous_number_samples))  # include header
+            # We only load samples that are generated along current period (self.activations-1,self.activation)
+            df = pd.read_csv(self.path_csv_files + ".csv", skiprows=range(1, self.previous_number_samples))  # It includes the csv header
             self.previous_number_samples += len(df.index) - 1  # avoid header
             df = df[df["DES.dst"]==self.DES]
             if len(df)>0:
                 # print("Number of samples: %i (from: %i)" % (len(df.index)-1, self.previous_number_samples))
-                if len(routes)>0:
+                if len(requests)>0:
                     # print(df[["TOPO.src","TOPO.dst"]])
-                    for r in routes:
-                        assert r[1][-1] == currentNode, "Last path node and source target are different"
-                        n_user = r[1][0] # The last node. It is not the ID-user.
-                        n_messages = len(df[df["TOPO.src"] == n_user])
-                        if n_messages >= 0:
-                            path = Rules()
+                    for (latencyPath,path) in requests:
+                        node_user = path[0] # The last node. It is not the ID-user.
+                        n_messages = len(df[df["TOPO.src"] == node_user])
+                        if n_messages > 0:
+                            if len(path)==1:
+                                node_code= "self"
+                            else:
+                                node_code = path[-2]
 
-                            #Example: path(4, 1, [2, 3, 5])
-                            # the service instance is on node 4
-                            # the user is on node 1
-                            # the path of nodes between both is the array: [4,2,3,5,1]
-                            # r[1] contains the reversed path and contains the initial and end node, we need to remove them
-
-                            #Initial v0
-                            #path.inner_rule("path", currentNode, n_user, r[1][::-1][1:])
-
-                            # Example: path(4, 1, [2, 3, 5])
-                            # the path of nodes between both is the array: [4,2,3,5,1]
-                            path.inner_rule("path", r[1][::-1])
-
-                            print("PATH: %s"%path)
-                            print(r[0])
-                            print(n_messages)
-
-                            self.rules.and_rule("route", self.DES, path, r[0], n_messages)
+                            self.rules.and_rule("requests", self.DES, node_code, n_messages,latencyPath)
             else:
                 print("INFO - No messages among users and service")
                 self.logger.warning("INFO - There are not new messages among users and service")
 
-            self.logger.info("Performing problog model")
+            ################################################################################
+            # Action history from AppOperator (MARIO)
+            # lastOutcome((OperationName,Si,Node), Result).
+            ################################################################################
+            if self.DES in self.app_operator.agent_communication:
+                for (prevOperation,status) in self.app_operator.agent_communication[self.DES]:
+                    self.rules.and_rule("lastOutcome",prevOperation, status)
 
-            # if PROBLOG:
-            #     actions = self.run_problog_model(self.rules,self.DES,currentNode,experiment_path)
-            # else:
-            action = self.run_swi_model(self.rules,self.DES,currentNode,path_results,sim)
+            ################################################################################
+            # RUN the model
+            ################################################################################
+            action = self.run_prolog_model(self.rules, self.DES, currentNode, path_results, sim)
 
-            #Sending the rules to the app_operator, aka MARIO
-            # print("Sending new rules to MARIO: %s",actions)
-            self.app_operator.get_actions_from_agents((self.name,self.DES,currentNode,[action]))
+            ################################################################################
+            # The agent communicates to the appOperator (MARIO) its operations
+            ################################################################################
+            self.app_operator.get_actions_from_agents((self.name,self.DES,currentNode,action))
 
-    def run_swi_model(self, facts, service_name, current_node, path_results, sim):
-        # Load policy rules
+
+    def run_prolog_model(self, facts, service_name, current_node, path_results, sim):
+        ###
+        ### MARIO v.1.3.
+        ###
+        ## It prepares the file (.pl) to run it in a terminal command
+
+        # There is a lib.pl to clean the policy rules
+        # this file is loaded in this point, but its path is implicit in self.rule_profile
+        loadOtherPLModels = ["lib","agentRequests"]
+        pathparts = self.rule_profile.split("/")
+        # Include other models
         rule_file = ""
-        with open(self.rule_profile, "r") as f:
-            rule_file = f.read()
+        for other in loadOtherPLModels:
+            pathModel = "/".join(pathparts[0:-1]) + "/%s.pl"%other
+            with open(pathModel, "r") as f:
+                rule_file += f.read()
 
-        rules_and_facts = ":- initialization(main).\n" \
-                          ":- discontiguous route/4.\n\n" \
+        # Include policy agent
+        with open(self.rule_profile, "r") as f:
+            rule_file += f.read()
+
+        # Include agent facts
+        rules_and_facts = ":- initialization(main).\n\n " \
                           "%s\n%s\n"%(rule_file,str(facts))
 
         # Write rules and facts in a Prolog file *.pl
@@ -219,67 +248,36 @@ class PolicyManager():
 
         with open(model_file, "w") as f:
             f.write(rules_and_facts)
-            f.write("main :- current_prolog_flag(argv, Argv),\n" \
+            f.write("\nmain :- current_prolog_flag(argv, Argv),\n" \
                     "  nth0(0, Argv, Argument0),\n" \
-                    "  atom_number(Argument0, Arg0),\n"\
-                    "  action(Arg0,ACTION,M),\n"\
-                    "  format('~q,~q~n', [ACTION,M]),\n"\
+                    "  atom_number(Argument0, ServiceID),\n"\
+                    "  operations(ServiceID,RequestedActions),\n"\
+                    "  format('~q~n', [RequestedActions]),\n"\
                     "  halt.\n"\
                     "main :-\n"\
                     "  halt(1).\n")
 
+
+        ### Run the model using swipl command on the terminal
         try:
-
-            # from pyswip import Prolog
-            # # swipl - -dump - runtime - variables
-            # prolog = Prolog()
-            #
-            # # print(model_file)
-            #
-            # prolog.consult(model_file)
-            # action_query = list(prolog.query("action(%i,ACTION,P)"%service_name))
-
             cmd = ["swipl",model_file,str(service_name)]
-            # cmd = ["swipl","%s/%s"%(gwc,model_file),service_name]
             p = Popen(cmd, stdout=PIPE, stderr=PIPE)
-            stdout, stderr = p.communicate()
+            stdout, stderr = p.communicate(timeout=10)
 
-            output = stdout.decode("utf-8")
-            action = output.split(",")[0]
-            params = output.split(",")[1:]
+            expr = stdout.decode("utf-8")
+            expr = expr.replace("\n","")
+            it = iter("".join(c for c in expr if c not in "()[] ").split(","))
+            result = [(x, y, z ) for x, y, z in zip(it, it, it)]
+            ## result == [('migrate', '2', 'n0lt0ln0'), ('replicate', '2', 'n0lt0ln0')]
 
-            if action == "suicide":
-               action = 'suicide(%i)' % service_name
-            elif action == "nop":
-               action = 'nop(%i)' % service_name
-            elif action== "migrate":
-               action = 'migrate(%i,X,%s)' % (service_name,params)
-            elif action  == "replicate":
-               action = 'replicate(%i,%s)' % (service_name, params)
-            else:
-               self.logger.critical("An action is not defined")
-               print("An action is not defined")
+            print("Actions :",result)
 
-            return action
+            assert len(result)>0, "(agent.py) Prolog return is incorrect"
+            return result[0]
 
-        except:
-            raise "Error running PYSWIP model on file: %s" % model_file
-
-    def render(self,service_name,current_node,modeltext,experiment_path):
-        """
-        write the model into a file
-
-        :param service_name:
-        :param current_node:
-        :param modeltext:
-        :param experiment_path:
-        :return:
-        """
-        rules_dir = Path(experiment_path + "prolog_facts/")
-        rules_dir.mkdir(parents=True, exist_ok=True)
-        rules_dir = str(rules_dir)
-
-        with open(rules_dir+"/rules_UID%i_n%s_s%s_%i.pl"%(self.app_operator.UID+1,current_node,service_name,self.action_on_render),"w") as f:
-            f.write(modeltext)
-
-        self.action_on_render +=1
+        except TimeoutExpired as err:
+            p.terminate()
+            raise Exception("Error running PYSWIP model on file: %s - TIMEOUT EXPERIED" % model_file)
+        # except Exception as err:
+        #     print(err)
+        #     raise Exception("Error running PYSWIP model on file: %s" % model_file)

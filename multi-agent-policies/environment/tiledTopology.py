@@ -50,7 +50,7 @@ class TiledTopology():
         x, y = self.generateProjection(posprojection)
         pos = {}
         for k in x.keys():
-            pos[k]=(x[k],y[k])
+            pos[k]=(y[k],x[k]) #swap lat/long vars since matplotlib render changes the orientation x- and y- axis
         nx.set_node_attributes(G, name="pos", values=pos)
 
 

@@ -10,6 +10,7 @@ import datetime
 import subprocess
 import pandas as pd
 import networkx as nx
+from configparser import ConfigParser
 from pathlib import Path
 
 from yafs.core import Sim
@@ -70,6 +71,8 @@ def do_video_from_execution_snaps(output_file, png_names, framerate):
 
     subprocess.call(cmdstring)
 
+
+
 def parser_CSVTaxiRome_toGPXfiles(inputCSVfile, temporalfolder):
     df = pd.read_csv(inputCSVfile, ",")
     df = df.rename(columns={"taxi id": "taxi"})
@@ -80,36 +83,41 @@ def parser_CSVTaxiRome_toGPXfiles(inputCSVfile, temporalfolder):
     except OSError:
         None
 
+    onlyRoutes = {2,37} #TODO TEST
     for idx, (group_name, df_group) in enumerate(dfg):
-        # Important taxi routes are sorted by time
-        gpx = gpxpy.gpx.GPX()
-        gpx_track = gpxpy.gpx.GPXTrack()
-        gpx.tracks.append(gpx_track)
-        gpx_segment = gpxpy.gpx.GPXTrackSegment()
-        gpx_track.segments.append(gpx_segment)
+        if group_name in onlyRoutes:
+            # Important taxi routes are sorted by time
+            gpx = gpxpy.gpx.GPX()
+            gpx_track = gpxpy.gpx.GPXTrack()
+            gpx.tracks.append(gpx_track)
+            gpx_segment = gpxpy.gpx.GPXTrackSegment()
+            gpx_track.segments.append(gpx_segment)
 
-        # Create points:
-        for idx in df_group.index:
-            date_time_obj = datetime.datetime.strptime(df_group.loc[idx]["date time"], '%Y-%m-%d %H:%M:%S')
+            # Create points:
+            for idx in df_group.index:
+                date_time_obj = datetime.datetime.strptime(df_group.loc[idx]["date time"], '%Y-%m-%d %H:%M:%S')
 
-            gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(df_group.loc[idx].latitude, df_group.loc[idx].longitude,
-                                                              time=date_time_obj,
-                                                              elevation=0
-                                                              ))
+                gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(df_group.loc[idx].latitude, df_group.loc[idx].longitude,
+                                                                  time=date_time_obj,
+                                                                  elevation=0
+                                                                  ))
 
-        with open(temporalfolder+'taxi_%i.gpx' % group_name, 'w') as f:
-            f.write(gpx.to_xml())
+            with open(temporalfolder+'taxi_%i.gpx' % group_name, 'w') as f:
+                f.write(gpx.to_xml())
 
     return temporal_folder+'trajectories/'
 
-def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folder,temporal_folder,case, tracks,projection,doExecutionVideo, it):
+def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folder,temporal_folder,
+         case,tracks,projection,
+         config,
+         doExecutionVideo, it):
                                                                               
     simulation_duration = number_simulation_steps * time_in_each_step
 
     # results_dir = Path(experiment_path+"results/")
     # results_dir.mkdir(parents=True, exist_ok=True)
     # results_dir = str(results_dir)
-    path_csv_files = temporal_folder + "/Results_%s_%i" % (case,it)
+
 
     """
     TOPOLOGY
@@ -122,29 +130,32 @@ def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folde
 
     # Definition of mandatory attributes
     ## on edges
-    # PR and BW are 1 unit
-    attPR_BW = {x:1 for x in t.G.edges()}
+    # PR and BW
+    attPR_BW = {x:int(config.get('topology', 'PR_BW')) for x in t.G.edges()}
     nx.set_edge_attributes(t.G,name="PR",values=attPR_BW)
     nx.set_edge_attributes(t.G,name="BW",values=attPR_BW)
     ## on nodes
     # HwReqs = level + 2
     # attHW = {x:abs(tiledTopo.getNumberLayers()-int(x[0]))+2 for x in t.G.nodes()} # node name: "000"
     attHW = {x:abs(tiledTopo.getNumberLayers()-tiledTopo.getLevel(x))+2 for x in t.G.nodes()} #node name:n0lt0ln0
-    attHW["n0lt0ln0"] = 10 #THE CLOUD Node capacity BIGGER NUMBER OF APPS
+    attHW["n0lt0ln0"] = int(config.get('topology', 'HwReqs_cloud_node')) #THE CLOUD Node capacity BIGGER NUMBER OF APPS
     # Shape": "(1,level+2)",
     attShape = {x:"(1,%i)"%attHW[x] for x in t.G.nodes()}
-    attShape["n0lt0ln0"] = "(2,5)"
+    attShape["n0lt0ln0"] = config.get('topology', 'shape_cloud_node')
     # IPT
-    attIPT = {x:100 for x in t.G.nodes()}
+    attIPT = {x:int(config.get('topology', 'IPT')) for x in t.G.nodes()}
     nx.set_node_attributes(t.G,name="IPT",values=attIPT)
-    nx.set_node_attributes(t.G,name="shape",values=attShape)
     nx.set_node_attributes(t.G,name="HwReqs",values=attHW)
+
+    t.write(temporal_folder + "network_%i.gexf" % tiledTopo.size)
+
+    nx.set_node_attributes(t.G,name="shape",values=attShape) #attr. shape is not supported by gexf format - before write()-
 
     #for render
     tiledTopo.setPosPlot(t.G,[[0,0],[20,20]])
 
 
-    # t.write(path +"network_%i.gexf"%tiledTopo.size)
+
     """
     Global Rules for all services
     """
@@ -179,6 +190,7 @@ def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folde
     """
     SIMULATION ENGINE
     """
+    path_csv_files = temporal_folder + "/Results_%s_%i" % (case, it)
     s = Sim(t, default_results_path=path_csv_files)
     s.set_mobile_fog_entities(dict({}))
     s.load_user_tracks(tracks)
@@ -194,10 +206,10 @@ def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folde
     """
     MARIO app controller & Agent generator
     """
-    time_activation = deterministic_distribution(time=100, name="Deterministic")
+    time_activation = deterministic_distribution(time=int(config.get('appOperator', 'activation_period')), name="Deterministic")
     appOp = Mario(globalrules,service_rule_profile, path_csv_files,
                   app_number=len(dataApp),
-                  period=1000,
+                  period=int(config.get('agent', 'activation_period')),
                   render=True,
                   path_results=temporal_folder)
 
@@ -251,12 +263,15 @@ if __name__ == '__main__':
 
     experiments = [
         # Name , folderExperiment, folderPolicy , projection=None
-        ("Rome","scenarios/TaxiRome/","policy_getcloser/",[[41.878037, 12.4462643], [41.919234, 12.5149603]])
+        ("Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]])
+        # ("Rome","scenarios/TaxiTest/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]])
     ]
 
 
     for name,experiment_path,policy_folder,projection in experiments:
-        print("Scenario definition: ",experiment_path)
+        print("Experiment definition: ",experiment_path)
+        config = ConfigParser()
+        config.read(experiment_path+'config.ini')
 
         # Generating a temporal folder to record results
         # datestamp = time.strftime('%Y%m%d')
@@ -289,7 +304,7 @@ if __name__ == '__main__':
 
             logging.info("Loading trajectories from (raw GPX files): %s" % pathGPXs)
             tracks = trackanimation.read_track(pathGPXs)
-            tracks = tracks.time_video_normalize(time=number_simulation_steps, framerate=1)  # framerate must be one
+            tracks = tracks.time_video_normalize(time=int(config.get('simulation', 'trackSteps')), framerate=1)  # framerate must be one
             tracks.export(temporal_folder + "normalized_trajectories")
 
 
@@ -304,8 +319,9 @@ if __name__ == '__main__':
         print("Total movements in the tracks: %i"%total_movements_in_tracks)
 
         number_simulation_steps = total_movements_in_tracks+1 #+1 to enable the last movement
-        time_in_each_step = 2000
-        nSimulations = 1  # iteration for each experiment
+
+        time_in_each_step = int(config.get('simulation', 'time_in_each_step'))
+        nSimulations = int(config.get('simulation', 'nSimulations'))
 
         # Iteration for each experiment changing the seed of randoms
         for iteration in range(nSimulations):
@@ -322,11 +338,13 @@ if __name__ == '__main__':
                  case=name,
                  tracks=tracks,
                  projection=projection,
+                 config = config,
                  doExecutionVideo=True,  # expensive task
                  it=iteration)
 
             print("\n--- %s seconds ---" % (time.time() - start_time))
             do_video_from_execution_snaps(temporal_folder + "animation_snaps", 'snap_%05d.png', 10)
+
 
     print("Simulation Done!")
 
