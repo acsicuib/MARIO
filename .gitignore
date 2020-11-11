@@ -8,6 +8,7 @@ pyenv.cfg
 /multi-agent-policies/test_rules/
 /multi-agent-policies/scenarios/old_prototypes/
 
+*.log
 network_*.png
 models/*.pl
 *.csv

@@ -261,7 +261,7 @@ class Mario():
                                         **{"sim": sim, "routing": routing, "experiment_path": path, "path_results":self.path_results})
         pm.id_monitor = id_monitor
         logging.info("Generating a new agent control from: %s with id: %i - Monitor: %i" % (service, des, id_monitor))
-        print("Generating a new agent control from: %s with id: %i - Monitor: %i" % (service, des, id_monitor))
+        # print("Generating a new agent control from: %s with id: %i - Monitor: %i" % (service, des, id_monitor))
         self.active_monitor[des] = id_monitor
 
     def get_actions_from_agents(self, something):
@@ -292,8 +292,7 @@ class Mario():
         #simple policies
         duy = -0.26 * (line*1.1)
         dux = (.0 * (total % 4))+(0.2*total)-0.4*line
-        print(dux)
-        # exit()
+
         # #
         # # new
         # duy = 4.56 * line
