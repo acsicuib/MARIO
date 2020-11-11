@@ -285,20 +285,22 @@ class Mario():
         if node not in self.__draw_controlUser.keys():
             self.__draw_controlUser[node] = 0
         total = self.__draw_controlUser[node]
-        line = int(total / 4) + 1
+        line = int(total / 8) + 1
         # duy = 0.06 * line
         # dux = 0.01 * (total % 4)
 
         #simple policies
-        duy = -0.26 * line
-        dux = (.0 * (total % 4))+(0.2*total)
+        duy = -0.26 * (line*1.1)
+        dux = (.0 * (total % 4))+(0.2*total)-0.4*line
+        print(dux)
+        # exit()
         # #
         # # new
         # duy = 4.56 * line
         # dux = 2.55 * (total % 4)
         # self.__draw_controlUser[node] += 1
 
-        ax.scatter(self.pos[node][0] + dux, self.pos[node][1] + duy, s=600.0, marker='o', color=newcolors[service])
+        ax.scatter(self.pos[node][0] + dux, self.pos[node][1] + duy, s=400.0, marker='o', color=newcolors[service],edgecolors="black")
 
         self.__draw_controlUser[node]+=1
 
@@ -453,7 +455,8 @@ class Mario():
                 color_app = newcmp(i)
                 legendItems.append(mpatches.Patch(color=color_app, label='App: %i'%i))
             # plt.legend(handles=legendItems, title=rule_policy)
-            plt.legend(handles=legendItems)
+            # plt.legend(handles=legendItems)
+            plt.legend(loc="lower center",handles=legendItems, ncol=len(dataApps))
         #
         # else:
         #     # SPECIFIC LEGEND for experiment: I_II_III

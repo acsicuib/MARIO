@@ -124,7 +124,7 @@ def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folde
     """
     t = Topology()
 
-    tiledTopo = TiledTopology(4)
+    tiledTopo = TiledTopology(int(config.get('topology', 'size')))
     t.G = tiledTopo.TiledGraph(projection)
 
 
@@ -137,10 +137,17 @@ def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folde
     ## on nodes
     # HwReqs = level + 2
     # attHW = {x:abs(tiledTopo.getNumberLayers()-int(x[0]))+2 for x in t.G.nodes()} # node name: "000"
-    attHW = {x:abs(tiledTopo.getNumberLayers()-tiledTopo.getLevel(x))+2 for x in t.G.nodes()} #node name:n0lt0ln0
+    attHW = {x:abs(tiledTopo.getNumberLayers()-tiledTopo.getLevel(x))+6 for x in t.G.nodes()} #node name:n0lt0ln0
     attHW["n0lt0ln0"] = int(config.get('topology', 'HwReqs_cloud_node')) #THE CLOUD Node capacity BIGGER NUMBER OF APPS
     # Shape": "(1,level+2)",
-    attShape = {x:"(1,%i)"%attHW[x] for x in t.G.nodes()}
+    # attShape = {x:"(1,%i)"%attHW[x] for x in t.G.nodes()}
+    attShape = {}
+    for x in t.G.nodes():
+        if attHW[x]%2==0:
+            attShape[x]="(2,%i)"%(attHW[x]//2)
+        else:
+            attShape[x]="(1,%i)"%(attHW[x])
+
     attShape["n0lt0ln0"] = config.get('topology', 'shape_cloud_node')
     # IPT
     attIPT = {x:int(config.get('topology', 'IPT')) for x in t.G.nodes()}

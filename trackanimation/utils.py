@@ -194,20 +194,21 @@ def get_point_in_the_middle(start_point, end_point, time_diff, point_idx):
     """
     time_proportion = (time_diff * point_idx) / end_point['TimeDifference'].values.item()
 
-    distance_proportion = end_point['Distance'].item() * time_proportion
-    time_diff_proportion = end_point['TimeDifference'].item() * time_proportion
+    distance_proportion = end_point['Distance'].values.item() * time_proportion
+    time_diff_proportion = end_point['TimeDifference'].values.item() * time_proportion
     speed = distance_proportion / time_diff_proportion
     distance = time_diff * speed
-    cum_time_diff = int(start_point['CumTimeDiff'].item() + time_diff_proportion)
+    cum_time_diff = int(start_point['CumTimeDiff'].values.item() + time_diff_proportion)
     # date = datetime.strptime(start_point['Date'].item(), '%Y-%m-%d %H:%M:%S') + dt.timedelta(seconds=int(
     # time_diff_proportion))
     date = pd.to_datetime(start_point['Date'].astype(str), format='%Y-%m-%d %H:%M:%S') + dt.timedelta(
         seconds=int(time_diff_proportion))
-    altitude = (end_point['Altitude'].item() + start_point['Altitude'].item()) / 2
-    name = start_point['CodeRoute'].item()
+    altitude = (end_point['Altitude'].values.item() + start_point['Altitude'].values.item()) / 2
+    name = start_point['CodeRoute'].values.item()
 
-    geo_start = geopy.Point(start_point['Latitude'].item(), start_point['Longitude'].item())
-    geo_end = geopy.Point(end_point['Latitude'].item(), end_point['Longitude'].item())
+    geo_start = geopy.Point(start_point['Latitude'].values.item(), start_point['Longitude'].values.item())
+
+    geo_end = geopy.Point(end_point['Latitude'].values.item(), end_point['Longitude'].values.item())
     middle_point = get_coordinates(geo_start, geo_end, distance_proportion)
 
     df_middle_point = ([[name, middle_point.latitude, middle_point.longitude, altitude,

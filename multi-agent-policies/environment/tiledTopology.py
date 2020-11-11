@@ -42,15 +42,19 @@ class TiledTopology():
     
     def setProjection(self,G,projection):
         self.projection = projection
-        lat,lng = self.generateProjection(projection)
+        lat,lng,t = self.generateProjection(projection)
         nx.set_node_attributes(G,name="latitude",values=lat)
         nx.set_node_attributes(G,name="longitude",values=lng)
 
     def setPosPlot(self,G,posprojection):
-        x, y = self.generateProjection(posprojection)
+        x, y,level = self.generateProjection(posprojection)
         pos = {}
         for k in x.keys():
-            pos[k]=(y[k],x[k]) #swap lat/long vars since matplotlib render changes the orientation x- and y- axis
+            shify = 0                                   # LIGHT MOVEMENT ON INTERMEDIATE NODES
+            if level[k]!=self.size:# and level[k]!=0:   # FOR RENDER THE CANVAS - MATPLOTLIB
+                shify = .25                             #
+            pos[k]=(y[k],x[k]+shify) #we swap lat/long vars since matplotlib changes the axis orientation
+
         nx.set_node_attributes(G, name="pos", values=pos)
 
 
@@ -183,7 +187,7 @@ class TiledTopology():
             Contains the longitude value of each node.
 
         """
-        lat,lng = {},{}
+        lat,lng,lvl = {},{},{}
         minLat,maxLat = projection[0][0],projection[1][0]
         minLng,maxLng = projection[0][1],projection[1][1]
         for il,l in enumerate(self.levels[::-1]):
@@ -193,13 +197,15 @@ class TiledTopology():
                        name = self.namenode(il,ix,iy)
                        lat[name]=posX
                        lng[name]=posY
+                       lvl[name]=l
     
       
         name = self.namenode(0,0,0)
         lat[name]=minLat+(maxLat-minLat)/2
         lng[name]=minLng+(maxLng-minLng)/2
-          
-        return lat,lng
+        lvl[name]=0
+
+        return lat,lng,lvl
 
 
     
