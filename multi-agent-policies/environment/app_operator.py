@@ -76,11 +76,11 @@ class Mario():
             if len(self.memory)>0:
                 self.step += 1
                 # DEBUG
-                print("+"*20)
+                # print("+"*20)
                 print("\nMARIO is here!! - Activation: %i  - Time: %i" %(self.step,sim.env.now))
-                print("- Size buffer of actions: %i" % len(self.memory))
-                print("- Current situation:")
-                sim.print_debug_assignaments()
+                # print("- Size buffer of actions: %i" % len(self.memory))
+                # print("- Current situation:")
+                # sim.print_debug_assignaments()
 
 
             # current implementation FCFS
@@ -90,12 +90,12 @@ class Mario():
 
             # (name, DES, currentNode, ('migrate', '2', 'n0lt0ln0'),)
             for name,DES,currentNode,(action,service_id,onNode) in reversed(self.memory):
-                print("+ Actions from DES_service: ", DES)
-                print("\tService: ", name)
-                print("\tID_Service: ", service_id)
-                print("\tNode: ", currentNode)
-                print("\tAction: ", action)
-                print("\t+ OnNode:", onNode)
+                # print("+ Actions from DES_service: ", DES)
+                # print("\tService: ", name)
+                # print("\tID_Service: ", service_id)
+                # print("\tNode: ", currentNode)
+                # print("\tAction: ", action)
+                # print("\t+ OnNode:", onNode)
 
                 service_id = int(service_id)
                 if onNode == "self":

@@ -206,7 +206,7 @@ class PolicyManager():
             self.app_operator.get_actions_from_agents((self.name,self.DES,currentNode,action))
 
 
-    def run_prolog_model(self, facts, service_name, current_node, path_results, sim):
+    def run_prolog_model(self, facts, serviceID, current_node, path_results, sim):
         ###
         ### MARIO v.1.3.
         ###
@@ -235,7 +235,7 @@ class PolicyManager():
         rules_dir = Path(path_results + "models/")
         rules_dir.mkdir(parents=True, exist_ok=True)
         rules_dir = str(rules_dir)
-        model_file = rules_dir + "/rules_swi_UID%i_n%s_s%s_%i_%i.pl" % (self.app_operator.UID + 1, current_node, service_name, self.action_on_render,sim.env.now)
+        model_file = rules_dir + "/rules_swi_UID%i_n%s_s%s_%i_%i.pl" % (self.app_operator.UID + 1, current_node, serviceID, self.action_on_render, sim.env.now)
         self.action_on_render += 1
 
         with open(model_file, "w") as f:
@@ -252,7 +252,7 @@ class PolicyManager():
 
         ### Run the model using swipl command on the terminal
         try:
-            cmd = ["swipl",model_file,str(service_name)]
+            cmd = ["swipl", model_file, str(serviceID)]
             p = Popen(cmd, stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(timeout=10)
 
@@ -263,11 +263,14 @@ class PolicyManager():
             result = [(x, y, z ) for x, y, z in zip(it, it, it)]
             ## result == [('migrate', '2', 'n0lt0ln0'), ('replicate', '2', 'n0lt0ln0')]
 
+            # print("**" * 5)
+            # print("ServiceID: ",serviceID)
+            # print("model_file: ",model_file)
             # print("Actions :",result)
-
+            # print("**"*5)
             assert len(result)>=0, "(agent.py) Prolog return is incorrect"
             if len(result)==0:
-                result = [("nop",0,"X")]
+                result = [("nop", serviceID, "X")]
             return result[0]
 
         except TimeoutExpired as err:

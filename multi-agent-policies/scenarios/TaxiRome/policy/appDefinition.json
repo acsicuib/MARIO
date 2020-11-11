@@ -3,7 +3,7 @@
     "id": 1,
     "name": 1,
     "HwReqs": 1,
-    "MaxReqs": 200,
+    "MaxReqs": 20,
     "MaxLatency": 50,
     "profile_rules": "policy1.pl",
 
@@ -36,7 +36,7 @@
     "id": 2,
     "name": 2,
     "HwReqs": 1,
-    "MaxReqs": 200,
+    "MaxReqs": 20,
     "MaxLatency": 50,
     "profile_rules": "policy1.pl",
 
@@ -69,7 +69,7 @@
     "id": 3,
     "name": 3,
     "HwReqs": 1,
-    "MaxReqs": 200,
+    "MaxReqs": 20,
     "MaxLatency": 50,
     "profile_rules": "policy1.pl",
 
@@ -102,7 +102,7 @@
     "id": 4,
     "name": 4,
     "HwReqs": 1,
-    "MaxReqs": 200,
+    "MaxReqs": 20,
     "MaxLatency": 50,
     "profile_rules": "policy1.pl",
 
@@ -135,7 +135,7 @@
     "id": 5,
     "name": 5,
     "HwReqs": 1,
-    "MaxReqs": 200,
+    "MaxReqs": 20,
     "MaxLatency": 50,
     "profile_rules": "policy1.pl",
 
@@ -168,7 +168,7 @@
     "id": 6,
     "name": 6,
     "HwReqs": 1,
-    "MaxReqs": 200,
+    "MaxReqs": 20,
     "MaxLatency": 50,
     "profile_rules": "policy1.pl",
 
