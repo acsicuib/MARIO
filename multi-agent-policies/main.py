@@ -217,7 +217,7 @@ def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folde
     appOp = Mario(globalrules,service_rule_profile, path_csv_files,
                   app_number=len(dataApp),
                   period=int(config.get('agent', 'activation_period')),
-                  render=True,
+                  render=False, #only snaps
                   path_results=temporal_folder)
 
     s.deploy_monitor("App-Operator", appOp, time_activation,

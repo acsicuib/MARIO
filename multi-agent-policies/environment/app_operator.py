@@ -38,6 +38,7 @@ class Mario():
         #render
         self.render_action = render
         self.image_id =0
+        self.snap_id =0
         self.__draw_controlUser = {}
 
         self.active_monitor = {}
@@ -147,6 +148,9 @@ class Mario():
 
                     if action == "undeploy" and service_id in self.agent_communication:
                         del self.agent_communication[service_id]
+
+
+            self.snapshot(sim,path,routing)
 
             self.memory = []
             routing.clear_routing_cache() # Cache data is stored to improve the execution time of the simulator
@@ -663,3 +667,129 @@ class Mario():
         plt.close(fig)
         # print("Rendering fILE: %s"%(self.image_dir + "/network_%05d.png" % self.image_id))
         return self.image_dir + "/network_%05d.png" % self.image_id
+
+
+    def snapshot(self,sim,path,routing):
+        """
+        An alternative to render for having a global view of the situation in each
+
+        :param sim:
+        :param path:
+        :param routing:
+
+        """
+
+        if self.pos == None: # Only the first time
+            self.pos = nx.get_node_attributes(sim.topology.G,'pos')
+            image_dir = Path(self.path_results+"images/")
+            image_dir.mkdir(parents=True, exist_ok=True)
+            self.image_dir = str(image_dir)
+
+        tab20 = plt.cm.get_cmap('tab20', self.total_services+5)
+        bounds = range(self.total_services+5)
+        newcolors = tab20(np.linspace(0, 1, self.total_services+5))
+        newcolors[0] = np.array([250.0 / 256.0, 250. / 256., 250. / 256., 1])
+        newcmp = mpl.colors.ListedColormap(newcolors)
+        norm = mpl.colors.BoundaryNorm(bounds, newcmp.N)
+
+        fig, ax = plt.subplots(figsize=(16.0, 10.0))
+        plt.tight_layout(h_pad=0.55)
+
+
+        nx.draw(sim.topology.G, self.pos, with_labels=False, node_size=1, node_color="#1260A0", edge_color="gray", node_shape="o",
+                 font_size=7, font_color="white", ax=ax)
+
+        width = ax.get_xlim()[1]
+        top = ax.get_ylim()[1]
+        # Some viz. vars.
+        piesize = .078
+        # piesize = .08
+        p2 = piesize / 2.5
+
+        dataApps = json.load(open(path + 'appDefinition.json'))
+
+        # Labels on nodes
+        for x in sim.topology.G.nodes:
+            if x == 0:
+                ax.text(self.pos[x][0]- (width/12), self.pos[x][1] , tiledTopology.getAbbrNodeName(x), fontsize=10,
+                        fontweight="bold")
+            else:
+                ax.text(self.pos[x][0] - (width/75), self.pos[x][1] + (width/35) , tiledTopology.getAbbrNodeName(x), fontsize=10,fontweight="bold")
+
+        if not "closers" in self.image_dir:
+            legendItems = []
+            for i in range(1,len(dataApps)+1):
+                color_app = newcmp(i)
+                legendItems.append(mpatches.Patch(color=color_app, label='App: %i'%i))
+            plt.legend(loc="lower center",handles=legendItems, ncol=len(dataApps))
+
+
+        # Plotting users dots
+        self.__draw_controlUser = {}
+        nodes_with_users = self.get_nodes_with_users(routing)
+
+        #PRINT ALL USERS
+        for node in nodes_with_users:
+            # print(node)
+            for app in nodes_with_users[node]:
+                self.__draw_user(node, int(app), ax, newcolors)
+
+        # LAST step:
+        # Displaying capacity, changing node shape
+        trans = ax.transData.transform
+        trans2 = fig.transFigure.inverted().transform
+        data_occupation = self.get_nodes_with_services(sim)
+
+        # Generate node shape
+        for n in sim.topology.G.nodes():
+            xx, yy = trans(self.pos[n])  # figure coordinates
+            xa, ya = trans2((xx, yy))  # axes coordinates
+            a = plt.axes([xa - p2, ya - p2, piesize, piesize])
+            a.set_aspect('equal')
+
+            #For labelling cells in the imshow
+            nrows, ncols = data_occupation[n].shape
+            real_x = np.array(range(0,ncols))
+            real_y = np.array(range(0,nrows))
+            if len(real_x) > 1:
+                dx = (real_x[1] - real_x[0]) / 2.
+            else:
+                dx = 0.5
+            if len(real_y)>1:
+                dy = (real_y[1] - real_y[0]) / 2.
+            else:
+                dy = 0.5
+            extent = [real_x[0] - dx, real_x[-1] + dx, real_y[0] - dy, real_y[-1] + dy]
+
+            # Include the current instance service identificator close to the node
+            a.imshow(data_occupation[n], cmap=newcmp, interpolation='none', norm=norm,extent=extent)
+
+            sizerow = 0.5
+            if nrows==0:
+                sizerow = (extent[3]+abs(extent[2]))/float(nrows)
+
+            sizecol = 0.5
+            if ncols-1>0:
+                sizecol = (extent[1]+abs(extent[0]))/float(ncols)
+
+
+            for irow,row in enumerate(data_occupation[n],start=1):
+                irev_row = (nrows+1)-irow
+                py = extent[2]+(sizerow*irev_row)
+                if irev_row>=2: py += 0.5
+                for icol,value in enumerate(row,start=1):
+                    if value==0: break
+                    px = extent[0]+(sizecol*icol)-0.5
+                    a.text(px,py, value, ha="center", va="center", color="w",weight="bold", size=18)
+
+            a.axes.get_yaxis().set_visible(False)
+            a.axes.get_xaxis().set_visible(False)
+
+        canvas = plt.get_current_fig_manager().canvas
+        canvas.draw()
+        pil_image = Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
+
+        pil_image.save(self.image_dir + "/snap_%05d.png" % self.snap_id)
+        self.snap_id += 1
+        plt.close(fig)
+
