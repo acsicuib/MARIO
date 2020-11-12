@@ -236,7 +236,10 @@ def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folde
     listIdApps = [x["id"] for x in dataApp]
 
     dStart = deterministicDistributionStartPoint(0, time_in_each_step, name="Deterministic")
-    evol = UserControlMovement(experiment_path, doExecutionVideo, tiledTopo,users,listIdApps)
+
+    evol = UserControlMovement(experiment_path, doExecutionVideo, tiledTopo,users,listIdApps,
+                               ratio_message=int(config.get('agent', 'message_period')))
+
     s.deploy_monitor("Traces_localization_update", evol, dStart,
                      **{"sim": s,
                         "routing": selectorPath,
@@ -361,3 +364,4 @@ if __name__ == '__main__':
 # ffmpeg -r 1 -i results/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p results/out2.mp4
 
 # ffmpeg -r 1 -i multi-agent-policies/scenarios/TaxiRome/results_20201028/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p video.mp4
+# ffmpeg -r 1 -i multi-agent-policies/scenarios/TaxiRome/results_20201028/images/snap_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p video.mp4

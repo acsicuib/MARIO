@@ -14,7 +14,7 @@ from yafs.distribution import *
 class UserControlMovement:
 
 
-    def __init__(self,pathResults, doExecutionVideo, tiledTopo, users,listIdApps, logger=None):
+    def __init__(self,pathResults, doExecutionVideo, tiledTopo, users,listIdApps, ratio_message,logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.current_step = 0
         self.path_results = pathResults
@@ -28,6 +28,7 @@ class UserControlMovement:
         self.mapsUser = {}
         self.total_diff_connections = 0
         self.prev_node = {} # store connections betw. users and nodes
+        self.ratio_message_generation = ratio_message
 
 
     def summarize(self):
@@ -156,7 +157,7 @@ class UserControlMovement:
                 app_name = random.sample(self.listIdApps, 1)[0]
                 app = sim.apps[app_name]
                 msg = app.get_message("M.USER.APP.%i" % app_name)
-                dist = deterministic_distribution(30, name="Deterministic")
+                dist = deterministic_distribution(self.ratio_message_generation, name="Deterministic")
 
                 idDES = sim.deploy_source(app_name, id_node=new_node, msg=msg, distribution=dist)
                 self.mapsUser[code] = idDES
