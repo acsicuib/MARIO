@@ -1,20 +1,23 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% libray of auxiliary predicates
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% "libray" of auxiliary predicates
 
-sumAll([],0).
-sumAll([(_,R)|L], Tot) :- sumAll(L,TotL), Tot is R+TotL.
+sumRequestRates([],0).
+sumRequestRates([(_,R,_)|Xs], Tot) :- sumRequestRates(Xs,TotXs), Tot is R+TotXs.
+
+mostRequestsFrom(Requests,M) :-
+    msort(Requests,OrderedRequests),
+    aggregateRequests(OrderedRequests,AggregatedRequests),
+    mostRequestsFrom2(AggregatedRequests,(M,_)).
 
 aggregateRequests([],[]).
-aggregateRequests([(H,R)|L],AggregatedRequests) :-
-    aggregateRequests2((H,R),L,AggregatedRequests).
-aggregateRequests2((H,R),[(H,R1)|L],AggregatedRequests) :-
-    NewR is R+R1, aggregateRequests2((H,NewR),L,AggregatedRequests).
-aggregateRequests2((H,R),[(H1,R1)|L],[(H,R)|AggregatedRequests]) :-
-    dif(H,H1), aggregateRequests2((H1,R1),L,AggregatedRequests).
+aggregateRequests([(H,R,_)|Xs],AggregatedRequests) :- aggregateRequests2((H,R),Xs,AggregatedRequests).
+
+aggregateRequests2((H,R),[(H,R1,_)|Xs],AggregatedRequests) :- NewR is R+R1, aggregateRequests2((H,NewR),Xs,AggregatedRequests).
+aggregateRequests2((H,R),[(H1,R1,_)|Xs],[(H,R)|AggregatedRequests]) :- dif(H,H1), aggregateRequests2((H1,R1),Xs,AggregatedRequests).
 aggregateRequests2((H,R),[],[(H,R)]).
 
-mostRequestsFrom([X],X).
-mostRequestsFrom([(Mx,Rx)|L],(M,R)) :- 
-    length(L,LLength), LLength>0, mostRequestsFrom(L,(ML,RL)), 
-    ( (Rx>RL, M=Mx, R=Rx); (Rx=<RL, M=ML, R=RL) ).
+mostRequestsFrom2([X],X).
+mostRequestsFrom2([(Mx,Rx)|Xs],(M,R)) :-
+    length(Xs,XsLength), XsLength>0, mostRequestsFrom2(Xs,(MXs,RXs)),
+    ( (Rx>RXs, M=Mx, R=Rx); (Rx=<RXs, M=MXs, R=RXs) ).
+

@@ -293,7 +293,7 @@ class Sim:
                 #size_bits = message.bytes * 8
                 try:
                    # transmit = size_bits / (self.topology.get_edge(link)[Topology.LINK_BW] * 1000000.0)  # MBITS!
-                    transmit = size_bits / (self.topology.get_edge(link)[Topology.LINK_BW] * 1000000.0)  # MBITS!
+                    transmit = size_bits // (self.topology.get_edge(link)[Topology.LINK_BW] * 1000000.0)  # MBITS!
                     propagation = self.topology.get_edge(link)[Topology.LINK_PR]
                     latency_msg_link = transmit + propagation
 
@@ -1324,13 +1324,6 @@ class Sim:
         time_shift = 200
         distribution = deterministic_distribution(name="SIM_Deterministic", time=time_shift)
         self.env.process(self.__add_stop_monitor("Stop_Control_Monitor",self.__ctrl_progress_monitor,distribution,show_progress_monitor,time_shift=time_shift))
-
-        # if mobile_behaviour:
-        #     """
-        #     Updating control variables of mobile environment
-        #     """
-        #     self.update_service_coverage()
-
 
         self.print_debug_assignaments()
 

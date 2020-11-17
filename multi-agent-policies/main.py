@@ -107,38 +107,50 @@ def parser_CSVTaxiRome_toGPXfiles(inputCSVfile, temporalfolder):
 
     return temporal_folder+'trajectories/'
 
-def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folder,temporal_folder,
-         case,tracks,projection,
+def main(number_simulation_steps,
+         time_in_each_step,
+         experiment_path,
+         policy_folder,
+         temporal_folder,
+         case,
+         tracks,
+         projection,
          config,
-         doExecutionVideo, it):
+         doExecutionVideo,
+         it,
+         policy_file = None # if None we use the policy defined in the APP
+         ):
                                                                               
     simulation_duration = number_simulation_steps * time_in_each_step
-
-    # results_dir = Path(experiment_path+"results/")
-    # results_dir.mkdir(parents=True, exist_ok=True)
-    # results_dir = str(results_dir)
-
 
     """
     TOPOLOGY
     """
     t = Topology()
-
     tiledTopo = TiledTopology(int(config.get('topology', 'size')))
     t.G = tiledTopo.TiledGraph(projection)
-
-
+    cloudNode = "n0lt0ln0"
     # Definition of mandatory attributes
     ## on edges
     # PR and BW
-    attPR_BW = {x:int(config.get('topology', 'PR_BW')) for x in t.G.edges()}
-    nx.set_edge_attributes(t.G,name="PR",values=attPR_BW)
-    nx.set_edge_attributes(t.G,name="BW",values=attPR_BW)
+    attBW = {x:int(config.get('topology', 'BW')) for x in t.G.edges()}
+    nx.set_edge_attributes(t.G,name="BW",values=attBW)
+
+    attPR = {}
+    for (s,d) in t.G.edges():
+        print(s,d)
+        minV = min(tiledTopo.getLevel(d),tiledTopo.getLevel(s))
+        pr = (tiledTopo.getNumberLayers()-minV)
+        attPR[(s,d)] = pr
+    nx.set_edge_attributes(t.G,name="PR",values=attPR)
+
     ## on nodes
     # HwReqs = level + 2
     # attHW = {x:abs(tiledTopo.getNumberLayers()-int(x[0]))+2 for x in t.G.nodes()} # node name: "000"
+    # attHW = {x:abs(tiledTopo.getNumberLayers()-tiledTopo.getLevel(x))+6 for x in t.G.nodes()} #node name:n0lt0ln0
+
     attHW = {x:abs(tiledTopo.getNumberLayers()-tiledTopo.getLevel(x))+6 for x in t.G.nodes()} #node name:n0lt0ln0
-    attHW["n0lt0ln0"] = int(config.get('topology', 'HwReqs_cloud_node')) #THE CLOUD Node capacity BIGGER NUMBER OF APPS
+    attHW[cloudNode] = int(config.get('topology', 'HwReqs_cloud_node')) #THE CLOUD Node capacity BIGGER NUMBER OF APPS
     # Shape": "(1,level+2)",
     # attShape = {x:"(1,%i)"%attHW[x] for x in t.G.nodes()}
     attShape = {}
@@ -148,20 +160,16 @@ def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folde
         else:
             attShape[x]="(1,%i)"%(attHW[x])
 
-    attShape["n0lt0ln0"] = config.get('topology', 'shape_cloud_node')
+    attShape[cloudNode] = config.get('topology', 'shape_cloud_node')
     # IPT
     attIPT = {x:int(config.get('topology', 'IPT')) for x in t.G.nodes()}
     nx.set_node_attributes(t.G,name="IPT",values=attIPT)
     nx.set_node_attributes(t.G,name="HwReqs",values=attHW)
 
     t.write(temporal_folder + "network_%i.gexf" % tiledTopo.size)
-
     nx.set_node_attributes(t.G,name="shape",values=attShape) #attr. shape is not supported by gexf format - before write()-
-
     #for render
     tiledTopo.setPosPlot(t.G,[[0,0],[20,20]])
-
-
 
     """
     Global Rules for all services
@@ -177,11 +185,14 @@ def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folde
     for app in dataApp:
         globalrules.and_rule("service",app["name"],app["HwReqs"],app["MaxReqs"],app["MaxLatency"])
 
+
+
     service_rule_profile={}
     for app in dataApp:
-        service_rule_profile[app["name"]]=experiment_path+policy_folder+app["profile_rules"] # Global path to pl.file
-
-
+        if policy_file == None:
+            service_rule_profile[app["name"]]=experiment_path+policy_folder+app["profile_rules"] # Global path to pl.file
+        else:
+            service_rule_profile[app["name"]] = experiment_path + policy_folder + policy_file
 
     """
     PLACEMENT algorithm
@@ -190,9 +201,9 @@ def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folde
     placement = JSONPlacement(name="Placement", json=placementJson)
 
     """
-    SELECTOR and Deploying algorithm
+    Routing algorithm
     """
-    selectorPath = DeviceSpeedAwareRouting()
+    routingPath = DeviceSpeedAwareRouting()
 
     """
     SIMULATION ENGINE
@@ -208,7 +219,7 @@ def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folde
     INITIAL DEPLOY OF SERVICES
     """
     for aName in apps.keys():
-        s.deploy_app(apps[aName], placement, selectorPath)
+        s.deploy_app(apps[aName], placement, routingPath)
 
     """
     MARIO app controller & Agent generator
@@ -217,51 +228,60 @@ def main(number_simulation_steps,time_in_each_step, experiment_path,policy_folde
     appOp = Mario(globalrules,service_rule_profile, path_csv_files,
                   app_number=len(dataApp),
                   period=int(config.get('agent', 'activation_period')),
-                  render=False, #only snaps
-                  path_results=temporal_folder)
+                  render=False, # only snaps
+                  path_results=temporal_folder,
+                  cloud_node = cloudNode,
+                  window_agent_size=int(config.get('agent', 'window_agent_outcome')))
 
     s.deploy_monitor("App-Operator", appOp, time_activation,
                      **{"sim": s,
-                        "routing": selectorPath,
+                        "routing": routingPath,
                         "path": experiment_path+policy_folder,
                         }
                      )
-
 
     """
     Create the custom monitor that it manages the user movements according with the traces
     The user operations are: CREATION, MOVEMENT (change associated node)
     """
-    users = set(tracks.df.CodeRoute)
-    listIdApps = [x["id"] for x in dataApp]
+    AppsIDs = [x["id"] for x in dataApp] #get a list with all ID-apps
 
     dStart = deterministicDistributionStartPoint(0, time_in_each_step, name="Deterministic")
 
-    evol = UserControlMovement(experiment_path, doExecutionVideo, tiledTopo,users,listIdApps,
-                               ratio_message=int(config.get('agent', 'message_period')))
+    record_movements = open(temporal_folder+"/movements.csv","w")
+    record_movements.write("taxi,DES,time,nodeSRC,nodeDST\n")
+    evol = UserControlMovement(
+                        experiment_path = experiment_path,
+                        doExecutionVideo = doExecutionVideo,
+                        tiledTopo = tiledTopo,
+                        listIdApps = AppsIDs,
+                        appOp = appOp,
+                        record_movements = record_movements,
+                        ratio_message = int(config.get('agent', 'message_period'))
+    )
 
     s.deploy_monitor("Traces_localization_update", evol, dStart,
                      **{"sim": s,
-                        "routing": selectorPath,
+                        "routingAlgorithm": routingPath,
                         "case": case,
                         "stop_time": simulation_duration,
                         "it": it})
 
     s.set_movement_control(evol)
 
-
     """
     RUNNING
     """
     logging.info(" Performing simulation: %s %i "%(case,it))
-
     s.run(simulation_duration)  # To test deployments put test_initial_deploy a TRUE
 
     """
     Storing results from other monitors
     & Render the last movement
     """
-    appOp.render(s,experiment_path,selectorPath,["END",-1,-1,"NONE"])
+    appOp.render(s,experiment_path,routingPath,["END",-1,-1,"NONE"])
+    # evol.write_map_user_des(temporal_folder + "/MapUserDES_%s_%i.csv" % (case, it))
+    record_movements.close()
     s.print_debug_assignaments()
     print("\nNumber of different connections for user movements: %i"%evol.total_diff_connections)
 
@@ -270,15 +290,20 @@ if __name__ == '__main__':
     import logging.config
     logging.config.fileConfig(os.getcwd() + '/logging.ini')
 
+    ### Control the simulation with monit
+    pid = str(os.getpid())
+    with open("/tmp/yafssimulation.pid", "w") as f:
+        f.write(pid)
 
+    # Case, Name , folderExperiment, folderPolicy , projection=None, policy_file = None
     experiments = [
-        # Name , folderExperiment, folderPolicy , projection=None
-        ("Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]])
-        # ("Rome","scenarios/TaxiTest/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]])
+        ("P1","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy1.pl")
+        # ("P2","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy2.pl")
+        # ("P12","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy12.pl")
+        # ("P12Memory","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy12withMemory.pl")
     ]
 
-
-    for name,experiment_path,policy_folder,projection in experiments:
+    for ncase, name,experiment_path,policy_folder,projection,policy_file in experiments:
         print("Experiment definition: ",experiment_path)
         config = ConfigParser()
         config.read(experiment_path+'config.ini')
@@ -287,12 +312,11 @@ if __name__ == '__main__':
         # datestamp = time.strftime('%Y%m%d')
 
         datestamp = "20201028" # fixed for testing
-        temporal_folder = experiment_path + "results_" + datestamp + "/"
+        temporal_folder = experiment_path + "results_%s_"%ncase + datestamp + "/"
         try:
             os.makedirs(temporal_folder)
         except OSError:
             None
-
 
         ##
         # STEP1:
@@ -324,10 +348,8 @@ if __name__ == '__main__':
                       [tracks.df.Latitude.max(), tracks.df.Longitude.max()]]
         ## else specific boundary
 
-
         total_movements_in_tracks = tracks.df.VideoFrame.max()
-        print("Total movements in the tracks: %i"%total_movements_in_tracks)
-
+        # print("Total movements in the tracks: %i"%total_movements_in_tracks)
         number_simulation_steps = total_movements_in_tracks+1 #+1 to enable the last movement
 
         time_in_each_step = int(config.get('simulation', 'time_in_each_step'))
@@ -350,11 +372,11 @@ if __name__ == '__main__':
                  projection=projection,
                  config = config,
                  doExecutionVideo=True,  # expensive task
-                 it=iteration)
+                 it=iteration,
+                 policy_file = policy_file)
 
             print("\n--- %s seconds ---" % (time.time() - start_time))
             do_video_from_execution_snaps(temporal_folder + "animation_snaps", 'snap_%05d.png', 10)
-
 
     print("Simulation Done!")
 

@@ -1,52 +1,31 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Policy 1
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Service instance Si asks to UNDEPLOY itself
-% if there are no requests for S_i
-
-%operation(undeploy,Si,self) :-
-%    \+ requests(Si,_,_,_).
-
-% Service instance Si asks to MIGRATE to node M
-% if there are no requests for Si from clients in its node and
-% all the requests for Si have neighbour M as last hop
-%operation(migrate,Si,M) :-
-%    findall(H,requests(Si,H,_,_),Ms), sort(Ms,[M]), dif(M,self).
-
-% Service instance Si asks to REPLICATE in node M
-% M is the node from which most requests to Si are arriving.
-% M is chosen among the node where Si is running and the neighbous of that node.
-%operation(replicate,Si,M) :-
-%    findall((H,R),requests(Si,H,R,_),Requests),
-%    msort(Requests,OrderedRequests), aggregateRequests(OrderedRequests,AggregatedRequests),
-%    mostRequestsFrom(AggregatedRequests,(M,_)).
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Policy 2
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Service instance Si asks to UNDEPLOY itself
-% if there are no requests for S_i
+% if there are no requests for S_i.
 operation(undeploy,Si,self) :-
     \+ requests(Si,_,_,_).
 
-% Service instance Si asks to MIGRATE to node M
-% if there are no requests for Si from clients in its node and
-% all the requests for Si have neighbour M as last hop
+% Service instance Si asks to MIGRATE to node M (different from self) if
+% (1b) it does not satisfy the maximum latency constraint for all requests arriving from M
+%  AND
+% (2) all the requests for Si have the same neighbour M as last hop
 operation(migrate,Si,M) :-
-    findall(H,requests(Si,H,_,_),Ms), sort(Ms,[M]), dif(M,self).
+    findall((H,R,L),requests(Si,H,R,L),Requests),
+    serviceInstance(Si, S, _), service(S,_,_,MaxLatencyToClient),
+    member((_,_,Lat),Requests), Lat>MaxLatencyToClient,                               %(1b)
+    %
+    findall(K,member((K,_,_),Requests),Ms), sort(Ms,[M]), dif(M,self).                  %(2)
 
-% Service instance Si asks to REPLICATE in node M
-% only if it cannot handle the total request rate of incoming requests.
-% M is the node from which most requests to Si are arriving.
-% M is chosen among the node where Si is running and the neighbous of that node.
+% Service instance Si asks to REPLICATE in one node M if
+% (1b) it does not satisfy the maximum latency constraint for all requests
+%
+%   - M is the neighbour of self from which most requests to Si not satisfying the maximum latency constraint are arriving
 operation(replicate,Si,M) :-
-    serviceInstance(Si, S, _), service(S,_,MaxRequestRate,_),
-    findall((H,R),requests(Si,H,R,_),Requests), sumAll(Requests,TotalRequestRate),
-    TotalRequestRate > MaxRequestRate,
-    msort(Requests,OrderedRequests), aggregateRequests(OrderedRequests,AggregatedRequests),
-    mostRequestsFrom(AggregatedRequests,(M,_)).
+    findall((H,R,L),requests(Si,H,R,L),Requests),
+    serviceInstance(Si, S, _), service(S,_,_,MaxLatencyToClient),
+    member((_,_,Lat),Requests), Lat>MaxLatencyToClient,                               %(1b)
+    %
+    findall((K,Rk,Lk),(member((K,Rk,Lk),Requests),Lk>MaxLatencyToClient),FilteredRequests),
+    dif(FilteredRequests,[]), mostRequestsFrom(FilteredRequests, M).
 
-
-:-dynamic requests/4.

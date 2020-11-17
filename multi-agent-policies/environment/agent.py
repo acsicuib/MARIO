@@ -47,7 +47,7 @@ class PolicyManager():
         self.rule_profile = service_rule_profile[self.app_name]
 
         self.logger = logging.getLogger(__name__)
-        self.previous_number_samples = 0
+        self.load_samples_from = 0
         self.rules = Rules(rules)
         self.agents = {}
         self.app_operator = app_operator
@@ -59,7 +59,6 @@ class PolicyManager():
     def get_free_space_on_nodes(self,sim):
         currentOccupation = dict([a, int(x)] for a,x in nx.get_node_attributes(G=sim.topology.G, name="HwReqs").items())
 
-        sim.print_debug_assignaments()
         for app in sim.alloc_module:
             dict_module_node = sim.alloc_module[app]  # modules deployed
             for module in dict_module_node:
@@ -85,8 +84,8 @@ class PolicyManager():
         
         if self.id_monitor in self.app_operator.active_monitor.values():# Once a process is finished, the service may run for the last time. The simulator does not control this last call.
             self.rules.clear()
-            print("\n(agent.py) Monitor ID: %i for service: %i (%s)  running rules "%(self.id_monitor,self.DES,self.name))
-            self.logger.info("\nMonitor ID: %i for service: %i (%s)  running rules "%(self.id_monitor,self.DES,self.name))
+            # print("\n(agent.py) Monitor ID: %i for service: %i (%s)  running rules "%(self.id_monitor,self.DES,self.name))
+            self.logger.debug("\nMonitor ID: %i for service: %i (%s)  running rules "%(self.id_monitor,self.DES,self.name))
 
             # print("SERVICE")
             # print(self.app_operator.active_monitor)
@@ -166,10 +165,10 @@ class PolicyManager():
             # To obtain the the number of msg get need to analyse the simulation results on the csv file
             sim.metrics.flush()
             # We only load samples that are generated along current period (self.activations-1,self.activation)
-            df = pd.read_csv(self.path_csv_files + ".csv", skiprows=range(1, self.previous_number_samples))  # It includes the csv header
-            self.previous_number_samples += len(df.index) - 1  # avoid header
-            df = df[df["DES.dst"]==self.DES]
-            if len(df)>0:
+            df = pd.read_csv(self.path_csv_files + ".csv", skiprows=range(1, self.load_samples_from))  # It includes the csv header
+            self.load_samples_from += len(df.index) - 1  # avoid header
+            df = df[df["DES.dst"] == self.DES]
+            if len(df) > 0:
                 # print("Number of samples: %i (from: %i)" % (len(df.index)-1, self.previous_number_samples))
                 if len(requests)>0:
                     # print(df[["TOPO.src","TOPO.dst"]])
@@ -184,8 +183,8 @@ class PolicyManager():
 
                             self.rules.and_rule("requests", self.DES, node_code, n_messages,latencyPath)
             else:
-                print("INFO - No messages among users and service")
-                self.logger.warning("INFO - There are not new messages among users and service")
+                # print("INFO - No messages among users and service")
+                self.logger.warning("WARN - There are not new messages among users and service")
 
             ################################################################################
             # Action history from AppOperator (MARIO)
@@ -193,7 +192,8 @@ class PolicyManager():
             ################################################################################
             if self.DES in self.app_operator.agent_communication:
                 for (prevOperation,status) in self.app_operator.agent_communication[self.DES]:
-                    self.rules.and_rule("lastOutcome",prevOperation, status)
+                    action, service_id, onNode = prevOperation
+                    self.rules.and_rule("refused",action, service_id, onNode)
 
             ################################################################################
             # RUN the model
@@ -269,9 +269,10 @@ class PolicyManager():
             # print("Actions :",result)
             # print("**"*5)
             assert len(result)>=0, "(agent.py) Prolog return is incorrect"
-            if len(result)==0:
-                result = [("nop", serviceID, "X")]
-            return result[0]
+            # if len(result)==0:
+            #     result = [("nop", serviceID, "X")]
+            result.append(("nop", serviceID, "UKN"))
+            return result
 
         except TimeoutExpired as err:
             p.terminate()

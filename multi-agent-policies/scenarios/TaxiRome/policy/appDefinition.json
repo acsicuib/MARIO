@@ -4,7 +4,7 @@
     "name": 1,
     "HwReqs": 1,
     "MaxReqs": 20,
-    "MaxLatency": 50,
+    "MaxLatency": 2,
     "profile_rules": "policy1.pl",
 
     "transmission": [
@@ -27,8 +27,8 @@
         "name": "M.USER.APP.1",
         "s": "None",
         "d": "1_01",
-        "bytes": 20,
-        "instructions": 30
+        "bytes": 1,
+        "instructions": 1
       }
     ]
   },
@@ -37,7 +37,7 @@
     "name": 2,
     "HwReqs": 1,
     "MaxReqs": 20,
-    "MaxLatency": 50,
+    "MaxLatency": 2,
     "profile_rules": "policy1.pl",
 
     "transmission": [
@@ -60,8 +60,8 @@
         "name": "M.USER.APP.2",
         "s": "None",
         "d": "2_01",
-        "bytes": 20,
-        "instructions": 30
+        "bytes": 1,
+        "instructions": 1
       }
     ]
   },
@@ -70,7 +70,7 @@
     "name": 3,
     "HwReqs": 1,
     "MaxReqs": 20,
-    "MaxLatency": 50,
+    "MaxLatency": 2,
     "profile_rules": "policy1.pl",
 
     "transmission": [
@@ -93,8 +93,8 @@
         "name": "M.USER.APP.3",
         "s": "None",
         "d": "3_01",
-        "bytes": 20,
-        "instructions": 30
+        "bytes": 1,
+        "instructions": 1
       }
     ]
   },
@@ -103,7 +103,7 @@
     "name": 4,
     "HwReqs": 1,
     "MaxReqs": 20,
-    "MaxLatency": 50,
+    "MaxLatency": 2,
     "profile_rules": "policy1.pl",
 
     "transmission": [
@@ -126,8 +126,8 @@
         "name": "M.USER.APP.4",
         "s": "None",
         "d": "4_01",
-        "bytes": 20,
-        "instructions": 30
+        "bytes": 1,
+        "instructions": 1
       }
     ]
   },
@@ -136,7 +136,7 @@
     "name": 5,
     "HwReqs": 1,
     "MaxReqs": 20,
-    "MaxLatency": 50,
+    "MaxLatency": 2,
     "profile_rules": "policy1.pl",
 
     "transmission": [
@@ -159,8 +159,8 @@
         "name": "M.USER.APP.5",
         "s": "None",
         "d": "5_01",
-        "bytes": 20,
-        "instructions": 30
+        "bytes": 1,
+        "instructions": 1
       }
     ]
   },
@@ -169,7 +169,7 @@
     "name": 6,
     "HwReqs": 1,
     "MaxReqs": 20,
-    "MaxLatency": 50,
+    "MaxLatency": 2,
     "profile_rules": "policy1.pl",
 
     "transmission": [
@@ -192,8 +192,8 @@
         "name": "M.USER.APP.6",
         "s": "None",
         "d": "6_01",
-        "bytes": 20,
-        "instructions": 30
+        "bytes": 1,
+        "instructions": 1
       }
     ]
   }
