@@ -13,7 +13,8 @@ Examples:
 - Topology with a size of 16 x 16 edge nodes 
 <img src="https://github.com/acsicuib/MARIO/raw/MarioII/media/Topology_16_Rome.gif" width="630" height="316"/></a>
 
-Run on server
+
+#  How to run the project
 ```
 git clone --branch MarioII https://github.com/acsicuib/MARIO
 

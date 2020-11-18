@@ -99,6 +99,17 @@ class UserControlMovement:
 
                 # What application does the user decide to use?
                 app_name = random.sample(self.all_available_Apps, 1)[0]
+
+                #TODO !!! THIS CODE IS TO HAVE THE SAME QUANTITY MOVEMENTS IN EACH APPS EXPERIMENTATION
+                #### Only to "cuadrar" the experimentation
+                if code == "taxi_298":
+                    app_name = 1
+                elif code == "taxi_297":
+                    app_name = 2
+                elif code == "taxi_94":
+                    app_name = 3
+                ######
+
                 # Is the app currently deployed on the infrastructure? Along the simulation the app can be "undeployed"-oper.
                 # if not is deployed the app on the sim.
                 if not app_name in sim.alloc_module: #only check the APP deployed (not all the submodules/services DAO)

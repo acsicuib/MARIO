@@ -58,6 +58,10 @@ class Mario():
 
         self.cloud_node = cloud_node
 
+    def close(self):
+        self.actions_stats.close()
+        self.actions_moves.close()
+
     def __call__(self, sim, routing, path):
         """
         This functions is called periodically
@@ -79,8 +83,11 @@ class Mario():
                         self.create_monitor_of_module(des, path, routing, service, sim)
             self.create_initial_services = False #only one time
 
-            self.action_stats = open(self.path_results+"action_stats.txt",'w+')
+            self.action_stats = open(self.path_results+"action_stats.txt",'w')
             self.action_stats.write("time,undeploy,nop,migrate,replicate,none\n")
+
+            self.actions_moves = open(self.path_results+"moves_stats.txt",'w')
+            self.actions_moves.write("idService,app,time,action\n")
         else:
             if len(self.memory)>0:
                 self.step += 1
@@ -157,11 +164,15 @@ class Mario():
                                 clean_routing_cache = (action != "nop")
                             self.logger.debug("Action %s taken on Node %s." % (action, onNode))
                             counter_actions[action] += 1
+                            self.actions_moves.write("%i,%i,%i,%s\n"%(service_id,self.get_app_identifier(name),sim.env.now,action))
+
                             break
                         else:
                             self.logger.debug("Action %s on nNode %s not possible."%(action,onNode))
                             counter_actions["none"] += 1
                             status = "rejected"
+                            self.actions_moves.write(
+                                "%i,%i,%i,none\n" % (service_id, self.get_app_identifier(name), sim.env.now))
                             self.agent_communication[service_id].append(((action, service_id, onNode), status))
 
                 #end for (operations)

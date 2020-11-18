@@ -283,6 +283,7 @@ def main(number_simulation_steps,
     # evol.write_map_user_des(temporal_folder + "/MapUserDES_%s_%i.csv" % (case, it))
     record_movements.close()
     s.print_debug_assignaments()
+    appOp.close()
     print("\nNumber of different connections for user movements: %i"%evol.total_diff_connections)
 
 
