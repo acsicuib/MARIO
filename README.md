@@ -6,7 +6,12 @@ How to install Prolog:
 https://www.swi-prolog.org/build/PPA.html
 
 # Topology structure
-<img src="https://github.com/acsicuib/MARIO/raw/MarioII/media/Topology_4_Rome.gif" width="350" height="350"/></a>
+
+Examples:
+- Topology with a size of 4 x 4 edge nodes 
+<img src="https://github.com/acsicuib/MARIO/raw/MarioII/media/Topology_4_Rome.gif" width="630" height="316"/></a>
+- Topology with a size of 16 x 16 edge nodes 
+<img src="https://github.com/acsicuib/MARIO/raw/MarioII/media/Topology_16_Rome.gif" width="630" height="316"/></a>
 
 Run on server
 ```
