@@ -235,7 +235,7 @@ class PolicyManager():
         rules_dir = Path(path_results + "models/")
         rules_dir.mkdir(parents=True, exist_ok=True)
         rules_dir = str(rules_dir)
-        model_file = rules_dir + "/rules_swi_UID%i_n%s_s%s_%i_%i.pl" % (self.app_operator.UID + 1, current_node, serviceID, self.action_on_render, sim.env.now)
+        model_file = rules_dir + "/model_B%i_n%s_DES%s_%i_%i.pl" % (self.app_operator.UID + 1, current_node, serviceID, self.action_on_render, sim.env.now)
         self.action_on_render += 1
 
         with open(model_file, "w") as f:

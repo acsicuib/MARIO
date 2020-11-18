@@ -86,7 +86,7 @@ class Mario():
                 self.step += 1
                 # DEBUG
                 # print("+"*20)
-                self.logger.info("MARIO - Activation step: %i  - Time: %i" %(self.step,sim.env.now))
+                self.logger.debug("MARIO - Activation step: %i  - Time: %i" %(self.step,sim.env.now))
                 # print("- Size buffer of actions: %i" % len(self.memory))
                 # print("- Current situation:")
                 # sim.print_debug_assignaments()
@@ -148,29 +148,25 @@ class Mario():
                                 None
 
 
-
                         if action == "undeploy" and service_id in self.agent_communication:
                             del self.agent_communication[service_id]
 
                         # status = "accepted"
-                        if not done:
+                        if done:
+                            if not clean_routing_cache:
+                                clean_routing_cache = (action != "nop")
+                            self.logger.debug("Action %s taken on Node %s." % (action, onNode))
+                            counter_actions[action] += 1
+                            break
+                        else:
                             self.logger.debug("Action %s on nNode %s not possible."%(action,onNode))
                             counter_actions["none"] += 1
                             status = "rejected"
                             self.agent_communication[service_id].append(((action, service_id, onNode), status))
 
-
-                        else:
-                            clean_routing_cache = (action != "nop")
-                            self.logger.debug("Action %s taken on Node %s."%(action,onNode))
-                            counter_actions[action] += 1
-                            break
-
                 #end for (operations)
                 self.window_agent_comm[service_id] += 1
-
             #end for all-operations
-
 
             self.memory = []
             if clean_routing_cache:

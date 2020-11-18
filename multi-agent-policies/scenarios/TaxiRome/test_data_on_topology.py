@@ -129,7 +129,7 @@ def getClosedNode(point,projection,levels):
 
 
 
-size = 4
+size = 16
 ls = generateAllLevels(size)
 edges,levelNode = list(getListEdges(ls))
 
@@ -145,7 +145,7 @@ nx.set_node_attributes(G, name="latitude", values=attLat)
 nx.set_node_attributes(G, name="longitude", values=attLng)
 
 # tracks = trackanimation.read_track("multi-agent-policies/scenarios/TaxiRome/results_20201028/normalized_trajectories.csv")
-tracks = trackanimation.read_track("results_20201028/normalized_trajectories.csv")
+tracks = trackanimation.read_track("results_P1_20201028/normalized_trajectories.csv")
 
 
 

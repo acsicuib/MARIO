@@ -5,12 +5,18 @@ MARIOII in progress.
 How to install Prolog: 
 https://www.swi-prolog.org/build/PPA.html
 
+# Topology structure
+<img src="https://github.com/acsicuib/MARIO/raw/MarioII/media/Topology_4_Rome.gif" width="350" height="350"/></a>
+
 Run on server
 ```
 git clone --branch MarioII https://github.com/acsicuib/MARIO
+
 git pull origin MarioII
+python3 -m pip install virtualenv
 
 (mariovenv - configure a virtual env.)
+ 
 python -m pip install -r requirements.txt 
 
 (on MARIO/multi-agent-policies/ folder)

@@ -279,7 +279,7 @@ def main(number_simulation_steps,
     Storing results from other monitors
     & Render the last movement
     """
-    appOp.render(s,experiment_path,routingPath,["END",-1,-1,"NONE"])
+    # appOp.render(s,experiment_path,routingPath,["END",-1,-1,"NONE"])
     # evol.write_map_user_des(temporal_folder + "/MapUserDES_%s_%i.csv" % (case, it))
     record_movements.close()
     s.print_debug_assignaments()
