@@ -153,8 +153,16 @@ def main(number_simulation_steps,
     # attHW = {x:abs(tiledTopo.getNumberLayers()-tiledTopo.getLevel(x))+6 for x in t.G.nodes()} #node name:n0lt0ln0
 
     # attHW = {x:abs(tiledTopo.getNumberLayers()-tiledTopo.getLevel(x))+6for x in t.G.nodes()} #node name:n0lt0ln0
-    attHW = {x: abs(tiledTopo.getNumberLayers() - tiledTopo.getLevel(x)) * 3 for x in t.G.nodes()}  # node name:n0lt0ln0
-    
+    # attHW = {x: abs(tiledTopo.getNumberLayers() - tiledTopo.getLevel(x)) * 1 for x in t.G.nodes()}  # node name:n0lt0ln0
+
+    attHW = {}  # node name:n0lt0ln0
+
+    for x in t.G.nodes():
+        l = abs(tiledTopo.getNumberLayers() - tiledTopo.getLevel(x))
+        attHW[x]=2*l
+        if l == 1:
+            attHW[x] = 1
+
 
     attHW[cloudNode] = int(config.get('topology', 'HwReqs_cloud_node')) #THE CLOUD Node capacity BIGGER NUMBER OF APPS
     # Shape": "(1,level+2)",
@@ -307,10 +315,10 @@ if __name__ == '__main__':
 
     # Case, Name , folderExperiment, folderPolicy , projection=None, policy_file = None
     experiments = [
-        ("P1_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy1.pl"),
-        ("P2_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy2.pl"),
-        ("P12_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy12.pl"),
-        ("P12Memory_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy12withMemory.pl")
+        # ("P1_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy1.pl"),
+        # ("P2_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy2.pl"),
+        # ("P12_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy12.pl"),
+        # ("P12Memory_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy12withMemory.pl")
     ]
 
     for ncase, name,experiment_path,policy_folder,projection,policy_file in experiments:
@@ -322,7 +330,7 @@ if __name__ == '__main__':
         # datestamp = time.strftime('%Y%m%d')
 
         # datestamp = "20201028" # fixed for testing
-        datestamp = "20201121" # fixed for testing
+        datestamp = "20201122" # fixed for testing
         temporal_folder = experiment_path + "results_%s_"%ncase + datestamp + "/"
         try:
             os.makedirs(temporal_folder)

@@ -147,7 +147,7 @@ nx.set_node_attributes(G, name="latitude", values=attLat)
 nx.set_node_attributes(G, name="longitude", values=attLng)
 
 # tracks = trackanimation.read_track("multi-agent-policies/scenarios/TaxiRome/results_20201028/normalized_trajectories.csv")
-tracks = trackanimation.read_track("results_P1_20201028/normalized_trajectories.csv")
+tracks = trackanimation.read_track("results_P12_s3_20201122/normalized_trajectories.csv")
 
 i = 0
 for k in attLat:
@@ -205,7 +205,7 @@ for current_step in range(total_steps):
 prev_node = {}
 total_steps  = tracks.df.VideoFrame.max() #
 user = collections.defaultdict(list)
-for current_step in range(total_steps):
+for current_step in range(25):
     track_code_last_position = currentMovement(tracks.df,current_step)
     # Get the last user position
     for code in track_code_last_position:
@@ -242,7 +242,7 @@ ax.set_xticklabels(list(range(0,max(c)+1)))
 # plt.title("Histogram of user different connections", fontsize=14)
 plt.xlabel(r"Total number of different AP connections", fontsize=16)
 plt.ylabel(r"Total number of users", fontsize=16)
-fig.savefig("hist_user_movements.pdf", dpi=400)
+fig.savefig("hist_user_movements_25.pdf", dpi=400)
 plt.show()
 
 

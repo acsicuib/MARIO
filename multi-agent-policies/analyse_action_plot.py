@@ -81,7 +81,7 @@ experiments = [
 
 
 for ncase, name, experiment_path, policy_folder, projection, policy_file in experiments:
-    pathcommon = experiment_path+"results_%s_20201121/"%ncase
+    pathcommon = experiment_path+"results_%s_20201122/"%ncase
     actions = pathcommon+"action_stats.txt"
     mov = pathcommon+"movements.csv"
     res = pathcommon+"Results_Rome_0.csv"
