@@ -120,7 +120,8 @@ def main(number_simulation_steps,
          it,
          policy_file = None # if None we use the policy defined in the APP
          ):
-                                                                              
+
+
     simulation_duration = number_simulation_steps * time_in_each_step
 
     """
@@ -141,7 +142,9 @@ def main(number_simulation_steps,
         print(s,d)
         minV = min(tiledTopo.getLevel(d),tiledTopo.getLevel(s))
         pr = (tiledTopo.getNumberLayers()-minV)
-        attPR[(s,d)] = pr
+        attPR[(s,d)] = pr-1
+
+
     nx.set_edge_attributes(t.G,name="PR",values=attPR)
 
     ## on nodes
@@ -170,6 +173,8 @@ def main(number_simulation_steps,
     nx.set_node_attributes(t.G,name="HwReqs",values=attHW)
 
     t.write(temporal_folder + "network_%i.gexf" % tiledTopo.size)
+
+
     nx.set_node_attributes(t.G,name="shape",values=attShape) #attr. shape is not supported by gexf format - before write()-
     #for render
     tiledTopo.setPosPlot(t.G,[[0,0],[20,20]])
@@ -260,6 +265,7 @@ def main(number_simulation_steps,
                         listIdApps = AppsIDs,
                         appOp = appOp,
                         record_movements = record_movements,
+                        limit_steps = int(config.get('simulation', 'stopSteps')),
                         ratio_message = int(config.get('agent', 'message_period'))
     )
 
@@ -301,10 +307,10 @@ if __name__ == '__main__':
 
     # Case, Name , folderExperiment, folderPolicy , projection=None, policy_file = None
     experiments = [
-        # ("P1","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy1.pl")
+        # ("P1_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy1.pl")
         ("P2_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy2.pl")
-        # ("P12","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy12.pl")
-        # ("P12Memory","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy12withMemory.pl")
+        ("P12_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy12.pl")
+        ("P12Memory_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy12withMemory.pl")
     ]
 
     for ncase, name,experiment_path,policy_folder,projection,policy_file in experiments:
@@ -355,7 +361,8 @@ if __name__ == '__main__':
 
         total_movements_in_tracks = tracks.df.VideoFrame.max()
         # print("Total movements in the tracks: %i"%total_movements_in_tracks)
-        number_simulation_steps = total_movements_in_tracks+1 #+1 to enable the last movement
+        # number_simulation_steps = total_movements_in_tracks+1 #+1 to enable the last movement
+        number_simulation_steps = int(config.get('simulation', 'stopSteps'))+1 #+1 to enable the last movement
 
         time_in_each_step = int(config.get('simulation', 'time_in_each_step'))
         nSimulations = int(config.get('simulation', 'nSimulations'))

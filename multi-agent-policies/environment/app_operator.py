@@ -15,7 +15,7 @@ import tiledTopology
 import matplotlib.patches as mpatches
 
 
-RENDERSNAP = True
+RENDERSNAP = False
 
 class Mario():
     """
@@ -98,8 +98,9 @@ class Mario():
                 # print("- Current situation:")
                 # sim.print_debug_assignaments()
 
-            self.snapshot(sim, path, routing)
-            sys.exit()
+            if RENDERSNAP:
+                self.snapshot(sim, path, routing)
+
             # current implementation FCFS
             self.UID += 1
             take_last_action = [] # It perfoms the last set of agent rules
