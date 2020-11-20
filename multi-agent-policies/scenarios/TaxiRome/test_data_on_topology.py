@@ -18,6 +18,7 @@ import networkx as nx
 from matplotlib import pyplot as plt
 import trackanimation
 import collections
+from collections import Counter
 
 def generateAllLevels(size):
     ls = [size]
@@ -129,13 +130,14 @@ def getClosedNode(point,projection,levels):
 
 
 
-size = 16
+size = 8
 ls = generateAllLevels(size)
 edges,levelNode = list(getListEdges(ls))
 
 G = nx.Graph()
 G.add_edges_from(edges)
 
+print("NODOS: ",len(G.nodes()))
 #Rome city
 projection = [[41.878037, 12.4462643], [41.919234,12.5149603]]
 attLat,attLng = generateProjection(projection, G.nodes(), ls)
@@ -147,6 +149,10 @@ nx.set_node_attributes(G, name="longitude", values=attLng)
 # tracks = trackanimation.read_track("multi-agent-policies/scenarios/TaxiRome/results_20201028/normalized_trajectories.csv")
 tracks = trackanimation.read_track("results_P1_20201028/normalized_trajectories.csv")
 
+i = 0
+for k in attLat:
+    print("{acr:\"%i\", coordinates:[%f,%f]},"%(i,attLng[k],attLat[k]))
+    i+=1
 
 
 # =============================================================================
@@ -217,22 +223,28 @@ for current_step in range(total_steps):
 
 
 print("User connections",user)
-
+print(user)
 counter = {u:len(user[u]) for u in user}
 hist = np.array(list(counter.values()))
 print("Number of users: ",len(counter))
 print("Average number of movements by user: %i"%hist.mean())
 print("Desviation number of movements by user: %i"%hist.std())
 
+c = Counter(counter.values())
+
+x = sorted(c)
+y = [c[i] for i in x]
 fig, ax = plt.subplots()
-plt.hist(hist)
+ax.bar(x,y)
 start, end = ax.get_xlim()
-ax.xaxis.set_ticks(np.arange(start, end, 1))
-ax.set_xticklabels(list(range(0,hist.max())))
-plt.title("Histogram of user different connections", fontsize=14)
-plt.xlabel(r"Connections", fontsize=14)
-plt.ylabel(r"Users", fontsize=14)
+ax.xaxis.set_ticks(np.arange(0, max(c)+1, 1))
+ax.set_xticklabels(list(range(0,max(c)+1)))
+# plt.title("Histogram of user different connections", fontsize=14)
+plt.xlabel(r"Total number of different AP connections", fontsize=16)
+plt.ylabel(r"Total number of users", fontsize=16)
 fig.savefig("hist_user_movements.pdf", dpi=400)
 plt.show()
+
+
 
 

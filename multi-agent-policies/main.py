@@ -149,15 +149,18 @@ def main(number_simulation_steps,
     # attHW = {x:abs(tiledTopo.getNumberLayers()-int(x[0]))+2 for x in t.G.nodes()} # node name: "000"
     # attHW = {x:abs(tiledTopo.getNumberLayers()-tiledTopo.getLevel(x))+6 for x in t.G.nodes()} #node name:n0lt0ln0
 
-    attHW = {x:abs(tiledTopo.getNumberLayers()-tiledTopo.getLevel(x))+6 for x in t.G.nodes()} #node name:n0lt0ln0
+    # attHW = {x:abs(tiledTopo.getNumberLayers()-tiledTopo.getLevel(x))+6for x in t.G.nodes()} #node name:n0lt0ln0
+    attHW = {x: abs(tiledTopo.getNumberLayers() - tiledTopo.getLevel(x)) * 3 for x in t.G.nodes()}  # node name:n0lt0ln0
+    
+
     attHW[cloudNode] = int(config.get('topology', 'HwReqs_cloud_node')) #THE CLOUD Node capacity BIGGER NUMBER OF APPS
     # Shape": "(1,level+2)",
-    # attShape = {x:"(1,%i)"%attHW[x] for x in t.G.nodes()}
+    ### attShape = {x:"(1,%i)"%attHW[x] for x in t.G.nodes()} #OLD
     attShape = {}
     for x in t.G.nodes():
-        if attHW[x]%2==0:
-            attShape[x]="(2,%i)"%(attHW[x]//2)
-        else:
+        # if attHW[x]%2==0:
+        #     attShape[x]="(2,%i)"%(attHW[x]//2)
+        # else:
             attShape[x]="(1,%i)"%(attHW[x])
 
     attShape[cloudNode] = config.get('topology', 'shape_cloud_node')
@@ -298,8 +301,8 @@ if __name__ == '__main__':
 
     # Case, Name , folderExperiment, folderPolicy , projection=None, policy_file = None
     experiments = [
-        ("P1","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy1.pl")
-        # ("P2","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy2.pl")
+        # ("P1","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy1.pl")
+        ("P2_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy2.pl")
         # ("P12","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy12.pl")
         # ("P12Memory","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy12withMemory.pl")
     ]
@@ -312,7 +315,8 @@ if __name__ == '__main__':
         # Generating a temporal folder to record results
         # datestamp = time.strftime('%Y%m%d')
 
-        datestamp = "20201028" # fixed for testing
+        # datestamp = "20201028" # fixed for testing
+        datestamp = "20201121" # fixed for testing
         temporal_folder = experiment_path + "results_%s_"%ncase + datestamp + "/"
         try:
             os.makedirs(temporal_folder)
@@ -387,4 +391,13 @@ if __name__ == '__main__':
 # ffmpeg -r 1 -i results/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p results/out2.mp4
 
 # ffmpeg -r 1 -i multi-agent-policies/scenarios/TaxiRome/results_20201028/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p video.mp4
-# ffmpeg -r 1 -i multi-agent-policies/scenarios/TaxiRome/results_20201028/images/snap_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p video.mp4
+# ffmpeg -r 1 -i multi-agent-policies/scenarios/TaxiRome/results_P1_20201028/images/snap_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p P1_size6.mp4
+
+
+#ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P1_20201028/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P1_size6.mp4
+#ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P1_20201120/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P1_size3.mp4
+
+#ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P12_20201028/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P12_size6.mp4
+#ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P12_20201120/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P12_size3.mp4
+
+# ffmpeg -t 20 -i P12_size6.mp4 -vf "fps=10,scale=520:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 output.gif

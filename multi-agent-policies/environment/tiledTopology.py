@@ -69,10 +69,10 @@ class TiledTopology():
 
         """
         ls = [self.size]
-        v = int(math.sqrt(self.size))
-        while v >=2:
+        v = self.size // 2
+        while v >= 2:
             ls.append(v)
-            v = int(math.sqrt(v))
+            v = v // 2
         ls.append(0)
         return ls
 
