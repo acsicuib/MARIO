@@ -291,12 +291,11 @@ There is three files to generate information about the results:
 
 
 # Snapshots
+<img src="https://github.com/acsicuib/MARIO/raw/MarioII/media/snap_example.png" width="330" height="266"/></a>
+
 There are two different snapshots: one capture each service(agent) decision, another capture all service(agent) decisions. The first gives an exact idea of each action and at each moment. It is most useful for debugging.
 The second alleviates this highly detailed build and captures all the movements made with each activation of MARIO.
-
 Taking snapshots slows down the simulation.
-
-<img src="https://github.com/acsicuib/MARIO/raw/MarioII/media/snap_example.png" width="630" height="316"/></a>
 
 The first one is controlled by an argument to MARIO constructor:
 ```python
@@ -317,7 +316,7 @@ class Mario():
 This is the recipe to run the project under a UBUNTU server. Each Policy simulation lasts about 1 hour on a MacBookPro. This time is longer if you take captures of each movement or group of movements to make the video. 
 Be aware of your system and paths.
 
-(Your first thing is install Prolog:)[https://www.swi-prolog.org/build/PPA.html]
+[First step is install Prolog:](https://www.swi-prolog.org/build/PPA.html)
 Please, be sure that this command works in your system
 ```bash
 $ swipl 
