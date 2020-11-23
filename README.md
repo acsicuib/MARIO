@@ -257,7 +257,7 @@ time,undeploy,nop,migrate,replicate,none
 700,0,7,1,9,0
 ```
 
-- movements.txt is a CSV file. It has all the handovers of each user(taxi). DES represents the identifier of the user in the simulation. You can include information about this user (DES) in *Results* files. 
+- movements.txt is a CSV file. It has all the handovers of each user(taxi). DES represents the identifier of the user in the simulation. Thus, you can link this information of the user (DES) with the requests traces in the simulator ( *Results* files). 
 ```csv 
 taxi,DES,time,nodeSRC,nodeDST
 taxi_122,9,0,none,n3lt7ln6
