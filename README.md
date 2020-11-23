@@ -134,12 +134,12 @@ else:
     "HwReqs": 1,
     "MaxReqs": 5,
     "MaxLatency": 10,
-    "profile_rules": "policy1.pl", // optional parameter 
+    "profile_rules": "policy1.pl",  
 
     "transmission": [
       {
         "message_in": "M.USER.APP.1",
-        "module": "1_01"           // It is important the name "1_01". The first 1 mentions the APP1.
+        "module": "1_01"           
       }
     ],
     "module": [
@@ -161,9 +161,9 @@ else:
       }
     ]
   },
-...
+
 ```
-- Cesium_viewer folder contains HTML files to view the 3D topology on its real map projection using (Cesium)[https://cesium.com/]
+- Cesium_viewer folder contains HTML files to view the 3D topology on its real map projection using [Cesium](https://cesium.com/)
 - test_data_on_topology.py generates JSON data of the topology to be included in Cesium_viewer/index.html (it is a manual process)
 - test_traces_info.py generates JSON data of the traces to be included in Cesium_viewer/CZML Path.html (it is a manual process)
 
@@ -217,6 +217,26 @@ nx.set_node_attributes(t.G,name="shape",values=attShape) #attr. shape is not sup
 tiledTopo.setPosPlot(t.G,[[0,0],[20,20]])
 ```
 
+
+# main.py
+
+The experiments in main.py are automated:
+
+```python
+experiments = [
+    ("P1_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy1.pl"),
+    ("P2_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy2.pl"),
+    ("P3_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy3.pl"),
+    ("P4_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy4.pl")
+]
+```
+- "P1_s3" is the code of the experiment
+- "Rome" is the another name
+- "scenarios/TaxiRome" is the folder with the previous structure
+- "policy" is the folder with some information: policy, apps, ...
+- "[..]" is the projection of the topology in a coordinate system. This value can be none and the simulator takes the users' trajectories boundaries.
+- "policyX.pl" is the mandatory policy that all apps will use in the simulator. This value can be none and the simulator uses the value defined in the json.  
+    
 
 # Simulation results
 
@@ -276,7 +296,7 @@ The second alleviates this highly detailed build and captures all the movements 
 
 Taking snapshots slows down the simulation.
 
-<img src="https://github.com/acsicuib/MARIO/raw/MarioII/media/plot_action.png" width="630" height="316"/></a>
+<img src="https://github.com/acsicuib/MARIO/raw/MarioII/media/snap_example.png" width="630" height="316"/></a>
 
 The first one is controlled by an argument to MARIO constructor:
 ```python
