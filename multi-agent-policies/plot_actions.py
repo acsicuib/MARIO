@@ -69,19 +69,21 @@ def showActionsbyGroup(ncase,num,groupname,df0,dfmov0):
         tick.set_fontsize(24)
     fig.savefig(pathcommon + "actions_%s_G%i.pdf" % (ncase,num), dpi=400)
 
+
 experiments = [
-    ("P1_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]], "policy1.pl"),
+    ("P1_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]],
+     "policy1.pl"),
     ("P2_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]],
      "policy2.pl"),
-    ("P12_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]],
-     "policy12.pl"),
-    ("P12Memory_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]],
-     "policy12withMemory.pl")
+    ("P3_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]],
+     "policy3.pl"),
+    (
+    "P4_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]], "policy4.pl")
 ]
 
-
 for ncase, name, experiment_path, policy_folder, projection, policy_file in experiments:
-    pathcommon = experiment_path+"results_%s_20201122/"%ncase
+    pathcommon = experiment_path+"results_%s_20201122w5/"%ncase
+    # pathcommon = experiment_path+"results_%s_20201122/"%ncase
     actions = pathcommon+"action_stats.txt"
     mov = pathcommon+"movements.csv"
     res = pathcommon+"Results_Rome_0.csv"
@@ -178,7 +180,7 @@ for ncase, name, experiment_path, policy_folder, projection, policy_file in expe
     dfapp = pd.DataFrame([users_app, usersCode, usersMovs]).T
     dfapp.columns = ["app", "code", "movs"]
 
-    ## apps 1,2,3 => Rate request senstivie
+    ## apps 1,2,3 => Workload senstivie
     ## apps 4,5,6 => Latency sensitive
     mapapps = {1: 0, 2: 0, 3: 0, 4: 1, 5: 1, 6: 1}
     dfapp["type"] = dfapp.app.map(mapapps)
@@ -200,7 +202,7 @@ for ncase, name, experiment_path, policy_folder, projection, policy_file in expe
     df1 = dem.loc[dem.app > 3]
 
 
-    showActionsbyGroup(ncase,1,"RRS",df0, dfmov0)
+    showActionsbyGroup(ncase,1,"WS",df0, dfmov0)
     showActionsbyGroup(ncase,2,"LS", df1, dfmov1)
 
 

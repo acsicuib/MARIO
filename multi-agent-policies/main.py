@@ -11,7 +11,6 @@ import subprocess
 import pandas as pd
 import networkx as nx
 from configparser import ConfigParser
-from pathlib import Path
 
 from yafs.core import Sim
 from yafs.application import Application, Message
@@ -24,7 +23,6 @@ from yafs.placement import JSONPlacement
 import trackanimation
 
 from environment.path_routing import DeviceSpeedAwareRouting
-from environment.workload import DynamicWorkload
 from environment.app_operator import Mario
 from environment.problogRulesGenerator import Rules
 from userMovement import UserControlMovement
@@ -144,18 +142,16 @@ def main(number_simulation_steps,
         pr = (tiledTopo.getNumberLayers()-minV)
         attPR[(s,d)] = pr-1
 
-
     nx.set_edge_attributes(t.G,name="PR",values=attPR)
 
     ## on nodes
     # HwReqs = level + 2
+    # WAYS TO DEFINE node HW capacity
+    attHW = {}
     # attHW = {x:abs(tiledTopo.getNumberLayers()-int(x[0]))+2 for x in t.G.nodes()} # node name: "000"
     # attHW = {x:abs(tiledTopo.getNumberLayers()-tiledTopo.getLevel(x))+6 for x in t.G.nodes()} #node name:n0lt0ln0
-
     # attHW = {x:abs(tiledTopo.getNumberLayers()-tiledTopo.getLevel(x))+6for x in t.G.nodes()} #node name:n0lt0ln0
     # attHW = {x: abs(tiledTopo.getNumberLayers() - tiledTopo.getLevel(x)) * 1 for x in t.G.nodes()}  # node name:n0lt0ln0
-
-    attHW = {}  # node name:n0lt0ln0
 
     for x in t.G.nodes():
         l = abs(tiledTopo.getNumberLayers() - tiledTopo.getLevel(x))
@@ -163,8 +159,8 @@ def main(number_simulation_steps,
         if l == 1:
             attHW[x] = 1
 
-
     attHW[cloudNode] = int(config.get('topology', 'HwReqs_cloud_node')) #THE CLOUD Node capacity BIGGER NUMBER OF APPS
+
     # Shape": "(1,level+2)",
     ### attShape = {x:"(1,%i)"%attHW[x] for x in t.G.nodes()} #OLD
     attShape = {}
@@ -315,10 +311,10 @@ if __name__ == '__main__':
 
     # Case, Name , folderExperiment, folderPolicy , projection=None, policy_file = None
     experiments = [
-        # ("P1_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy1.pl"),
-        # ("P2_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy2.pl"),
-        # ("P12_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy12.pl"),
-        # ("P12Memory_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy12withMemory.pl")
+        ("P1_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy1.pl"),
+        ("P2_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy2.pl"),
+        ("P3_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy3.pl"),
+        ("P4_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy4.pl")
     ]
 
     for ncase, name,experiment_path,policy_folder,projection,policy_file in experiments:
@@ -328,9 +324,8 @@ if __name__ == '__main__':
 
         # Generating a temporal folder to record results
         # datestamp = time.strftime('%Y%m%d')
+        datestamp = "20201028" # fixed for testing
 
-        # datestamp = "20201028" # fixed for testing
-        datestamp = "20201122" # fixed for testing
         temporal_folder = experiment_path + "results_%s_"%ncase + datestamp + "/"
         try:
             os.makedirs(temporal_folder)
@@ -404,15 +399,12 @@ if __name__ == '__main__':
 
 # ffmpeg -r 1 -i results/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p results/out2.mp4
 # ffmpeg -r 1 -i results/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p results/out2.mp4
-
 # ffmpeg -r 1 -i multi-agent-policies/scenarios/TaxiRome/results_20201028/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p video.mp4
 # ffmpeg -r 1 -i multi-agent-policies/scenarios/TaxiRome/results_P1_20201028/images/snap_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p P1_size6.mp4
 
 
 #ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P1_20201028/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P1_size6.mp4
 #ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P1_20201120/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P1_size3.mp4
-
 #ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P12_20201028/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P12_size6.mp4
 #ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P12_20201120/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P12_size3.mp4
-
 # ffmpeg -t 20 -i P12_size6.mp4 -vf "fps=10,scale=520:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 output.gif

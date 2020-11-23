@@ -1,7 +1,5 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
-from collections import defaultdict
 import numpy as np
 import scipy.stats as stats
 
@@ -31,7 +29,11 @@ def computeAndPlot(movements, nopers, name):
     fig, ax = plt.subplots(figsize=(12, 5))
     ax.plot(x, nopers.values, linewidth=4, label="Operations")
     ax.plot(x, movements.values, linewidth=3, label="User Movements")
-    plt.title("Overall Pearson r = %0.3f" % r, fontsize=28)
+
+    if "%f"%r == "nan":
+        plt.title("Pearson correlation coefficient r = --", fontsize=28)
+    else:
+        plt.title("Pearson correlation coefficient r = %0.3f" % r, fontsize=28)
     plt.xlabel(r"MARIO activations", fontsize=20)
     plt.ylabel(r"Frequency", fontsize=20)
     plt.legend(loc='upper right', fontsize=18)  # policy_getcloser # policy_getclosers_I_II_III
@@ -39,18 +41,20 @@ def computeAndPlot(movements, nopers, name):
 
 
 experiments = [
-    ("P1_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]], "policy1.pl"),
+    ("P1_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]],
+     "policy1.pl"),
     ("P2_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]],
      "policy2.pl"),
-    ("P12_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]],
-     "policy12.pl"),
-    ("P12Memory_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]],
-     "policy12withMemory.pl")
+    ("P3_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]],
+     "policy3.pl"),
+    (
+    "P4_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]], "policy4.pl")
 ]
 
 
 for ncase, name, experiment_path, policy_folder, projection, policy_file in experiments:
     pathcommon = experiment_path+"results_%s_20201122/"%ncase
+    # pathcommon = experiment_path + "results_%s_20201122w10/" % ncase
     actions = pathcommon+"action_stats.txt"
     mov = pathcommon+"movements.csv"
     res = pathcommon+"Results_Rome_0.csv"
@@ -86,7 +90,7 @@ for ncase, name, experiment_path, policy_folder, projection, policy_file in expe
     ##movements
     ##nopers
     ### Compute the co-relations between both
-    computeAndPlot(movements, nopers,pathcommon +"pearson_P%s.pdf" % (ncase))
+    computeAndPlot(movements, nopers,pathcommon +"pearson_%s.pdf" % (ncase))
 
     # =============================================================================
     # BY GROUP APP
@@ -113,7 +117,7 @@ for ncase, name, experiment_path, policy_folder, projection, policy_file in expe
     dfapp = pd.DataFrame([users_app, usersCode, usersMovs]).T
     dfapp.columns = ["app", "code", "movs"]
 
-    ## 0: apps 1,2,3 => Rate request senstivie
+    ## 0: apps 1,2,3 => Workload senstivie
     ## 1: apps 4,5,6 => Latency sensitive
     mapapps = {1: 0, 2: 0, 3: 0, 4: 1, 5: 1, 6: 1}
     dfapp["type"] = dfapp.app.map(mapapps)
@@ -151,7 +155,7 @@ for ncase, name, experiment_path, policy_folder, projection, policy_file in expe
     operations0 = dem0.sum(axis=1)
     nopers0 = normalizeOperations(operations0, movements0)
 
-    computeAndPlot(movements0, nopers0, pathcommon +"pearson_P%s_G1.pdf" % (ncase))
+    computeAndPlot(movements0, nopers0, pathcommon +"pearson_%s_WL.pdf" % (ncase))
 
     ### SAME PREVIOUS
     # get mov from users Type1
@@ -182,7 +186,7 @@ for ncase, name, experiment_path, policy_folder, projection, policy_file in expe
     operations1 = dem1.sum(axis=1)
     nopers1 = normalizeOperations(operations1, movements1)
 
-    computeAndPlot(movements1, nopers1, pathcommon +"pearson_P%s_G2.pdf"%(ncase))
+    computeAndPlot(movements1, nopers1, pathcommon +"pearson_%s_LS.pdf"%(ncase))
 
 
 print("Done")
