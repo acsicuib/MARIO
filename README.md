@@ -240,9 +240,8 @@ experiments = [
 
 # Simulation results
 
-Using YAFS you obtain two files: Result_.csv and Results_link.csv. Both files contains the simulation traces.
-In this simulation, MARIO gathers more results such as: movements, actions, etc.
-This files are:
+In YAFS simulations you obtain two default files: Result_.csv and Results_link.csv. Both files contains the simulation traces.
+In this simulation, we added more data gathers in MARIO to get movements, actions, etc. The extra files are:
  
 ```bash
 ├── actions_stats.txt
@@ -317,7 +316,7 @@ This is the recipe to run the project under a UBUNTU server. Each Policy simulat
 Be aware of your system and paths.
 
 [First step is install Prolog:](https://www.swi-prolog.org/build/PPA.html)
-Please, be sure that this command works in your system
+Please, be sure that this command works in your system:
 ```bash
 $ swipl 
 Welcome to SWI-Prolog (threaded, 64 bits, version 8.2.1)
