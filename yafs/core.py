@@ -1149,6 +1149,19 @@ class Sim:
 
 
 
+    def load_user_tracks(self,tracks):
+        self.user_tracks = tracks
+
+        # self.user_tracks = AnimationTrack(df_points=tracks, dpi=300, bg_map=False, map_transparency=0.5)
+
+        # for i, (point, nextpoint) in enumerate(fig.compute_points()):
+        #     print i, point, nextpoint
+        #     if i == 2: break
+        # exit()
+
+
+
+
     def run(self, until, test_initial_deploy=False, show_progress_monitor=False, mobile_behaviour=False):
 
 

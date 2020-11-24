@@ -221,9 +221,8 @@ def main(number_simulation_steps,
     """
     path_csv_files = temporal_folder + "/Results_%s_%i" % (case, it)
     s = Sim(t, default_results_path=path_csv_files)
-    s.set_mobile_fog_entities(dict({}))
     s.load_user_tracks(tracks)
-    s.set_coverage_class(CircleCoverage, radius=5)
+
 
 
     """
