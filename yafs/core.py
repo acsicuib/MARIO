@@ -1146,21 +1146,59 @@ class Sim:
         print("-" * 40)
         # exit()
 
+    #
+    # ### MOBILE ADAPTATION SECTION
+    # def update_service_coverage(self):
+    #     if self.street_network is not None:
+    #         points = utils.create_points(self.topology.G)
+    #         point_streets = utils.create_points(self.street_network)
+    #
+    #         tree = scipy.spatial.KDTree(points.values())
+    #         points_within_tolerance = tree.query_ball_point(point_streets.values(), self.tolerance)
+    #
+    #         # key = node network
+    #         # value = id - module SW
+    #
+    #         self.service_coverage = {}
+    #         for idx, pt in enumerate(points_within_tolerance):
+    #             ## MODULE SW
+    #             key2 = point_streets.keys()[idx]
+    #             nG2 = self.street_network.nodes[key2]
+    #             # print "%s is close to " % nG2["model"]
+    #             ## Street coverage
+    #             for p in pt:
+    #                 key = points.keys()[p]
+    #                 # service_coverage[(G.nodes[key]['x'],G.nodes[key]['y'])]=nG2["model"]
+    #                 self.service_coverage[key] = nG2["id"]
+
+
+
+    # def setMobilityUserBehaviour(self,dataPopulation):
+    #     self.user_behaviour = dataPopulation #TODO CHECK SYNTAX
+
+
 
 
 
     def load_user_tracks(self,tracks):
         self.user_tracks = tracks
 
-        # self.user_tracks = AnimationTrack(df_points=tracks, dpi=300, bg_map=False, map_transparency=0.5)
 
-        # for i, (point, nextpoint) in enumerate(fig.compute_points()):
-        #     print i, point, nextpoint
-        #     if i == 2: break
-        # exit()
+    # def generate_snapshot(self, pathFile,event):
+    #     if len(self.endpoints) == 0: self.__update_connection_points()
+    #     if self.map == None: self.__load_map()
+    #
+    #     #map_endpoints = [self.map.to_pixels(i[0], i[1]) for i in self.endpoints]
+    #     #map_endpoints = np.array(map_endpoints)
+    #
+    #     animation = AnimationTrack(self, dpi=100, bg_map=True, aspect='equal')
+    #     animation.make_video(output_file=pathFile, framerate=10, linewidth=1.0)
 
 
 
+
+    def set_movement_control(self,evol):
+        self.control_movement_class = evol
 
     def run(self, until, test_initial_deploy=False, show_progress_monitor=False, mobile_behaviour=False):
 
