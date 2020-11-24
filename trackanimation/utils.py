@@ -141,8 +141,12 @@ def get_coordinates(start_point, end_point, distance_meters):
     bearing = get_bearing(start_point, end_point)
 
     distance_km = distance_meters / 1000
-    d = geo_dist.VincentyDistance(kilometers=distance_km)
+    # d = geopy.distance.geodesic(kilometers=distance_km)
+    # destination = d.destination(point=start_point, bearing=bearing)
+
+    d = geopy.distance.geodesic(kilometers=distance_km)
     destination = d.destination(point=start_point, bearing=bearing)
+
 
     return geopy.Point(destination.latitude, destination.longitude)
 
