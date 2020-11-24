@@ -24,8 +24,6 @@ from yafs import utils
 from trackanimation.animation import AnimationTrack
 
 import numpy as np
-import smopy
-from PIL import Image as pimg
 
 EVENT_UP_ENTITY = "node_up"
 EVENT_DOWN_ENTITY = "node_down"
@@ -1255,14 +1253,6 @@ class Sim:
     #     animation = AnimationTrack(self, dpi=100, bg_map=True, aspect='equal')
     #     animation.make_video(output_file=pathFile, framerate=10, linewidth=1.0)
 
-    def __load_map(self):
-        trk_bounds = self.user_tracks.get_bounds()
-        min_lat = trk_bounds.min_latitude
-        max_lat = trk_bounds.max_latitude
-        min_lng = trk_bounds.min_longitude
-        max_lng = trk_bounds.max_longitude
-
-        self.map = smopy.Map((min_lat, min_lng, max_lat, max_lng), z=12)
 
 
     def __update_connection_points(self):
