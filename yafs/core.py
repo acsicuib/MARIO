@@ -9,9 +9,7 @@ This module unifies the event-discrete simulation environment with the rest of m
 
 
 import logging
-import random
 import copy
-import warnings
 import simpy
 import networkx as nx
 
@@ -1148,139 +1146,8 @@ class Sim:
         print("-" * 40)
         # exit()
 
-    #
-    # ### MOBILE ADAPTATION SECTION
-    # def update_service_coverage(self):
-    #     if self.street_network is not None:
-    #         points = utils.create_points(self.topology.G)
-    #         point_streets = utils.create_points(self.street_network)
-    #
-    #         tree = scipy.spatial.KDTree(points.values())
-    #         points_within_tolerance = tree.query_ball_point(point_streets.values(), self.tolerance)
-    #
-    #         # key = node network
-    #         # value = id - module SW
-    #
-    #         self.service_coverage = {}
-    #         for idx, pt in enumerate(points_within_tolerance):
-    #             ## MODULE SW
-    #             key2 = point_streets.keys()[idx]
-    #             nG2 = self.street_network.nodes[key2]
-    #             # print "%s is close to " % nG2["model"]
-    #             ## Street coverage
-    #             for p in pt:
-    #                 key = points.keys()[p]
-    #                 # service_coverage[(G.nodes[key]['x'],G.nodes[key]['y'])]=nG2["model"]
-    #                 self.service_coverage[key] = nG2["id"]
 
 
-
-    # def setMobilityUserBehaviour(self,dataPopulation):
-    #     self.user_behaviour = dataPopulation #TODO CHECK SYNTAX
-
-    def __add_mobile_agent(self,ides, gme):
-        #The mobile starts
-
-        yield self.env.timeout(gme.start)
-        self.logger.info("(#DES:%i)\t--- Mobile Entity STARTS :\t%s " % (ides, gme._id))
-        while (len(gme.path) - 1 > gme.current_position) and not self.stop and self.des_process_running[ides]:
-            e = (gme.path[gme.current_position], gme.path[gme.current_position + 1])
-            data = self.street_network.get_edge_data(*e)
-            try:
-                next_time = int(utils.toMeters(data[0]["geometry"]) / gme.speed)
-            except KeyError:
-                next_time = 1  # default time by roundabout or other Spatial THINGS
-
-            # take an action?
-            gme.next_time = next_time
-
-            self.logger.info("(#DES:%i)\t--- DO ACTION :\t%s " % (ides, gme._id))
-            gme.do.action(gme)
-
-            #TODO Can the MA wait more time in that node?
-
-            yield self.env.timeout(next_time)
-            gme.current_position += 1
-
-        # Last movement
-        if self.des_process_running[ides] and not self.stop:
-            gme.do.action(gme)
-
-        self.logger.info("(#DES:%i)\t--- Mobile Entity ENDS :\t%s " % (ides, gme._id))
-        # print "Mobile agent: %s ends " % gme.plate
-
-
-
-    def add_mobile_agent(self,gme):
-        ides = self.__get_id_process()
-        self.des_process_running[ides] = True
-        self.env.process(self.__add_mobile_agent(ides, gme))
-
-        ### ATENCION COONTROLAR VAR: INTERNAS
-        #self.alloc_DES[ides] = id_node
-
-        return ides
-
-    def load_user_tracks(self,tracks):
-        self.user_tracks = tracks
-
-        # self.user_tracks = AnimationTrack(df_points=tracks, dpi=300, bg_map=False, map_transparency=0.5)
-
-        # for i, (point, nextpoint) in enumerate(fig.compute_points()):
-        #     print i, point, nextpoint
-        #     if i == 2: break
-        # exit()
-
-    def generate_animation(self,pathFile):
-        if len(self.endpoints)==0: self.__update_connection_points()
-        # if self.map == None: self.__load_map()
-
-        #map_endpoints = [self.map.to_pixels(i[0], i[1]) for i in self.endpoints]
-        #map_endpoints = np.array(map_endpoints)
-        self.map.img.save(pathFile+"_map_background.png")
-
-        animation = AnimationTrack(self, dpi=100, bg_map=True, aspect='equal')
-        animation.make_video(output_file=pathFile, framerate=10, linewidth=1.0,G=self.topology.G)
-
-
-    # def generate_snapshot(self, pathFile,event):
-    #     if len(self.endpoints) == 0: self.__update_connection_points()
-    #     if self.map == None: self.__load_map()
-    #
-    #     #map_endpoints = [self.map.to_pixels(i[0], i[1]) for i in self.endpoints]
-    #     #map_endpoints = np.array(map_endpoints)
-    #
-    #     animation = AnimationTrack(self, dpi=100, bg_map=True, aspect='equal')
-    #     animation.make_video(output_file=pathFile, framerate=10, linewidth=1.0)
-
-
-
-    def __update_connection_points(self):
-        level = nx.get_node_attributes(self.topology.G, 'level')
-        lat = nx.get_node_attributes(self.topology.G, 'lat')
-        lng = nx.get_node_attributes(self.topology.G, 'lng')
-
-        self.endpoints = []
-        self.name_endpoints = {}
-        pos = 0
-        for n in level:
-            if level[n] == 0:
-                self.endpoints.append([lat[n], lng[n]])
-                self.name_endpoints[pos]=n
-                pos +=1
-        self.endpoints = np.array(self.endpoints)
-
-
-    def set_coverage_class(self, class_name,**kwargs):
-        if len(self.endpoints)==0: self.__update_connection_points()
-        # if self.map == None: self.__load_map()
-        # self.coverage = class_name(self.map,self.endpoints,**kwargs)
-
-    def set_mobile_fog_entities(self,mobile_fog_entities):
-        self.mobile_fog_entities = mobile_fog_entities
-
-    def set_movement_control(self,evol):
-        self.control_movement_class = evol
 
     def run(self, until, test_initial_deploy=False, show_progress_monitor=False, mobile_behaviour=False):
 

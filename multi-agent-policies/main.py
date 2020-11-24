@@ -14,7 +14,6 @@ from configparser import ConfigParser
 
 from yafs.core import Sim
 from yafs.application import Application, Message
-from yafs.coverage import CircleCoverage
 from yafs.topology import Topology
 from yafs.distribution import *
 from yafs.utils import fractional_selectivity
