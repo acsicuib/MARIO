@@ -447,7 +447,6 @@ class Mario():
         ##########
         # Textual data
         ##########
-        print(top)
         plt.text(width-20, 0, "Simulation time: %i" % sim.env.now,{'color': "black", 'fontsize': 14})
 
         # info_text = "Action %s on node: %s" % (action,onNode)
