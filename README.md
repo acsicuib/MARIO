@@ -329,8 +329,7 @@ For built-in help, use ?- help(Topic). or ?- apropos(Word).
 ?- 
 ```
 
-Ok, thus... you should clone the project and configure Python third libraries:
-  
+Ok, thus... you should clone the project and configure Python third libraries (tested on Ubuntu Server 20.0) 
 ```
 git clone --branch MarioII https://github.com/acsicuib/MARIO
 
