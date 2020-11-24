@@ -354,6 +354,8 @@ python3 main.py
 ffmpeg -r 1 -i multi-agent-policies/scenarios/TaxiRome/results_20201028/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p video.mp4
 ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P12_20201120/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P12_size3.mp4
 
+ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P12_20201122/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P1_size3.mp4
+ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P1_s3_20201124/images/network_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P1_size3.mp4
 (This lines are for me ;) -  copypaste)
 scp isaac@deepblue:/home/isaac/projects/MARIO/video.mp4 .
 scp isaac@deepblue:/home/isaac/projects/MARIO/multi-agent-policies/scenarios/TaxiRome/results_20201028/models/rules_swi_UID96_nn0lt0ln0_s0_X_9700.pl .

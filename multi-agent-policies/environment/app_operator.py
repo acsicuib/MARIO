@@ -15,7 +15,7 @@ import tiledTopology
 import matplotlib.patches as mpatches
 
 
-RENDERSNAP = False
+RENDERSNAP = True
 
 class Mario():
     """
@@ -129,8 +129,8 @@ class Mario():
                             self.agent_communication[service_id] = []
 
                         # The render of the action is done the state of the simulator changes
-                        if self.render_action:
-                              image_file = self.render(sim, path, routing,
+                        if self.render_action and action != "nop":
+                            image_file = self.render(sim, path, routing,
                                                        service=name,
                                                        serviceID=service_id,
                                                        currentNode=currentNode,
@@ -151,7 +151,7 @@ class Mario():
 
                         if self.render_action and not done:
                             try:
-                                self.logger.warning("Image removed")
+                                # self.logger.warning("Image removed")
                                 os.remove(image_file)
                             except FileNotFoundError:
                                 None
@@ -552,11 +552,6 @@ class Mario():
             # Include the current instance service identificator close to the node
             a.imshow(data_occupation[n], cmap=newcmp, interpolation='none', norm=norm,extent=extent)
 
-            # DEBUG BORDERS of the imshow
-            # a.text(extent[0],extent[2], "%i,%i"%(extent[0],extent[2]), ha="center", va="center", color="yellow") #esquina inferior izquierda
-            # a.text(extent[1],extent[2], "%i,%i"%(extent[1],extent[2]), ha="center", va="center", color="black") #esquina inferior derecha
-            # a.text(extent[1],extent[3], "%i,%i"%(extent[1],extent[3]), ha="center", va="center", color="green") #esquina superior derecha
-
             sizerow = 0.5
             if nrows==0:
                 sizerow = (extent[3]+abs(extent[2]))/float(nrows)
@@ -565,12 +560,6 @@ class Mario():
             if ncols-1>0:
                 sizecol = (extent[1]+abs(extent[0]))/float(ncols)
 
-            # DEBUG
-            # a.text(extent[0]+sizecol-0.5,extent[2]+sizerow, "11", ha="center", va="center", color="black") #esquina inferior izquierda
-            # a.text(extent[0]+(sizecol*2)-0.5,extent[2]+sizerow, "21", ha="center", va="center", color="black") #esquina inferior izquierda
-            # a.text(extent[0]+(sizecol*3)-0.5,extent[2]+sizerow, "31", ha="center", va="center", color="black") #esquina inferior izquierda
-            # a.text(extent[0]+(sizecol)-0.5,extent[2]+(sizerow*2)+0.5, "12", ha="center", va="center", color="black") #esquina inferior izquierda
-
 
             for irow,row in enumerate(data_occupation[n],start=1):
                 irev_row = (nrows+1)-irow
@@ -578,7 +567,11 @@ class Mario():
                 if irev_row>=2: py += 0.5
                 for icol,value in enumerate(row,start=1):
                     if value==0: break
-                    px = extent[0]+(sizecol*icol)-0.5
+                    nrows, ncols = data_occupation[n].shape
+                    if nrows * ncols == 1:
+                        px = extent[0] + 0.5
+                    else:
+                        px = extent[0] + (sizecol * icol) - 0.5
                     a.text(px,py, value, ha="center", va="center", color="w",weight="bold", size=18)
 
             a.axes.get_yaxis().set_visible(False)

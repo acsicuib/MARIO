@@ -323,6 +323,7 @@ if __name__ == '__main__':
         # Generating a temporal folder to record results
         # datestamp = time.strftime('%Y%m%d')
         datestamp = "20201124" # fixed for testing
+        # datestamp = "20201028" # fixed for testing
 
         temporal_folder = experiment_path + "results_%s_"%ncase + datestamp + "/"
         try:
