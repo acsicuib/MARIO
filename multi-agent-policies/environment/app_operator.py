@@ -434,10 +434,7 @@ class Mario():
 
         width = ax.get_xlim()[1]
         top = ax.get_ylim()[1]
-        # Some viz. vars.
-        piesize = .078
-        # piesize = .08
-        p2 = piesize / 2.5
+
 
         try:
             idApp = int(service.split("_")[0])
@@ -450,14 +447,14 @@ class Mario():
         ##########
         # Textual data
         ##########
-        # TODO UNCOMMENT
-        plt.text(3.5, top, "Simulation time: %i" % sim.env.now,{'color': color_app, 'fontsize': 10})
+        print(top)
+        plt.text(width-20, 0, "Simulation time: %i" % sim.env.now,{'color': "black", 'fontsize': 14})
 
-        info_text = "Action %s on node: %s" % (action,onNode)
-        plt.text(3.5 , top-0.5, info_text, {'color': color_app, 'fontsize': 10})
-
-        info_text = "by Service: S%i on Node: %s" % (serviceID, tiledTopology.getAbbrNodeName(currentNode))
-        plt.text(3.5, top -1, info_text, {'color': color_app, 'fontsize': 10})
+        # info_text = "Action %s on node: %s" % (action,onNode)
+        # plt.text(3.5 , top-0.5, info_text, {'color': color_app, 'fontsize': 10})
+        #
+        # info_text = "by Service: S%i on Node: %s" % (serviceID, tiledTopology.getAbbrNodeName(currentNode))
+        # plt.text(3.5, top -1, info_text, {'color': color_app, 'fontsize': 10})
 
 
         # Get the POLICY FILE
@@ -474,23 +471,22 @@ class Mario():
             print("- WARNING - Rendering the image of the last case")
             None #Render the last case
 
-        # TODO UNCOMMENT
-        info_text = "App: %i with policy: %s" % (idApp, rule_policy)
-        plt.text(3.5, top -1.5, info_text, {'color': color_app, 'fontsize': 10})
-        info_text = "Debug file: rules_swi_UID%i_n%s_s%i_X_%i.pl" % (self.UID, tiledTopology.getAbbrNodeName(currentNode), serviceID, sim.env.now)
-        plt.text(3.5, top - 2., info_text, {'color': color_app, 'fontsize': 10})
+
+        # info_text = "App: %i with policy: %s" % (idApp, rule_policy)
+        # plt.text(3.5, top -1.5, info_text, {'color': color_app, 'fontsize': 10})
+        # info_text = "Debug file: rules_swi_UID%i_n%s_s%i_X_%i.pl" % (self.UID, tiledTopology.getAbbrNodeName(currentNode), serviceID, sim.env.now)
+        # plt.text(3.5, top - 2., info_text, {'color': color_app, 'fontsize': 10})
 
 
         # Labels on nodes
         for x in sim.topology.G.nodes:
             if x == 0:
-                ax.text(self.pos[x][0]- (width/12), self.pos[x][1] , tiledTopology.getAbbrNodeName(x), fontsize=10,
+                ax.text(self.pos[x][0]- (width/12), self.pos[x][1] , tiledTopology.getAbbrNodeNameSnap(x), fontsize=10,
                         fontweight="bold")
             else:
-                ax.text(self.pos[x][0] - (width/75), self.pos[x][1] + (width/35) , tiledTopology.getAbbrNodeName(x), fontsize=10,fontweight="bold")
+                ax.text(self.pos[x][0] - (width/75), self.pos[x][1] + (width/35) , tiledTopology.getAbbrNodeNameSnap(x), fontsize=10,fontweight="bold")
 
-        #TODO IMPROVE THE GENERATION OF THE LEGEND according with APP & Policies
-            # TODO UNCOMMENT
+
         # APP Legend
         if not "closers" in self.image_dir:
         # DEFAULT Legends apps
@@ -498,126 +494,7 @@ class Mario():
             for i in range(1,len(dataApps)+1):
                 color_app = newcmp(i)
                 legendItems.append(mpatches.Patch(color=color_app, label='App: %i'%i))
-            # plt.legend(handles=legendItems, title=rule_policy)
-            # plt.legend(handles=legendItems)
             plt.legend(loc="lower center",handles=legendItems, ncol=len(dataApps))
-        #
-        # else:
-        #     # SPECIFIC LEGEND for experiment: I_II_III
-        #     offset = 0
-        #     text=["Get_Closer","Get_Closer_II","Get_Closer_III"]
-        #     for i in range(0, len(dataApps) ):
-        #         color_app = newcmp(i+1)
-        #         if (i%2 == 0):
-        #             ax.annotate("%s" % text[offset],
-        #                         xy=(0.95, 1.0 - ((i + offset) * 0.05)), xycoords='axes fraction',
-        #                         textcoords='offset points',
-        #                         size=14,
-        #                         bbox=dict(boxstyle="round", fc="white", ec="none"))
-        #             offset+=1
-        #
-        #         ax.annotate("App: %i"%(i+1),
-        #             xy=(0.95, 1.0-((i+offset)*0.05)), xycoords='axes fraction',
-        #             textcoords='offset points',
-        #             size=14,
-        #             bbox=dict(boxstyle="round", fc=color_app, ec="none"))
-        #
-        #         # TODO IMPROVE THE GENERATION OF THE LEGEND according with APP & Policies
-        #         # APP Legend
-
-
-        #TODO INDIVIDUAL POLKICIES IMAGE LABEL
-        # offset = 0
-        # # text = ["GetCloser"]
-        # # text = ["Eco_GetCloser"]
-        # text = ["Turbo_GetCloser"]
-        # ax.annotate("%s" % text[offset],
-        #             xy=(0.01, 0.96 - ((0 + offset) * 0.08)), xycoords='axes fraction',
-        #             textcoords='offset points',
-        #             size=38,
-        #             weight="bold",
-        #             bbox=dict(boxstyle="round", fc="white", ec="none"))
-        # offset += 1
-        #
-        # for i in range(0, len(dataApps),2):
-        #     color_app = newcmp(i + 1)
-        #     ax.annotate("  App: %i " % (i + 1),
-        #                 xy=(0.01, 0.92 - ((i + offset) * 0.05)), xycoords='axes fraction',
-        #                 textcoords='offset points',
-        #                 size=30,
-        #                 weight="bold",
-        #                 bbox=dict(boxstyle="round", fc=color_app, ec="none",alpha=0.8))
-        #
-        #     color_app = newcmp(i + 2)
-        #     ax.annotate("  App: %i " % (i + 2),
-        #                 xy=(0.16, 0.92 - ((i + offset) * 0.05)), xycoords='axes fraction',
-        #                 textcoords='offset points',
-        #                 size=30,
-        #                 weight="bold",
-        #                 bbox=dict(boxstyle="round", fc=color_app, ec="none",alpha=0.8))
-
-
-        ### END INDIVIDUAL LEGEND
-
-        ## MANUAL LEGEND FOR MIX I II III Cases
-
-        # offset = 0
-        # text = ["GetCloser"]
-        # ax.annotate("%s" % text[offset],
-        #             xy=(0.05, 0.96), xycoords='axes fraction',
-        #             textcoords='offset points',
-        #             size=34,
-        #             weight="bold",
-        #             bbox=dict(boxstyle="round", fc="white", ec="none"))
-        # offset += 1
-        #
-        # for i in range(0, 2):
-        #     color_app = newcmp(i + 1)
-        #     ax.annotate("  App: %i " % (i + 1),
-        #                 xy=(0.05+(i * 0.13), 0.90 ) , xycoords='axes fraction',
-        #                 textcoords='offset points',
-        #                 size=28,
-        #                 # weight="bold",
-        #                 bbox=dict(boxstyle="round", fc=color_app, ec="none"))
-        #
-        #
-        # offset = 0
-        # text = ["Eco_GetCloser"]
-        # ax.annotate("%s" % text[offset],
-        #             xy=(0.05, 0.82), xycoords='axes fraction',
-        #             textcoords='offset points',
-        #             size=34,
-        #             weight="bold",
-        #             bbox=dict(boxstyle="round", fc="white", ec="none"))
-        # offset += 1
-        #
-        # for i in range(0, 2):
-        #     color_app = newcmp(i + 3)
-        #     ax.annotate("  App: %i " % (i + 3),
-        #                xy=(0.05+(i * 0.13), 0.76 ), xycoords='axes fraction',
-        #                 textcoords='offset points',
-        #                 size=28,
-        #                 # weight="bold",
-        #                 bbox=dict(boxstyle="round", fc=color_app, ec="none"))
-        #
-        # offset = 0
-        # text = ["Turbo_GetCloser"]
-        # ax.annotate("%s" % text[offset],
-        #             xy=(0.05, 0.68), xycoords='axes fraction',
-        #             textcoords='offset points',
-        #             size=34,
-        #             weight="bold",
-        #             bbox=dict(boxstyle="round", fc="white", ec="none"))
-        # offset += 1
-        #
-        # for i in range(0, 2):
-        #     color_app = newcmp(i + 5)
-        #     ax.annotate("  App: %i " % (i + 5),
-        #             xy=(0.05 + (i * 0.13), 0.62), xycoords='axes fraction',
-        #             textcoords='offset points',
-        #             size=28,
-        #             # weight="bold",
-        #             bbox=dict(boxstyle="round", fc=color_app, ec="none"))
 
 
         # Plotting users dots
@@ -642,13 +519,25 @@ class Mario():
 
         # Generate node shape
         for n in sim.topology.G.nodes():
+            # Some viz. vars.
+
+
             xx, yy = trans(self.pos[n])  # figure coordinates
             xa, ya = trans2((xx, yy))  # axes coordinates
+            nrows, ncols = data_occupation[n].shape
+            if nrows*ncols == 1:
+                piesize = .028
+            elif nrows*ncols<6:
+                piesize = .048
+            else:
+                piesize = .078
+
+            p2 = piesize / 2.5
+
             a = plt.axes([xa - p2, ya - p2, piesize, piesize])
-            a.set_aspect('equal')
+            # a.set_aspect('equal')
 
             #For labelling cells in the imshow
-            nrows, ncols = data_occupation[n].shape
             real_x = np.array(range(0,ncols))
             real_y = np.array(range(0,nrows))
             if len(real_x) > 1:
@@ -706,6 +595,8 @@ class Mario():
         self.image_id += 1
 
         plt.close(fig)
+
+
         # print("Rendering fILE: %s"%(self.image_dir + "/network_%05d.png" % self.image_id))
         return self.image_dir + "/network_%05d.png" % self.image_id
 

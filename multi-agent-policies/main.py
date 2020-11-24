@@ -240,7 +240,7 @@ def main(number_simulation_steps,
     appOp = Mario(globalrules,service_rule_profile, path_csv_files,
                   app_number=len(dataApp),
                   period=int(config.get('agent', 'activation_period')),
-                  render=False, # only snaps
+                  render=True, # only snaps
                   path_results=temporal_folder,
                   cloud_node = cloudNode,
                   window_agent_size=int(config.get('agent', 'window_agent_outcome')))
@@ -312,9 +312,9 @@ if __name__ == '__main__':
     # Case, Name , folderExperiment, folderPolicy , projection=None, policy_file = None
     experiments = [
         ("P1_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy1.pl"),
-        ("P2_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy2.pl"),
-        ("P3_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy3.pl"),
-        ("P4_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy4.pl")
+        # ("P2_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy2.pl"),
+        # ("P3_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy3.pl"),
+        # ("P4_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy4.pl")
     ]
 
     for ncase, name,experiment_path,policy_folder,projection,policy_file in experiments:
@@ -324,7 +324,7 @@ if __name__ == '__main__':
 
         # Generating a temporal folder to record results
         # datestamp = time.strftime('%Y%m%d')
-        datestamp = "20201028" # fixed for testing
+        datestamp = "20201124" # fixed for testing
 
         temporal_folder = experiment_path + "results_%s_"%ncase + datestamp + "/"
         try:
