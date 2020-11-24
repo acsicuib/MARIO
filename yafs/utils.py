@@ -2,15 +2,11 @@
 Some common functions
 """
 import copy
-import networkx as nx
 import matplotlib.pyplot as plt
 import random
 import numpy as np
 from collections import OrderedDict
 import networkx as nx
-import pyproj
-from shapely.ops import transform
-from functools import partial
 import math
 
 #DISTRIBUTIONS
@@ -58,12 +54,6 @@ def create_points(G):
         pos[k]=[lat,lng]
     return pos
 
-def toMeters(geometry):
-    project = partial(
-    pyproj.transform,
-    pyproj.Proj(init='EPSG:4326'),
-    pyproj.Proj(init='EPSG:32633'))
-    return transform(project,geometry).length
 
 def get_random_node(G):
     return list(G.nodes())[random.randint(0,len(G.nodes())-1)]

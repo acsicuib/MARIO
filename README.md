@@ -335,8 +335,12 @@ Ok, thus... you should clone the project and configure Python third libraries:
 git clone --branch MarioII https://github.com/acsicuib/MARIO
 
 git pull origin MarioII
-python3 -m pip install virtualenv
 
+apt-get install python3-venv
+apt install  pkg-config 
+python3 -m pip install virtualenv
+python3 -m venv marioenv
+source marioenv/bin/activate
 (mariovenv - configure a virtual env.)
  
 python -m pip install -r requirements.txt 
