@@ -27,5 +27,10 @@ six==1.13.0
 traitlets==4.3.3
 wcwidth==0.1.7
 simpy==3.0.11
-geopy==2.0.0
-Pillow-8.0.1
+Pillow
+gpxpy
+pandas
+networkx
+simpy
+matplotlib
+geopy
