@@ -22,20 +22,12 @@ def showActionsbyGroup(df0,dfmov0):
 
 
 experiments = [
-    ("P1_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]],
-     "policy1.pl"),
-    ("P2_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]],
-     "policy2.pl"),
-    ("P3_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]],
-     "policy3.pl"),
-    (
-    "P4_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]], "policy4.pl")
+    ("P1_s3", "Results_%s_20201122w5",)
 ]
 
-
-for ncase, name, experiment_path, policy_folder, projection, policy_file in experiments:
+for ncase, pathcommon in experiments:
     # pathcommon = experiment_path+"results_%s_20201122/"%ncase
-    pathcommon = experiment_path + "results_%s_20201122w5/" % ncase
+
     actions = pathcommon+"action_stats.txt"
     mov = pathcommon+"movements.csv"
     res = pathcommon+"Results_Rome_0.csv"

@@ -76,7 +76,12 @@ idService,app,time,action
 # Analysing the results
 
 There is three files to generate information about the results:
-- plot_actions.py. It generates a bar plot with the number of actions in each MARIO activation. 
+- plot_actions.py. It generates a bar plot with the number of actions in each MARIO activation. In order to execute this script (and the other two) , you should update the variable that contains the results in the plot_actions.py (line 74) Here you have an example:
+```
+experiments = [
+    ("P1_s3", "Results_%s_20201122w5",)
+]
+```
 <img src="https://github.com/acsicuib/MARIO/raw/MarioII/media/plot_action.png" width="630" height="316"/></a>
 - plot_pearsonCoefficient.py. It generates a plot about the relationship between actions and users movements.
 <img src="https://github.com/acsicuib/MARIO/raw/MarioII/media/plot_pearson.png" width="630" height="316"/></a>
