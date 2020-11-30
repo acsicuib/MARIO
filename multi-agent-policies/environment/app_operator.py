@@ -15,7 +15,7 @@ import tiledTopology
 import matplotlib.patches as mpatches
 
 
-RENDERSNAP = True
+RENDERSNAP = False
 
 class Mario():
     """
@@ -24,7 +24,8 @@ class Mario():
     """
 
 
-    def __init__(self, common_rules, service_rule_profile, path_csv_files, app_number, period, render, path_results, cloud_node, window_agent_size):
+    def __init__(self, common_rules, service_rule_profile, path_csv_files, app_number, period, render, path_results, cloud_node, window_agent_size,
+                    radius,reversepath ):
         self.create_initial_services = True
         self.logger = logging.getLogger(__name__)
         self.memory = []
@@ -57,6 +58,9 @@ class Mario():
         self.window_agent_size = window_agent_size
 
         self.cloud_node = cloud_node
+
+        self.radius = radius
+        self.reversepath = reversepath
 
     def close(self):
         self.action_stats.close()
@@ -98,6 +102,8 @@ class Mario():
                 # print("- Current situation:")
                 # sim.print_debug_assignaments()
 
+
+
             if RENDERSNAP:
                 self.snapshot(sim, path, routing)
 
@@ -108,13 +114,13 @@ class Mario():
             clean_routing_cache = False
             # (name, DES, currentNode, ('migrate', '2', 'n0lt0ln0'),)
             for name,DES,currentNode,operations in reversed(self.memory):
+
                 for (action,service_id,onNode) in operations:
-                    # print("+ Actions from DES_service: ", DES)
-                    # print("\tService: ", name)
-                    # print("\tID_Service: ", service_id)
-                    # print("\tNode: ", currentNode)
-                    # print("\tAction: ", action)
-                    # print("\t+ OnNode:", onNode)
+                    print("+ MARIO + get actions from DES_service: ", DES)
+                    print("\tService: ", name)
+                    print("\tNode: ", currentNode)
+                    print("\tAction: ", action)
+                    print("\t+ OnNode:", onNode)
 
                     service_id = int(service_id)
                     if onNode == "self":
@@ -293,7 +299,7 @@ class Mario():
 
     def create_monitor_of_module(self, des, path, routing, service, sim):
         period = deterministic_distribution(self.period, name="Deterministic")
-        pm = PolicyManager(des, service, self.common_rules, self.service_rule_profile, self.path_csv_files, self, self.render)
+        pm = PolicyManager(des, service, self.common_rules, self.service_rule_profile, self.path_csv_files, self, self.render,self.radius,self.reversepath)
 
         # Performance tip: it avoids an huge load of useless samples
         number_of_lines = 0
@@ -318,7 +324,7 @@ class Mario():
         """
         self.memory.append(something)
 
-    def __draw_user(self, node, service, ax, newcolors):
+    def __draw_user(self, node, service, ax, newcolors,scenario):
         """
         Draw a dot for each user, plus sort the dots for each node
         :param node:
@@ -334,9 +340,16 @@ class Mario():
         # duy = 0.06 * line
         # dux = 0.01 * (total % 4)
 
+
         #simple policies
-        duy = -0.26 * (line*1.1)
-        dux = (.0 * (total % 4))+(0.2*total)-0.4*line
+        if scenario == "Grid":
+            duy = -0.036 * (line*1.0001)
+            dux = (.0 * (total % 4))+(0.002*total)-0.04*line
+        else:
+            duy = -0.26 * (line * 1.1)
+            dux = (.0 * (total % 4)) + (0.2 * total) - 0.4 * line
+
+
 
         # #
         # # new
@@ -402,16 +415,17 @@ class Mario():
         return currentOccupation
 
     def render(self,sim,path,routing,service,serviceID,currentNode,action,onNode):
+        if "Grid" in path:
+            scenario="Grid"
+        else:
+            scenario="Rome"
 
         if self.pos == None: # Only the first time
-            self.pos = nx.get_node_attributes(sim.topology.G,'pos')
-            # if len(pos)>0:
-            #     for k in pos.keys():
-            #         pos[k] = np.array(eval(pos[k]))
-            #     self.pos = pos
-            # else:
-            #
-            # self.pos = nx.random_layout(sim.topology.G)
+            if "pos" in sim.topology.G.nodes["n0lt0ln0"]:
+                self.pos = nx.get_node_attributes(sim.topology.G,'pos')
+            else:
+                self.pos = nx.kamada_kawai_layout(sim.topology.G)
+
 
             image_dir = Path(self.path_results+"images/")
             image_dir.mkdir(parents=True, exist_ok=True)
@@ -443,19 +457,6 @@ class Mario():
 
         color_app = newcmp(idApp)
 
-
-        ##########
-        # Textual data
-        ##########
-        plt.text(width-20, 0, "Simulation time: %i" % sim.env.now,{'color': "black", 'fontsize': 14})
-
-        # info_text = "Action %s on node: %s" % (action,onNode)
-        # plt.text(3.5 , top-0.5, info_text, {'color': color_app, 'fontsize': 10})
-        #
-        # info_text = "by Service: S%i on Node: %s" % (serviceID, tiledTopology.getAbbrNodeName(currentNode))
-        # plt.text(3.5, top -1, info_text, {'color': color_app, 'fontsize': 10})
-
-
         # Get the POLICY FILE
         # As the service is named: "idApp_IdModule", we can get the app id from there.
         dataApps = json.load(open(path + 'appDefinition.json'))
@@ -473,17 +474,49 @@ class Mario():
 
         # info_text = "App: %i with policy: %s" % (idApp, rule_policy)
         # plt.text(3.5, top -1.5, info_text, {'color': color_app, 'fontsize': 10})
-        # info_text = "Debug file: rules_swi_UID%i_n%s_s%i_X_%i.pl" % (self.UID, tiledTopology.getAbbrNodeName(currentNode), serviceID, sim.env.now)
-        # plt.text(3.5, top - 2., info_text, {'color': color_app, 'fontsize': 10})
+
+        if scenario == "Rome":
+            plt.text(width-20, 0, "Simulation time: %i" % sim.env.now,{'color': "black", 'fontsize': 14})
+
+            info_text = "Action %s on node: %s" % (action,onNode)
+            plt.text(width-20 , 1, info_text, {'color': color_app, 'fontsize': 10})
+
+            info_text = "by Service: S%i on Node: %s" % (serviceID, tiledTopology.getAbbrNodeName(currentNode))
+            plt.text(width-20, 2, info_text, {'color': color_app, 'fontsize': 10})
+
+            info_text = "Debug file: model_B%i_n%s_DES%i_X_%i.pl" % (self.UID, tiledTopology.getAbbrNodeName(currentNode), serviceID, sim.env.now)
+            plt.text(width-20, 3, info_text, {'color': color_app, 'fontsize': 10})
+
+            for x in sim.topology.G.nodes:
+                if x == 0:
+                    ax.text(self.pos[x][0] - (width / 12), self.pos[x][1], tiledTopology.getAbbrNodeNameSnap(x),
+                            fontsize=10,
+                            fontweight="bold")
+                else:
+                    ax.text(self.pos[x][0] - (width / 75), self.pos[x][1] + (width / 35),
+                            tiledTopology.getAbbrNodeNameSnap(x), fontsize=10, fontweight="bold")
 
 
-        # Labels on nodes
-        for x in sim.topology.G.nodes:
-            if x == 0:
-                ax.text(self.pos[x][0]- (width/12), self.pos[x][1] , tiledTopology.getAbbrNodeNameSnap(x), fontsize=10,
-                        fontweight="bold")
-            else:
-                ax.text(self.pos[x][0] - (width/75), self.pos[x][1] + (width/35) , tiledTopology.getAbbrNodeNameSnap(x), fontsize=10,fontweight="bold")
+        else:
+            plt.text(-width, top-0.1, "Simulation time: %i" % sim.env.now, {'color': "black", 'fontsize': 14})
+
+            info_text = "Action %s on node: %s" % (action, onNode)
+            plt.text(-width, top-0.2, info_text, {'color': color_app, 'fontsize': 14})
+
+            info_text = "by Service: S%i on Node: %s" % (serviceID, tiledTopology.getAbbrNodeName(currentNode))
+            plt.text(-width, top-0.3, info_text, {'color': color_app, 'fontsize': 14})
+
+            info_text = "Prolog file: model_B%i_nn%s_DES%i_X_%i.pl" % (
+            self.UID, tiledTopology.getAbbrNodeName(currentNode), serviceID, sim.env.now)
+            plt.text(-width, top-0.4, info_text, {'color': color_app, 'fontsize': 14})
+
+
+            # Labels on nodes
+
+            for x in sim.topology.G.nodes:
+                ax.text(self.pos[x][0]-0.01, self.pos[x][1]+0.08 , tiledTopology.getAbbrNodeNameSnap(x), fontsize=10,fontweight="bold")
+
+
 
 
         # APP Legend
@@ -508,7 +541,7 @@ class Mario():
         for node in nodes_with_users:
             # print(node)
             for app in nodes_with_users[node]:
-                self.__draw_user(node, int(app), ax, newcolors)
+                self.__draw_user(node, int(app), ax, newcolors,scenario)
 
         # LAST step:
         # Displaying capacity, changing node shape

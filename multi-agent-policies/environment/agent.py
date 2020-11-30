@@ -36,7 +36,7 @@ class PolicyManager():
 
         return deployed_services,nodes_with_services
 
-    def __init__(self,DES,name,rules,service_rule_profile,path,app_operator,render):
+    def __init__(self,DES,name,rules,service_rule_profile,path,app_operator,render,radius,reversepath):
         self.id_monitor = None
         self.DES = DES #Service ID
         self.name = name
@@ -54,6 +54,9 @@ class PolicyManager():
         self.action_on_render =0
 
         self.render_action = render
+
+        self.radius = radius
+        self.reversepath = reversepath
         # data = json.load(open(path + 'usersDefinition.json'))
 
     def get_free_space_on_nodes(self,sim):
@@ -130,14 +133,26 @@ class PolicyManager():
             #     n_neigh = [e[1] for e in sim.topology.G.edges(n)]
             #     self.rules.and_rule("node", n, available_space_on_node[n], n_neigh)
 
+            # print("HERE")
+            # print(currentNode)
+            nodesRadius = nx.single_source_shortest_path_length(sim.topology.G, source=currentNode, cutoff=self.radius)
 
-            ## LIST OF DIRECT NODES to the CurrentNode
             neighbours = [e[1] for e in sim.topology.G.edges(currentNode)]
             neighbours = list(dict.fromkeys(neighbours))
-            for n in neighbours:
+            for n in nodesRadius:
                 self.rules.and_rule("node", n, available_space_on_node[n], [])
 
             self.rules.and_rule("node", currentNode, available_space_on_node[currentNode], neighbours)
+
+            ## LIST OF DIRECT NODES to the CurrentNode
+            # neighbours = [e[1] for e in sim.topology.G.edges(currentNode)]
+            # neighbours = list(dict.fromkeys(neighbours))
+            # for n in neighbours:
+            #     self.rules.and_rule("node", n, available_space_on_node[n], [])
+            #
+            # self.rules.and_rule("node", currentNode, available_space_on_node[currentNode], neighbours)
+
+
 
             ################################################################################
             # LINK fact (DEPRECATED)
@@ -177,10 +192,15 @@ class PolicyManager():
                         n_messages = len(df[df["TOPO.src"] == node_user])
                         if n_messages > 0:
                             if len(path)==1:
-                                node_code= "self"
+                                node_code= ["self"]
                             else:
                                 node_code = path[-2]
+                                if (self.reversepath + 1) > len(path)-1:
+                                    node_code = path[0:-1]
+                                else:
+                                    node_code = path[-(self.reversepath+1):-1]
 
+                            # if self.reversepath
                             self.rules.and_rule("requests", self.DES, node_code, n_messages,latencyPath)
             else:
                 # print("INFO - No messages among users and service")
@@ -199,6 +219,7 @@ class PolicyManager():
             # RUN the model
             ################################################################################
             action = self.run_prolog_model(self.rules, self.DES, currentNode, path_results, sim)
+
 
             ################################################################################
             # The agent communicates to the appOperator (MARIO) its operations
@@ -259,18 +280,20 @@ class PolicyManager():
 
             expr = stdout.decode("utf-8")
             expr = expr.replace("\n","")
+
+
             it = iter("".join(c for c in expr if c not in "()[] ").split(","))
             result = [(x, y, z ) for x, y, z in zip(it, it, it)]
             ## result == [('migrate', '2', 'n0lt0ln0'), ('replicate', '2', 'n0lt0ln0')]
 
-            # print("**" * 5)
-            # print("ServiceID: ",serviceID)
-            # print("model_file: ",model_file)
-            # print("Actions :",result)
-            # print("**"*5)
+            print("*-*-" * 5)
+            print("ServiceID: ",serviceID)
+            print("model_file: ",model_file)
+            print("Actions :",result)
+            print("*-*-"*5)
+
             assert len(result)>=0, "(agent.py) Prolog return is incorrect"
-            # if len(result)==0:
-            #     result = [("nop", serviceID, "X")]
+
             result.append(("nop", serviceID, "UKN"))
             return result
 

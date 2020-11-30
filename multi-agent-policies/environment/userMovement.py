@@ -79,55 +79,90 @@ class UserControlMovement:
 
 
             # Get the coordinate of each user in this step
-            user_positions = self.currentMovement(sim.user_tracks.df,self.current_step)
+            if sim.user_tracks == None: # Grid-scenario
+                if self.current_step == 0: #new users
+                    new_users = 25
+                    onPosNode = np.random.choice(len(sim.topology.G.nodes()),new_users)
+                    onNode = [list(sim.topology.G.nodes())[n] for n in onPosNode]
+                    user_position = zip(range(25),onNode)
+                else: #new movements
+                    quantity = np.random.choice(np.random.randint(3,6))
+                    onPosNode = np.random.choice(len(sim.topology.G.nodes()), quantity)
+                    onNode = [list(sim.topology.G.nodes())[n] for n in onPosNode]
+                    user_position = zip(onPosNode, onNode)
 
-            # Updating positions
-            for code in user_positions:
-                (lat, lng) = user_positions[code]
-                point = [lat, lng]
-                new_node = self.tiledTopo.getClosedNode(point)
+                for code,new_node in user_position:
+                    if code in self.prev_node:
+                        # User has changed node
+                        if self.prev_node[code] != new_node:
+                            self.logger.debug("A new movement of user (#%s) from node %s to node %s" % (code, self.prev_node[code], new_node))
+                            self.total_diff_connections += 1
+                            sim.alloc_DES[self.mapsUser[code]] = new_node
+                            self.record_movements.write("%s,%i,%i,%s,%s\n" % (code, self.mapsUser[code], sim.env.now, self.prev_node[code], new_node))
+                    else:
+                        # Creating new user on new_node
+                        self.logger.debug("New user (#%s) on node %s" % (code, new_node))
+                        # What application does the user decide to use?
+                        app_name = random.sample(self.all_available_Apps, 1)[0]
 
-                # User already exists
-                if code in self.prev_node:
+                        # Is the app currently deployed on the infrastructure? Along the simulation the app can be "undeployed"-oper.
+                        # if not is deployed the app on the sim.
+                        if not app_name in sim.alloc_module:  # only check the APP deployed (not all the submodules/services DAO)
+                            # we deploy a new module in the cloud node
+                            # NOTE: The initial name of the service is this "x_01" in our scenario
+                            self.appOp.deploy_module(sim, "%i_01" % app_name, self.appOp.cloud_node, routingAlgorithm,
+                                                     self.experiment_path)
 
-                    # User has changed node
-                    if self.prev_node[code] != new_node:
-                        self.logger.debug("A new movement of user (#%s) from node %s to node %s" % (code, self.prev_node[code], new_node))
-                        self.total_diff_connections += 1
-                        sim.alloc_DES[self.mapsUser[code]] = new_node
-                        self.record_movements.write("%s,%i,%i,%s,%s\n"%(code,self.mapsUser[code],sim.env.now,self.prev_node[code],new_node))
-                else:
-                    # Creating new user on new_node
-                    self.logger.debug("New user (#%s) on node %s" % (code, new_node))
+                        app = sim.apps[app_name]
+                        msg = app.get_message("M.USER.APP.%i" % app_name)
+                        dist = deterministic_distribution(self.ratio_message_generation, name="Deterministic")
+                        idDES = sim.deploy_source(app_name, id_node=new_node, msg=msg, distribution=dist)
+                        self.mapsUser[code] = idDES
+                        self.record_movements.write("%s,%i,%i,none,%s\n" % (code, idDES, sim.env.now, new_node))
 
-                    # What application does the user decide to use?
-                    app_name = random.sample(self.all_available_Apps, 1)[0]
+                    self.prev_node[code] = new_node
 
-                    #TODO !!! THIS CODE IS TO HAVE THE SAME QUANTITY MOVEMENTS IN EACH APPS EXPERIMENTATION
-                    #### Only to "cuadrar" the experimentation
-                    if code == "taxi_298":
-                        app_name = 1
-                    elif code == "taxi_297":
-                        app_name = 2
-                    elif code == "taxi_94":
-                        app_name = 3
-                    ######
 
-                    # Is the app currently deployed on the infrastructure? Along the simulation the app can be "undeployed"-oper.
-                    # if not is deployed the app on the sim.
-                    if not app_name in sim.alloc_module: #only check the APP deployed (not all the submodules/services DAO)
-                        # we deploy a new module in the cloud node
-                        # NOTE: The initial name of the service is this "x_01" in our scenario
-                        self.appOp.deploy_module(sim,"%i_01"%app_name,self.appOp.cloud_node,routingAlgorithm,self.experiment_path)
+            else:# Rome
+                user_positions = self.currentMovement(sim.user_tracks.df,self.current_step)
 
-                    app = sim.apps[app_name]
-                    msg = app.get_message("M.USER.APP.%i" % app_name)
-                    dist = deterministic_distribution(self.ratio_message_generation, name="Deterministic")
-                    idDES = sim.deploy_source(app_name, id_node=new_node, msg=msg, distribution=dist)
-                    self.mapsUser[code] = idDES
-                    self.record_movements.write("%s,%i,%i,none,%s\n" % (code, idDES, sim.env.now, new_node))
+                # Updating positions
+                for code in user_positions:
+                    (lat, lng) = user_positions[code]
+                    point = [lat, lng]
+                    new_node = self.tiledTopo.getClosedNode(point)
 
-                self.prev_node[code] = new_node
+                    # User already exists
+                    if code in self.prev_node:
+
+                        # User has changed node
+                        if self.prev_node[code] != new_node:
+                            self.logger.debug("A new movement of user (#%s) from node %s to node %s" % (code, self.prev_node[code], new_node))
+                            self.total_diff_connections += 1
+                            sim.alloc_DES[self.mapsUser[code]] = new_node
+                            self.record_movements.write("%s,%i,%i,%s,%s\n"%(code,self.mapsUser[code],sim.env.now,self.prev_node[code],new_node))
+                    else:
+                        # Creating new user on new_node
+                        self.logger.debug("New user (#%s) on node %s" % (code, new_node))
+
+                        # What application does the user decide to use?
+                        app_name = random.sample(self.all_available_Apps, 1)[0]
+
+                        # Is the app currently deployed on the infrastructure? Along the simulation the app can be "undeployed"-oper.
+                        # if not is deployed the app on the sim.
+                        if not app_name in sim.alloc_module: #only check the APP deployed (not all the submodules/services DAO)
+                            # we deploy a new module in the cloud node
+                            # NOTE: The initial name of the service is this "x_01" in our scenario
+                            self.appOp.deploy_module(sim,"%i_01"%app_name,self.appOp.cloud_node,routingAlgorithm,self.experiment_path)
+
+                        app = sim.apps[app_name]
+                        msg = app.get_message("M.USER.APP.%i" % app_name)
+                        dist = deterministic_distribution(self.ratio_message_generation, name="Deterministic")
+                        idDES = sim.deploy_source(app_name, id_node=new_node, msg=msg, distribution=dist)
+                        self.mapsUser[code] = idDES
+                        self.record_movements.write("%s,%i,%i,none,%s\n" % (code, idDES, sim.env.now, new_node))
+
+                    self.prev_node[code] = new_node
 
             self.logger.debug("\tEND movement #%i. Time taken: %s" %(self.current_step,(time.time()- start_time)))
             # sim.print_debug_assignaments()
