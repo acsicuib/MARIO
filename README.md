@@ -1,6 +1,6 @@
 # Description
 
-MARIOII publication is under review.
+MARIOII Scholar.
 
 
 
