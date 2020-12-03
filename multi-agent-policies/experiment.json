@@ -2,15 +2,8 @@
   {
     "code": "RomeP2",
     "scenario":"Rome",
-    "policy":"policy2.pl",
+    "policy":"testPol1.pl",
     "radius": 1,
     "reversepath": 1
-  },
-  {
-    "code": "P2_grid",
-    "scenario": "Grid",
-    "policy":"policy2.pl",
-    "radius": 3,
-    "reversepath": 3
   }
 ]

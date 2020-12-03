@@ -20,4 +20,3 @@ mostRequestsFrom2([X],X).
 mostRequestsFrom2([(Mx,Rx)|Xs],(M,R)) :-
     length(Xs,XsLength), XsLength>0, mostRequestsFrom2(Xs,(MXs,RXs)),
     ( (Rx>RXs, M=Mx, R=Rx); (Rx=<RXs, M=MXs, R=RXs) ).
-

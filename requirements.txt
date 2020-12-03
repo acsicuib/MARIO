@@ -2,7 +2,6 @@ appnope==0.1.0
 backcall==0.1.0
 cycler==0.10.0
 decorator==4.4.1
-gpxpy==1.4.2
 ipython==7.9.0
 ipython-genutils==0.2.0
 jedi==0.15.1
@@ -28,9 +27,5 @@ traitlets==4.3.3
 wcwidth==0.1.7
 simpy==3.0.11
 Pillow
-gpxpy
-pandas
-networkx
-simpy
-matplotlib
-geopy
+gpxpy==1.4.2
+geopy=2.0.0

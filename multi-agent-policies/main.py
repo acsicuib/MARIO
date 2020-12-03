@@ -349,6 +349,8 @@ def main(number_simulation_steps,
 if __name__ == '__main__':
     import logging.config
     logging.config.fileConfig(os.getcwd() + '/logging.ini')
+    import os
+    print(os.getcwd())
 
     experiments = []
     with open("experiment.json") as f:
@@ -371,7 +373,7 @@ if __name__ == '__main__':
             config.read(experiment_path + 'config.ini')
 
 
-            input_directory = experiment_path + "trajectories/normalized_trajectories.csv"  #
+            input_directory = os.getcwd()+experiment_path + "trajectories/normalized_trajectories.csv"  #
             logging.info("Loading trajectories from (cached file): %s" % input_directory)
             tracks = trackanimation.read_track(input_directory)
             total_movements_in_tracks = tracks.df.VideoFrame.max()
