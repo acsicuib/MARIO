@@ -349,8 +349,8 @@ def main(number_simulation_steps,
 if __name__ == '__main__':
     import logging.config
     logging.config.fileConfig(os.getcwd() + '/logging.ini')
-    import os
-    print(os.getcwd())
+    # import os
+    # print(os.getcwd())
 
     experiments = []
     with open("experiment.json") as f:
