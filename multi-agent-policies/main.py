@@ -426,7 +426,7 @@ if __name__ == '__main__':
 
             print("\n--- %s seconds ---" % (time.time() - start_time))
 
-            do_video_from_execution_snaps(temporal_folder + "animation_snaps", 'snap_%05d.png', 10)
+            # do_video_from_execution_snaps(temporal_folder + "animation_snaps", 'snap_%05d.png', 10)
 
     print("Simulation Done!")
 
