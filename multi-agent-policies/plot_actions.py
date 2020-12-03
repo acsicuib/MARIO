@@ -71,7 +71,7 @@ def showActionsbyGroup(ncase,num,groupname,df0,dfmov0):
 
 
 experiments = [
-    ("P1_s3", "Results_%s_20201122w5",)
+    ("squad3", "results_R_CaseA_r2_X",)
 ]
 
 for ncase, pathcommon in experiments:
