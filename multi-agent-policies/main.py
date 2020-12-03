@@ -427,7 +427,7 @@ if __name__ == '__main__':
             print("\n--- %s seconds ---" % (time.time() - start_time))
 
             # do_video_from_execution_snaps(temporal_folder + "animation_snaps", 'snap_%05d.png', 10)
-
+    #
     print("Simulation Done!")
 
 # ffmpeg -r 1 -i results/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p results/out2.mp4
@@ -441,3 +441,4 @@ if __name__ == '__main__':
 # ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P12_20201028/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P12_size6.mp4
 # ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P12_20201120/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P12_size3.mp4
 # ffmpeg -t 20 -i P12_size6.mp4 -vf "fps=10,scale=520:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 output.gif
+#TODO
