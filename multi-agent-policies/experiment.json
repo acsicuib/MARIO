@@ -1,11 +1,5 @@
 [
-  {
-    "code": "R_instructors_r2",
-    "scenario":"Rome",
-    "policy":"detour_instructors.pl",
-    "radius": 2,
-    "reversepath": 1
-  },
+
   {
     "code": "R_squad6_neigh",
     "scenario":"Rome",
@@ -17,6 +11,13 @@
     "code": "R_squad6_path",
     "scenario":"Rome",
     "policy":"s6_path.pl",
+    "radius": 2,
+    "reversepath": 1
+  },
+  {
+    "code": "R_instructors_r2",
+    "scenario":"Rome",
+    "policy":"detour_instructors.pl",
     "radius": 2,
     "reversepath": 1
   }

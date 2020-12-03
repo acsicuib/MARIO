@@ -33,7 +33,7 @@ operation(replicate,Si,M) :-
        (dif(C,self), node(C,CHW,_), CHW >= RequiredHW, M=C)
        ;
           % self
-       (C=self, node(N,NHw,_), NHw>=RequiredHW)
+       (C=self, node(N,NHw,_), NHw>=RequiredHW, M=self)
        ;
         % a neighbour of the node from which requests are coming
        (node(M,AvailableHW,Neighbours), dif(M,N), member(C,Neighbours), AvailableHW>=RequiredHW)
@@ -44,5 +44,4 @@ operation(replicate,Si,M) :-
             (node(P,HWP,NeighboursP), dif(P,N), HWP>=RequiredHW, length(NeighboursP,DegP), ((DegP > DegM);(DegP=DegM,HWP>HWM)))
         )
     ).
-
 
