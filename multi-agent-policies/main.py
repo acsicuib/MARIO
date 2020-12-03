@@ -364,7 +364,7 @@ if __name__ == '__main__':
         temporal_folder = "results_%s_%s" %(ncase, datestamp) + "/"
 
         if name == "Rome":
-            experiment_path = "scenarios/TaxiRome/"
+            experiment_path = os.getcwd()+"/scenarios/TaxiRome/"
             # policy_folder = "policy/"
             projection = [[41.878037, 12.4462643], [41.919234, 12.5149603]]
 
@@ -373,7 +373,7 @@ if __name__ == '__main__':
             config.read(experiment_path + 'config.ini')
 
 
-            input_directory = os.getcwd()+experiment_path + "trajectories/normalized_trajectories.csv"  #
+            input_directory = experiment_path + "trajectories/normalized_trajectories.csv"  #
             logging.info("Loading trajectories from (cached file): %s" % input_directory)
             tracks = trackanimation.read_track(input_directory)
             total_movements_in_tracks = tracks.df.VideoFrame.max()
