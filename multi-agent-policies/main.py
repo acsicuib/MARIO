@@ -364,7 +364,7 @@ if __name__ == '__main__':
         temporal_folder = "results_%s_%s" %(ncase, datestamp) + "/"
 
         if name == "Rome":
-            experiment_path = os.getcwd()+"/scenarios/TaxiRome/"
+            experiment_path = "scenarios/TaxiRome/"
             # policy_folder = "policy/"
             projection = [[41.878037, 12.4462643], [41.919234, 12.5149603]]
 
