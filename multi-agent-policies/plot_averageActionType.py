@@ -22,12 +22,12 @@ def showActionsbyGroup(df0,dfmov0):
 
 
 experiments = [
-    # ("squad3", "results_R_CaseA_r2_X/",)
     # ("squad3", "results_R_CaseA_r2_X/"),
     ("Instructors", "results_R_instructors_r2_X/"),
-    ("squad3Path", "results_R_squad6_path_X/"),
-    ("squad3Neigh", "results_R_squad6_neigh_X/"),
+    ("squad6Path", "results_R_squad6_path_X/"),
+    ("squad6Neigh", "results_R_squad6_neigh_X/"),
 ]
+
 
 for ncase, pathcommon in experiments:
     # pathcommon = experiment_path+"results_%s_20201122/"%ncase
