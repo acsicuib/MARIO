@@ -286,11 +286,11 @@ class PolicyManager():
             result = [(x, y, z ) for x, y, z in zip(it, it, it)]
             ## result == [('migrate', '2', 'n0lt0ln0'), ('replicate', '2', 'n0lt0ln0')]
 
-            print("*-*-" * 5)
-            print("ServiceID: ",serviceID)
-            print("model_file: ",model_file)
-            print("Actions :",result)
-            print("*-*-"*5)
+            # print("*-*-" * 5)
+            # print("ServiceID: ",serviceID)
+            # print("model_file: ",model_file)
+            # print("Actions :",result)
+            # print("*-*-"*5)
 
             assert len(result)>=0, "(agent.py) Prolog return is incorrect"
 

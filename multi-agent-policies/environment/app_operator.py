@@ -116,11 +116,11 @@ class Mario():
             for name,DES,currentNode,operations in reversed(self.memory):
 
                 for (action,service_id,onNode) in operations:
-                    print("+ MARIO + get actions from DES_service: ", DES)
-                    print("\tService: ", name)
-                    print("\tNode: ", currentNode)
-                    print("\tAction: ", action)
-                    print("\t+ OnNode:", onNode)
+                    # print("+ MARIO + get actions from DES_service: ", DES)
+                    # print("\tService: ", name)
+                    # print("\tNode: ", currentNode)
+                    # print("\tAction: ", action)
+                    # print("\t+ OnNode:", onNode)
 
                     service_id = int(service_id)
                     if onNode == "self":
