@@ -1,8 +1,15 @@
 [
   {
-    "code": "RomeP2",
+    "code": "R_CaseA_r1",
     "scenario":"Rome",
-    "policy":"testPol1.pl",
+    "policy":"policy_a.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
+  {
+    "code": "R_CaseA_r2",
+    "scenario":"Rome",
+    "policy":"policy_a.pl",
     "radius": 1,
     "reversepath": 1
   }
