@@ -1,16 +1,23 @@
 [
   {
-    "code": "R_CaseA_r1",
+    "code": "R_instructors_r2",
     "scenario":"Rome",
-    "policy":"policy_a.pl",
-    "radius": 1,
+    "policy":"detour_instructors.pl",
+    "radius": 2,
     "reversepath": 1
   },
   {
-    "code": "R_CaseA_r2",
+    "code": "R_squad6_neigh",
     "scenario":"Rome",
-    "policy":"policy_a.pl",
-    "radius": 1,
+    "policy":"s6_neigh.pl",
+    "radius": 2,
+    "reversepath": 1
+  },
+    {
+    "code": "R_squad6_path",
+    "scenario":"Rome",
+    "policy":"s6_path.pl",
+    "radius": 2,
     "reversepath": 1
   }
 ]
