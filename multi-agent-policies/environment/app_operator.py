@@ -102,8 +102,6 @@ class Mario():
                 # print("- Current situation:")
                 # sim.print_debug_assignaments()
 
-
-
             if RENDERSNAP:
                 self.snapshot(sim, path, routing)
 
@@ -324,7 +322,7 @@ class Mario():
         """
         self.memory.append(something)
 
-    def __draw_user(self, node, service, ax, newcolors,scenario):
+    def __draw_user(self, node, service, ax, newcolors,scenario=None):
         """
         Draw a dot for each user, plus sort the dots for each node
         :param node:
@@ -342,12 +340,12 @@ class Mario():
 
 
         #simple policies
-        if scenario == "Grid":
-            duy = -0.036 * (line*1.0001)
-            dux = (.0 * (total % 4))+(0.002*total)-0.04*line
-        else:
-            duy = -0.26 * (line * 1.1)
-            dux = (.0 * (total % 4)) + (0.2 * total) - 0.4 * line
+        # if scenario == "Grid":
+        #     duy = -0.036 * (line*1.0001)
+        #     dux = (.0 * (total % 4))+(0.002*total)-0.04*line
+        # else:
+        duy = -0.26 * (line * 1.1)
+        dux = (.0 * (total % 4)) + (0.2 * total) - 0.4 * line
 
 
 
@@ -415,18 +413,25 @@ class Mario():
         return currentOccupation
 
     def render(self,sim,path,routing,service,serviceID,currentNode,action,onNode):
-        if "Grid" in path:
-            scenario="Grid"
-        else:
-            scenario="Rome"
+        # if "Grid" in path:
+        #     scenario="Grid"
+        # else:
+        #     scenario="Rome"
 
-        if self.pos == None: # Only the first time
-            if "pos" in sim.topology.G.nodes["n0lt0ln0"]:
-                self.pos = nx.get_node_attributes(sim.topology.G,'pos')
+        # if self.pos == None: # Only the first time
+        #     if "pos" in sim.topology.G.nodes[0]: #Cloud Node
+        #         self.pos = nx.get_node_attributes(sim.topology.G,'pos')
+        #     else:
+        #         self.pos = nx.kamada_kawai_layout(sim.topology.G)
+
+        if self.pos == None:  # Only the first time
+            pos = nx.get_node_attributes(sim.topology.G, 'pos')
+            if len(pos) > 0:
+                for k in pos.keys():
+                    pos[k] = np.array(eval(pos[k]))
+                    self.pos = pos
             else:
                 self.pos = nx.kamada_kawai_layout(sim.topology.G)
-
-
             image_dir = Path(self.path_results+"images/")
             image_dir.mkdir(parents=True, exist_ok=True)
             self.image_dir = str(image_dir)
@@ -441,14 +446,12 @@ class Mario():
         fig, ax = plt.subplots(figsize=(16.0, 10.0))
         plt.tight_layout(h_pad=0.55)
         # left, bottom, width, height = ax.get_position().bounds
-        #
 
         nx.draw(sim.topology.G, self.pos, with_labels=False, node_size=1, node_color="#1260A0", edge_color="gray", node_shape="o",
                  font_size=7, font_color="white", ax=ax)
 
         width = ax.get_xlim()[1]
         top = ax.get_ylim()[1]
-
 
         try:
             idApp = int(service.split("_")[0])
@@ -460,61 +463,39 @@ class Mario():
         # Get the POLICY FILE
         # As the service is named: "idApp_IdModule", we can get the app id from there.
         dataApps = json.load(open(path + 'appDefinition.json'))
-        rule_policy = ""
-
-        try:
-            for app in dataApps:
-                if app["id"] == idApp:
-                    rule_policy = app["profile_rules"]
-                    break
-        except UnboundLocalError:
-            print("- WARNING - Rendering the image of the last case")
-            None #Render the last case
+        # rule_policy = ""
+        #
+        # try:
+        #     for app in dataApps:
+        #         if app["id"] == idApp:
+        #             rule_policy = app["profile_rules"]
+        #             break
+        # except UnboundLocalError:
+        #     print("- WARNING - Rendering the image of the last case")
+        #     None #Render the last case
 
 
         # info_text = "App: %i with policy: %s" % (idApp, rule_policy)
         # plt.text(3.5, top -1.5, info_text, {'color': color_app, 'fontsize': 10})
 
-        if scenario == "Rome":
-            plt.text(width-20, 0, "Simulation time: %i" % sim.env.now,{'color': "black", 'fontsize': 14})
 
-            info_text = "Action %s on node: %s" % (action,onNode)
-            plt.text(width-20 , 1, info_text, {'color': color_app, 'fontsize': 10})
+        plt.text(-width, top-0.1, "Simulation time: %i" % sim.env.now, {'color': "black", 'fontsize': 14})
 
-            info_text = "by Service: S%i on Node: %s" % (serviceID, tiledTopology.getAbbrNodeName(currentNode))
-            plt.text(width-20, 2, info_text, {'color': color_app, 'fontsize': 10})
+        info_text = "Action %s on node: %s" % (action, onNode)
+        plt.text(-width, top-0.2, info_text, {'color': color_app, 'fontsize': 14})
 
-            info_text = "Debug file: model_B%i_n%s_DES%i_X_%i.pl" % (self.UID, tiledTopology.getAbbrNodeName(currentNode), serviceID, sim.env.now)
-            plt.text(width-20, 3, info_text, {'color': color_app, 'fontsize': 10})
+        info_text = "by Service: S%i on Node: %s" % (serviceID, tiledTopology.getAbbrNodeName(currentNode))
+        plt.text(-width, top-0.3, info_text, {'color': color_app, 'fontsize': 14})
 
-            for x in sim.topology.G.nodes:
-                if x == 0:
-                    ax.text(self.pos[x][0] - (width / 12), self.pos[x][1], tiledTopology.getAbbrNodeNameSnap(x),
-                            fontsize=10,
-                            fontweight="bold")
-                else:
-                    ax.text(self.pos[x][0] - (width / 75), self.pos[x][1] + (width / 35),
-                            tiledTopology.getAbbrNodeNameSnap(x), fontsize=10, fontweight="bold")
+        info_text = "Prolog file: model_B%i_nn%s_DES%i_X_%i.pl" % (
+        self.UID, tiledTopology.getAbbrNodeName(currentNode), serviceID, sim.env.now)
+        plt.text(-width, top-0.4, info_text, {'color': color_app, 'fontsize': 14})
 
 
-        else:
-            plt.text(-width, top-0.1, "Simulation time: %i" % sim.env.now, {'color': "black", 'fontsize': 14})
+        # Labels on nodes
 
-            info_text = "Action %s on node: %s" % (action, onNode)
-            plt.text(-width, top-0.2, info_text, {'color': color_app, 'fontsize': 14})
-
-            info_text = "by Service: S%i on Node: %s" % (serviceID, tiledTopology.getAbbrNodeName(currentNode))
-            plt.text(-width, top-0.3, info_text, {'color': color_app, 'fontsize': 14})
-
-            info_text = "Prolog file: model_B%i_nn%s_DES%i_X_%i.pl" % (
-            self.UID, tiledTopology.getAbbrNodeName(currentNode), serviceID, sim.env.now)
-            plt.text(-width, top-0.4, info_text, {'color': color_app, 'fontsize': 14})
-
-
-            # Labels on nodes
-
-            for x in sim.topology.G.nodes:
-                ax.text(self.pos[x][0]-0.01, self.pos[x][1]+0.08 , tiledTopology.getAbbrNodeNameSnap(x), fontsize=10,fontweight="bold")
+        for x in sim.topology.G.nodes:
+            ax.text(self.pos[x][0]-0.01, self.pos[x][1]+0.08 , tiledTopology.getAbbrNodeNameSnap(x), fontsize=10,fontweight="bold")
 
 
 
@@ -541,7 +522,7 @@ class Mario():
         for node in nodes_with_users:
             # print(node)
             for app in nodes_with_users[node]:
-                self.__draw_user(node, int(app), ax, newcolors,scenario)
+                self.__draw_user(node, int(app), ax, newcolors)
 
         # LAST step:
         # Displaying capacity, changing node shape

@@ -912,6 +912,13 @@ class Sim:
         """
         self.des_process_running[id] = True
 
+    def deploy_pop(self, app, population):
+        if not population.name in self.population_policy.keys():  # First Time
+            self.population_policy[population.name] = {"population_policy": population, "apps": []}
+            if population.activation_dist is not None:
+                self.env.process(self.__add_population_process(population))
+        self.population_policy[population.name]["apps"].append(app.name)
+
     def deploy_app(self, app, placement, selector):
         """
         This process is responsible for linking the *application* to the different algorithms (placement, population, and service)

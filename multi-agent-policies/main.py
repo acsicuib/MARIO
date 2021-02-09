@@ -21,25 +21,12 @@ from yafs.utils import fractional_selectivity
 from yafs.placement import JSONPlacement
 
 import trackanimation
-
+from environment.workload import DynamicWorkload
 from environment.path_routing import DeviceSpeedAwareRouting
 from environment.app_operator import Mario
 from environment.problogRulesGenerator import Rules
 from userMovement import UserControlMovement
 from tiledTopology import TiledTopology
-
-# Case, Name , folderExperiment, folderPolicy , projection=None, policy_file = None
-experiments = [
-    ("P1", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]], "policy1.pl"),
-    ("P2_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]],
-     "policy2.pl"),
-    ("P3_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]],
-     "policy3.pl"),
-    (
-        "P4_s3", "Rome", "scenarios/TaxiRome/", "policy/", [[41.878037, 12.4462643], [41.919234, 12.5149603]],
-        "policy4.pl")
-]
-
 
 def create_applications_from_json(data):
     applications = {}
@@ -71,63 +58,12 @@ def create_applications_from_json(data):
     return applications
 
 
-def do_video_from_execution_snaps(output_file, png_names, framerate):
-    cmdstring = ('ffmpeg',
-                 '-loglevel', 'quiet',
-                 '-framerate', str(framerate),
-                 '-i', png_names,
-                 '-r', '25',
-                 '-s', '1280x960',
-                 '-pix_fmt', 'yuv420p',
-                 output_file + '.mp4'
-                 )
-
-    subprocess.call(cmdstring)
-
-
-def parser_CSVTaxiRome_toGPXfiles(inputCSVfile, temporalfolder):
-    df = pd.read_csv(inputCSVfile, ",")
-    df = df.rename(columns={"taxi id": "taxi"})
-    dfg = df.groupby(["taxi"])
-
-    try:
-        os.makedirs(temporalfolder)
-    except OSError:
-        None
-
-    # onlyRoutes = {2,37} #TODO TEST
-    for idx, (group_name, df_group) in enumerate(dfg):
-        # if group_name in onlyRoutes:  #TODO TEST
-        # Important taxi routes are sorted by time
-        gpx = gpxpy.gpx.GPX()
-        gpx_track = gpxpy.gpx.GPXTrack()
-        gpx.tracks.append(gpx_track)
-        gpx_segment = gpxpy.gpx.GPXTrackSegment()
-        gpx_track.segments.append(gpx_segment)
-
-        # Create points:
-        for idx in df_group.index:
-            date_time_obj = datetime.datetime.strptime(df_group.loc[idx]["date time"], '%Y-%m-%d %H:%M:%S')
-
-            gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(df_group.loc[idx].latitude, df_group.loc[idx].longitude,
-                                                              time=date_time_obj,
-                                                              elevation=0
-                                                              ))
-
-        with open(temporalfolder + 'taxi_%i.gpx' % group_name, 'w') as f:
-            f.write(gpx.to_xml())
-
-    return temporal_folder + 'trajectories/'
-
-
 def main(number_simulation_steps,
          time_in_each_step,
          experiment_path,
-         policy_folder,
+         conf_folder,
          temporal_folder,
          case,
-         tracks,
-         projection,
          config,
          doExecutionVideo,
          it,
@@ -141,93 +77,9 @@ def main(number_simulation_steps,
     TOPOLOGY
     """
     t = Topology()
-    if tracks == None: #it is a Grid topology
-        tiledTopo = TiledTopology(0)
-        size = int(config.get('topology', 'size'))
-        t.G = nx.grid_graph(dim=[size,size])
-        t.G = nx.relabel_nodes(t.G, lambda x:"n0lt%iln%i"%(x[0],x[1]))
-        cloudNode = "n0lt0ln0"
-
-        attBW = {x: int(config.get('topology', 'BW')) for x in t.G.edges()}
-        nx.set_edge_attributes(t.G, name="BW", values=attBW)
-
-        attPR = {x: int(config.get('topology', 'PR')) for x in t.G.edges()}
-        nx.set_edge_attributes(t.G, name="PR", values=attPR)
-
-        attHW = {x: int(config.get('topology', 'HwReqs')) for x in t.G.nodes()}  # node name: "000"
-        attHW[cloudNode] = int(config.get('topology', 'HwReqs_cloud_node'))
-        nx.set_node_attributes(t.G, name="HwReqs", values=attHW)
-
-        attIPT = {x: int(config.get('topology', 'IPT')) for x in t.G.nodes()}
-        nx.set_node_attributes(t.G, name="IPT", values=attIPT)
-
-        attShape = {x: config.get('topology', 'shape') for x in t.G.nodes()}  # node name: "000"
-        attShape[cloudNode] = config.get('topology', 'shape_cloud_node')
-
-        t.write(temporal_folder + "network_%i.gexf" % size)
-
-        # for render
-        nx.set_node_attributes(t.G, name="shape",values=attShape)  # attr. shape is not supported by gexf format - before write()-
-
-
-
-    else: #it is a TIER topology
-
-        tiledTopo = TiledTopology(int(config.get('topology', 'size')))
-        t.G = tiledTopo.TiledGraph(projection)
-        cloudNode = "n0lt0ln0"
-        # Definition of mandatory attributes
-        ## on edges
-        # PR and BW
-        attBW = {x: int(config.get('topology', 'BW')) for x in t.G.edges()}
-        nx.set_edge_attributes(t.G, name="BW", values=attBW)
-
-        attPR = {}
-        for (s, d) in t.G.edges():
-            print(s, d)
-            minV = min(tiledTopo.getLevel(d), tiledTopo.getLevel(s))
-            pr = (tiledTopo.getNumberLayers() - minV)
-            attPR[(s, d)] = pr - 1
-
-        nx.set_edge_attributes(t.G, name="PR", values=attPR)
-
-        ## on nodes
-        # HwReqs = level + 2
-        # WAYS TO DEFINE node HW capacity
-        attHW = {}
-        # attHW = {x:abs(tiledTopo.getNumberLayers()-int(x[0]))+2 for x in t.G.nodes()} # node name: "000"
-        # attHW = {x:abs(tiledTopo.getNumberLayers()-tiledTopo.getLevel(x))+6 for x in t.G.nodes()} #node name:n0lt0ln0
-        # attHW = {x:abs(tiledTopo.getNumberLayers()-tiledTopo.getLevel(x))+6for x in t.G.nodes()} #node name:n0lt0ln0
-        # attHW = {x: abs(tiledTopo.getNumberLayers() - tiledTopo.getLevel(x)) * 1 for x in t.G.nodes()}  # node name:n0lt0ln0
-
-        for x in t.G.nodes():
-            l = abs(tiledTopo.getNumberLayers() - tiledTopo.getLevel(x))
-            attHW[x] = 2 * l
-            if l == 1:
-                attHW[x] = 1
-
-        attHW[cloudNode] = int(config.get('topology', 'HwReqs_cloud_node'))  # THE CLOUD Node capacity BIGGER NUMBER OF APPS
-
-        # Shape": "(1,level+2)",
-        ### attShape = {x:"(1,%i)"%attHW[x] for x in t.G.nodes()} #OLD
-        attShape = {}
-        for x in t.G.nodes():
-            # if attHW[x]%2==0:
-            #     attShape[x]="(2,%i)"%(attHW[x]//2)
-            # else:
-            attShape[x] = "(1,%i)" % (attHW[x])
-
-        attShape[cloudNode] = config.get('topology', 'shape_cloud_node')
-        # IPT
-        attIPT = {x: int(config.get('topology', 'IPT')) for x in t.G.nodes()}
-        nx.set_node_attributes(t.G, name="IPT", values=attIPT)
-        nx.set_node_attributes(t.G, name="HwReqs", values=attHW)
-
-        t.write(temporal_folder + "network_%i.gexf" % tiledTopo.size)
-
-        nx.set_node_attributes(t.G, name="shape",values=attShape)  # attr. shape is not supported by gexf format - before write()-
-        # for render
-        tiledTopo.setPosPlot(t.G, [[0, 0], [20, 20]])
+    dataNetwork = json.load(open(experiment_path + conf_folder+'topology.json'))
+    t.load_all_node_attr(dataNetwork)
+    cloudNode = 0 # "id == 0"
 
     """
     Global Rules for all services
@@ -237,7 +89,7 @@ def main(number_simulation_steps,
     """
     APPLICATION
     """
-    dataApp = json.load(open(experiment_path + policy_folder + 'appDefinition.json'))
+    dataApp = json.load(open(experiment_path + conf_folder+ 'appDefinition.json'))
     apps = create_applications_from_json(dataApp)
 
     for app in dataApp:
@@ -254,7 +106,7 @@ def main(number_simulation_steps,
     """
     PLACEMENT algorithm
     """
-    placementJson = json.load(open(experiment_path + policy_folder + 'allocDefinition.json'))
+    placementJson = json.load(open(experiment_path + conf_folder+'initialAllocation.json'))
     placement = JSONPlacement(name="Placement", json=placementJson)
 
     """
@@ -267,13 +119,30 @@ def main(number_simulation_steps,
     """
     path_csv_files = temporal_folder + "/Results_%s_%i" % (case, it)
     s = Sim(t, default_results_path=path_csv_files)
-    s.load_user_tracks(tracks)
 
     """
     INITIAL DEPLOY OF SERVICES
     """
     for aName in apps.keys():
         s.deploy_app(apps[aName], placement, routingPath)
+
+    """
+    POPULATION algorithm
+    """
+    dataPopulation = json.load(open(experiment_path + conf_folder + 'usersDefinition.json'))
+    # Each application has an unique population politic
+    # For the original json, we filter and create a sub-list for each app politic
+    for aName in apps.keys():
+        data = []
+        for element in dataPopulation["sources"]:
+            # print("element-app", type(element["app"]))
+            if element['app'] == aName:
+                data.append(element)
+
+        # distribution = exponential_distribution(name="Exp", lambd=random.randint(100,200), seed= int(aName)*100+it)
+        distribution = deterministic_distribution(name="DET", time=10)
+        pop_app = DynamicWorkload(name="Dynamic_%s" % aName, data=data, iteration=it, activation_dist=distribution)
+        s.deploy_pop(apps[aName], pop_app)
 
     """
     MARIO app controller & Agent generator
@@ -299,36 +168,6 @@ def main(number_simulation_steps,
                      )
 
     """
-    Create the custom monitor that it manages the user movements according with the traces
-    The user operations are: CREATION, MOVEMENT (change associated node)
-    """
-    AppsIDs = [x["id"] for x in dataApp]  # get a list with all ID-apps
-
-    dStart = deterministicDistributionStartPoint(0, time_in_each_step, name="Deterministic")
-
-    record_movements = open(temporal_folder + "/movements.csv", "w")
-    record_movements.write("taxi,DES,time,nodeSRC,nodeDST\n")
-    evol = UserControlMovement(
-        experiment_path=experiment_path,
-        doExecutionVideo=doExecutionVideo,
-        tiledTopo=tiledTopo,
-        listIdApps=AppsIDs,
-        appOp=appOp,
-        record_movements=record_movements,
-        limit_steps=int(config.get('simulation', 'stopSteps')),
-        ratio_message=int(config.get('agent', 'message_period'))
-    )
-
-    s.deploy_monitor("Traces_localization_update", evol, dStart,
-                     **{"sim": s,
-                        "routingAlgorithm": routingPath,
-                        "case": case,
-                        "stop_time": simulation_duration,
-                        "it": it})
-
-    s.set_movement_control(evol)
-
-    """
     RUNNING
     """
     logging.info(" Performing simulation: %s %i " % (case, it))
@@ -340,10 +179,10 @@ def main(number_simulation_steps,
     """
     # appOp.render(s,experiment_path,routingPath,["END",-1,-1,"NONE"])
     # evol.write_map_user_des(temporal_folder + "/MapUserDES_%s_%i.csv" % (case, it))
-    record_movements.close()
-    # s.print_debug_assignaments()
+
     appOp.close()
-    print("\nNumber of different connections for user movements: %i" % evol.total_diff_connections)
+    s.print_debug_assignaments()
+
 
 
 if __name__ == '__main__':
@@ -352,46 +191,26 @@ if __name__ == '__main__':
     # import os
     # print(os.getcwd())
 
-    experiments = []
     with open("experiment.json") as f:
         experiments = json.load(f)
 
     for item in experiments:
-        ncase, name, policy_file, radius, reversepath = item.values()
+        experiment_path = "scenarios/OriginalModel/"
+
+        codeCase = item["code"]
+        name = item["scenario"]
+        policy = item["policy"]
+        radius = item["radius"]
+        reversepath = item["reversepath"]
 
         # datestamp = time.strftime('%Y%m%d_%H%M')
         datestamp = "X"
-        temporal_folder = "results_%s_%s" %(ncase, datestamp) + "/"
+        temporal_folder = "results/results_%s_%s" % (codeCase, datestamp) + "/"
 
-        if name == "Rome":
-            experiment_path = "scenarios/TaxiRome/"
-            # policy_folder = "policy/"
-            projection = [[41.878037, 12.4462643], [41.919234, 12.5149603]]
+        config = ConfigParser()
+        config.read(experiment_path + 'config.ini')
 
-            print("Experiment definition at: ", experiment_path)
-            config = ConfigParser()
-            config.read(experiment_path + 'config.ini')
-
-
-            input_directory = experiment_path + "trajectories/normalized_trajectories.csv"  #
-            logging.info("Loading trajectories from (cached file): %s" % input_directory)
-            tracks = trackanimation.read_track(input_directory)
-            total_movements_in_tracks = tracks.df.VideoFrame.max()
-
-        elif name == "Grid":
-            experiment_path = "scenarios/Grid/"
-            print("Experiment definition at: ", experiment_path)
-            config = ConfigParser()
-            config.read(experiment_path + 'config.ini')
-            tracks = None
-            projection = None
-            total_movements_in_tracks = 25
-
-        else:
-            print("Error with experiment name: Rome or ___")
-            sys.exit()
-
-        number_simulation_steps = int(config.get('simulation', 'stopSteps')) + 1  # +1 to enable the last movement
+        number_simulation_steps = int(config.get('simulation', 'stopSteps')) + 1
         time_in_each_step = int(config.get('simulation', 'time_in_each_step'))
         nSimulations = int(config.get('simulation', 'nSimulations'))
 
@@ -411,17 +230,15 @@ if __name__ == '__main__':
             main(number_simulation_steps=number_simulation_steps,
                  time_in_each_step=time_in_each_step,
                  experiment_path=experiment_path,
-                 policy_folder="configuration/",
+                 conf_folder="configuration/",
                  temporal_folder=temporal_folder,
                  case=name,
-                 tracks=tracks,
-                 projection=projection,
                  config=config,
                  doExecutionVideo=True,  # expensive task
                  it=iteration,
                  radius=radius,
                  reversepath=reversepath,
-                 policy_file=policy_file,
+                 policy_file=policy
                  )
 
             print("\n--- %s seconds ---" % (time.time() - start_time))

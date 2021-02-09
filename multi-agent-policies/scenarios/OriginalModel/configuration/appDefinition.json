@@ -5,7 +5,6 @@
     "HwReqs": 1,
     "MaxReqs": 5,
     "MaxLatency": 10,
-    "profile_rules": "policy1.pl",
 
     "transmission": [
       {
@@ -38,7 +37,6 @@
     "HwReqs": 1,
     "MaxReqs": 5,
     "MaxLatency": 10,
-    "profile_rules": "policy1.pl",
 
     "transmission": [
       {
@@ -71,7 +69,6 @@
     "HwReqs": 1,
     "MaxReqs": 5,
     "MaxLatency": 10,
-    "profile_rules": "policy1.pl",
 
     "transmission": [
       {
@@ -104,7 +101,6 @@
     "HwReqs": 1,
     "MaxReqs": 40,
     "MaxLatency": 1,
-    "profile_rules": "policy1.pl",
 
     "transmission": [
       {
@@ -137,7 +133,6 @@
     "HwReqs": 1,
     "MaxReqs": 40,
     "MaxLatency": 1,
-    "profile_rules": "policy1.pl",
 
     "transmission": [
       {
@@ -170,7 +165,6 @@
     "HwReqs": 1,
     "MaxReqs": 40,
     "MaxLatency": 1,
-    "profile_rules": "policy1.pl",
 
     "transmission": [
       {

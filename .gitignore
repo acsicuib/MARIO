@@ -13,3 +13,4 @@ network_*.png
 models/*.pl
 *.csv
 /multi-agent-policies/test*.py
+/multi-agent-policies/results/

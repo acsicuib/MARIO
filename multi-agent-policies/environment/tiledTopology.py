@@ -16,16 +16,18 @@ import networkx as nx
 
 
 def getAbbrNodeName(node):
-    level = node.split("lt")[0].split("n")[1]
-    lat = node.split("lt")[1].split("ln")[0]
-    lng = node.split("lt")[1].split("ln")[1]
-    return "%s-%s-%s" % (level, lat, lng)
+    # level = node.split("lt")[0].split("n")[1]
+    # lat = node.split("lt")[1].split("ln")[0]
+    # lng = node.split("lt")[1].split("ln")[1]
+    # return "%s-%s-%s" % (level, lat, lng)
+    return node
 
 def getAbbrNodeNameSnap(node):
-    level = node.split("lt")[0].split("n")[1]
-    lat = node.split("lt")[1].split("ln")[0]
-    lng = node.split("lt")[1].split("ln")[1]
-    return "%s(%s,%s)" % (level, lat, lng)
+    # level = node.split("lt")[0].split("n")[1]
+    # lat = node.split("lt")[1].split("ln")[0]
+    # lng = node.split("lt")[1].split("ln")[1]
+    # return "%s(%s,%s)" % (level, lat, lng)
+    return node
 
 class TiledTopology():
     
