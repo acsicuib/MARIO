@@ -1,8 +1,8 @@
 # Description
 
-MARIO publication 
-Target: Special Issue on Distributed Complex Systems: Governance, Engineering, and Maintenance
-Base branch: 
+- MARIO publication 
+- Target: Special Issue on Distributed Complex Systems: Governance, Engineering, and Maintenance
+- Base branch: scholar 
 
 ## Acknowledge
 
@@ -89,32 +89,7 @@ activation_period = 200
 message_period = 40
 window_agent_outcome = 5
 ```
--  File data/raw_trajectories.csv contains the traces of the RomeTaxis. YAFS uses trackAnimation library to normalize the movements in periods. Each taxi trajectory 
-is normalized (same initial time and same speed). It is necessary transform this data:
-```python
-##
-# STEP1:
-# Initializing of the common and static context of each simulation
-##
 
-# 1.1 Mobile entities trough GPX traces
-# The track normalization is an expensive computational task. A cached file is generated in each experiment path
-if os.path.isfile(temporal_folder + "normalized_trajectories.csv"):
-    input_directory = temporal_folder + "normalized_trajectories.csv"  #
-    logging.info("Loading trajectories from (cached file): %s" % input_directory)
-    tracks = trackanimation.read_track(input_directory)
-else:
-    pathGPXs = temporal_folder+"trajectories/"
-    if not os.path.isdir(pathGPXs):
-        logging.info("Generating trajectories from (raw CSV file)")
-        input_directory = experiment_path + "data/raw_trajectories.csv"  #
-        pathGPXs = parser_CSVTaxiRome_toGPXfiles(input_directory, pathGPXs)
-
-    logging.info("Loading trajectories from (raw GPX files): %s" % pathGPXs)
-    tracks = trackanimation.read_track(pathGPXs)
-    tracks = tracks.time_video_normalize(time=int(config.get('simulation', 'trackSteps')), framerate=1)  # framerate must be one
-    tracks.export(temporal_folder + "normalized_trajectories") 
-```
 -  policy/--.pl are the prolog files with different policies 1--4
 -  policy/allocDefinition.json describes the initial allocation of the instances
 ```json
@@ -127,94 +102,18 @@ else:
 ```
 -  policy/appDefinition.json defines the apps
 ```json
-[
-  {
-    "id": 1,
-    "name": 1,
-    "HwReqs": 1,
-    "MaxReqs": 5,
-    "MaxLatency": 10,
-    "profile_rules": "policy1.pl",  
-
-    "transmission": [
-      {
-        "message_in": "M.USER.APP.1",
-        "module": "1_01"           
-      }
-    ],
-    "module": [
-      {
-        "id": 1,
-        "name": "1_01",
-        "type": "MODULE",
-        "RAM": 1
-      }
-    ],
-    "message": [
-      {
-        "id": 0,
-        "name": "M.USER.APP.1",
-        "s": "None",
-        "d": "1_01",
-        "bytes": 1,
-        "instructions": 1
-      }
-    ]
-  },
+TODO
 
 ```
-- Cesium_viewer folder contains HTML files to view the 3D topology on its real map projection using [Cesium](https://cesium.com/)
-- test_data_on_topology.py generates JSON data of the topology to be included in Cesium_viewer/index.html (it is a manual process)
-- test_traces_info.py generates JSON data of the traces to be included in Cesium_viewer/CZML Path.html (it is a manual process)
 
 A scenario has other definitions such as topology, routing algorithm, MARIO app and movement manager. All of them are defined in the main.py file.
 
 # Topology structure
 
-In YAFS the network topology is defined using NetworkX library. In our case, we define a Tiled topology to cover a surface.
+In YAFS the network topology is defined using NetworkX library.  The topology is defined in main.py
 
-You have some examples of the TiledTopology using Cesium_viewer/index.html and test_data_on_topology.py
-
-- Topology with a size of 4 x 4 edge nodes 
-<img src="https://github.com/acsicuib/MARIO/raw/MarioII/media/Topology_4_Rome.gif" width="630" height="316"/></a>
-- Topology with a size of 16 x 16 edge nodes 
-<img src="https://github.com/acsicuib/MARIO/raw/MarioII/media/Topology_16_Rome.gif" width="630" height="316"/></a>
-
-
-The topology is defined in main.py
 ```python
-t = Topology()
-tiledTopo = TiledTopology(int(config.get('topology', 'size')))
-t.G = tiledTopo.TiledGraph(projection)
-cloudNode = "n0lt0ln0"
-# Definition of mandatory attributes
-## on edges
-# PR and BW
-attBW = {x:int(config.get('topology', 'BW')) for x in t.G.edges()}
-nx.set_edge_attributes(t.G,name="BW",values=attBW)
-
-attPR = {}
-#...
-nx.set_edge_attributes(t.G,name="PR",values=attPR)
-
-## Mandatory attr. on nodes
-# HwReqs = level + 2
-attHW = {}
-#...
-attHW[cloudNode] = int(config.get('topology', 'HwReqs_cloud_node')) #THE CLOUD Node capacity BIGGER NUMBER OF APPS
-
-#SHAPE attributes are for visualization purpose. It is related to attHW capacity
-# ...
-# IPT
-attIPT = {x:int(config.get('topology', 'IPT')) for x in t.G.nodes()}
-nx.set_node_attributes(t.G,name="IPT",values=attIPT)
-nx.set_node_attributes(t.G,name="HwReqs",values=attHW)
-
-t.write(temporal_folder + "network_%i.gexf" % tiledTopo.size)
-
-nx.set_node_attributes(t.G,name="shape",values=attShape) #attr. shape is not supported by gexf format - before write()-
-#for render inside matplotlib
-tiledTopo.setPosPlot(t.G,[[0,0],[20,20]])
+TODO
 ```
 
 
@@ -223,12 +122,7 @@ tiledTopo.setPosPlot(t.G,[[0,0],[20,20]])
 The experiments in main.py are automated:
 
 ```python
-experiments = [
-    ("P1_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy1.pl"),
-    ("P2_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy2.pl"),
-    ("P3_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy3.pl"),
-    ("P4_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy4.pl")
-]
+TODO
 ```
 - "P1_s3" is the code of the experiment
 - "Rome" is the another name
