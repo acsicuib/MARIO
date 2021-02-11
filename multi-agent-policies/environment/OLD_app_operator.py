@@ -351,26 +351,10 @@ class Mario():
         if node not in self.__draw_controlUser.keys():
             self.__draw_controlUser[node] = 0
         total = self.__draw_controlUser[node]
-        line = int(total / 8) + 1
-        # duy = 0.06 * line
-        # dux = 0.01 * (total % 4)
 
-
-        #simple policies
-        # if scenario == "Grid":
-        #     duy = -0.036 * (line*1.0001)
-        #     dux = (.0 * (total % 4))+(0.002*total)-0.04*line
-        # else:
-        duy = -0.26 * (line * 1.1)
-        dux = (.0 * (total % 4)) + (0.2 * total) - 0.4 * line
-
-
-
-        # #
-        # # new
-        # duy = 4.56 * line
-        # dux = 2.55 * (total % 4)
-        # self.__draw_controlUser[node] += 1
+        line = int(total / 4) + 1
+        duy = -0.26 * line
+        dux = (.0 * (total % 4)) + (0.2 * total)
 
         ax.scatter(self.pos[node][0] + dux, self.pos[node][1] + duy, s=400.0, marker='o', color=newcolors[service],edgecolors="black")
 
@@ -521,8 +505,9 @@ class Mario():
         # Labels on nodes
 
         for x in sim.topology.G.nodes:
-            ax.text(self.pos[x][0]-0.01, self.pos[x][1]+0.08 , tiledTopology.getAbbrNodeNameSnap(x), fontsize=10,fontweight="bold")
-
+            # ax.text(self.pos[x][0]-0.01, self.pos[x][1]+0.08 , tiledTopology.getAbbrNodeNameSnap(x), fontsize=10,fontweight="bold")
+            ax.text(self.pos[x][0] - (width / 1), self.pos[x][1] + (width / 1), "N%i" % (x), fontsize=30,
+                fontweight="bold")
 
 
 
@@ -634,6 +619,8 @@ class Mario():
 
 
         # print("Rendering fILE: %s"%(self.image_dir + "/network_%05d.png" % self.image_id))
+
+        print("YYYYYYYY \n" * 20)
         return self.image_dir + "/network_%05d.png" % self.image_id
 
 
@@ -687,8 +674,9 @@ class Mario():
                 ax.text(self.pos[x][0]- (width/12), self.pos[x][1] , tiledTopology.getAbbrNodeName(x), fontsize=10,
                         fontweight="bold")
             else:
-                ax.text(self.pos[x][0] - (width/75), self.pos[x][1] + (width/35) , tiledTopology.getAbbrNodeName(x), fontsize=10,fontweight="bold")
+                ax.text(self.pos[x][0] , self.pos[x][1], tiledTopology.getAbbrNodeName(x), fontsize=40,fontweight="bold")
 
+        print("XXXXX "*20)
         if not "closers" in self.image_dir:
             legendItems = []
             for i in range(1,len(dataApps)+1):

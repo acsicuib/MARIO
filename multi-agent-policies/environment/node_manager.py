@@ -348,30 +348,14 @@ class NodeManager():
         """
         if node not in self.__draw_controlUser.keys():
             self.__draw_controlUser[node] = 0
-        total = self.__draw_controlUser[node]
-        line = int(total / 8) + 1
-        # duy = 0.06 * line
-        # dux = 0.01 * (total % 4)
 
-
-        #simple policies
-        # if scenario == "Grid":
-        #     duy = -0.036 * (line*1.0001)
-        #     dux = (.0 * (total % 4))+(0.002*total)-0.04*line
-        # else:
-        duy = -0.26 * (line * 1.1)
-        dux = (.0 * (total % 4)) + (0.2 * total) - 0.4 * line
-
-
-
-        # #
-        # # new
-        # duy = 4.56 * line
-        # dux = 2.55 * (total % 4)
-        # self.__draw_controlUser[node] += 1
+        numberUserRow = 4
+        inPlace = self.__draw_controlUser[node]
+        line = int(inPlace // numberUserRow)
+        duy = -0.25 - (0.15 * line)
+        dux = -.2 + (.15* (inPlace % numberUserRow))
 
         ax.scatter(self.pos[node][0] + dux, self.pos[node][1] + duy, s=400.0, marker='o', color=newcolors[service],edgecolors="black")
-
         self.__draw_controlUser[node]+=1
 
     def get_app_identifier(self,nameservice):
@@ -392,10 +376,6 @@ class NodeManager():
                     size = sim.get_size_service(app, sim.alloc_level[des])
                     currentOccupation[sim.alloc_DES[des]] -= size
         return currentOccupation
-
-
-
-
 
     def get_nodes_with_services(self,sim):
         """
@@ -517,22 +497,20 @@ class NodeManager():
 
 
         # Labels on nodes
-
         for x in sim.topology.G.nodes:
-            ax.text(self.pos[x][0]-0.01, self.pos[x][1]+0.08 , tiledTopology.getAbbrNodeNameSnap(x), fontsize=10,fontweight="bold")
+            if x == 0:
+                ax.text(self.pos[x][0]- (width/16), self.pos[x][1] , tiledTopology.getAbbrNodeName(x), fontsize=20,fontweight="bold")
+            else:
+                ax.text(self.pos[x][0] - (width/35), self.pos[x][1] + (width/50) , tiledTopology.getAbbrNodeName(x), fontsize=20,fontweight="bold")
 
 
 
-
-        # APP Legend
         if not "closers" in self.image_dir:
-        # DEFAULT Legends apps
             legendItems = []
             for i in range(1,len(dataApps)+1):
                 color_app = newcmp(i)
-                legendItems.append(mpatches.Patch(color=color_app, label='App: %i'%i))
-            plt.legend(loc="lower center",handles=legendItems, ncol=len(dataApps))
-
+                legendItems.append(mpatches.Patch(facecolor=color_app, edgecolor="black", linewidth=".7" ,label='App: %i'%i))
+            plt.legend(loc="upper left",handles=legendItems, ncol=len(dataApps)//2,fontsize=18)
 
         # Plotting users dots
         self.__draw_controlUser = {}
@@ -559,19 +537,22 @@ class NodeManager():
         # Generate node shape
         nodesDESUsed = set()
         for n in sim.topology.G.nodes():
-            # Some viz. vars.
+            nodesDESUsed = set()
             xx, yy = trans(self.pos[n])  # figure coordinates
             xa, ya = trans2((xx, yy))  # axes coordinates
             nrows, ncols = data_occupation[n].shape
-            if nrows*ncols == 1:
-                piesize = .028
-            elif nrows*ncols<6:
-                piesize = .048
+            if nrows * ncols == 1:
+                piesize = .020
+            elif nrows * ncols < 4:
+                piesize = .050
+            elif nrows * ncols < 6:
+                piesize = .08
+            elif nrows * ncols < 8:
+                piesize = .1
             else:
-                piesize = .078
+                piesize = .12
 
             p2 = piesize / 2.5
-
             a = plt.axes([xa - p2, ya - p2, piesize, piesize])
             # a.set_aspect('equal')
 
@@ -682,26 +663,26 @@ class NodeManager():
         # Labels on nodes
         for x in sim.topology.G.nodes:
             if x == 0:
-                ax.text(self.pos[x][0]- (width/12), self.pos[x][1] , tiledTopology.getAbbrNodeName(x), fontsize=10,
-                        fontweight="bold")
+                ax.text(self.pos[x][0]- (width/16), self.pos[x][1] , tiledTopology.getAbbrNodeName(x), fontsize=20,fontweight="bold")
             else:
-                ax.text(self.pos[x][0] - (width/75), self.pos[x][1] + (width/35) , tiledTopology.getAbbrNodeName(x), fontsize=10,fontweight="bold")
+                ax.text(self.pos[x][0] - (width/35), self.pos[x][1] + (width/50) , tiledTopology.getAbbrNodeName(x), fontsize=20,fontweight="bold")
 
         if not "closers" in self.image_dir:
             legendItems = []
             for i in range(1,len(dataApps)+1):
                 color_app = newcmp(i)
-                legendItems.append(mpatches.Patch(color=color_app, label='App: %i'%i))
-            plt.legend(loc="lower center",handles=legendItems, ncol=len(dataApps))
+                legendItems.append(mpatches.Patch(facecolor=color_app, edgecolor="black", linewidth=".7" ,label='App: %i'%i))
+            # plt.legend(loc="lower center",handles=legendItems, ncol=len(dataApps),fontsize=14)
+            plt.legend(loc="upper left",handles=legendItems, ncol=len(dataApps)//2,fontsize=18)
 
 
         # Plotting users dots
         self.__draw_controlUser = {}
         nodes_with_users = self.get_nodes_with_users(routing)
 
+
         #PRINT ALL USERS
         for node in nodes_with_users:
-            # print(node)
             for app in nodes_with_users[node]:
                 self.__draw_user(node, int(app), ax, newcolors)
 
@@ -716,22 +697,36 @@ class NodeManager():
             nodesDESUsed = set()
             xx, yy = trans(self.pos[n])  # figure coordinates
             xa, ya = trans2((xx, yy))  # axes coordinates
-            a = plt.axes([xa - p2, ya - p2, piesize, piesize])
-            a.set_aspect('equal')
-
-            #For labelling cells in the imshow
             nrows, ncols = data_occupation[n].shape
-            real_x = np.array(range(0,ncols))
-            real_y = np.array(range(0,nrows))
+            if nrows * ncols == 1:
+                piesize = .020
+            elif nrows * ncols < 4:
+                piesize = .050
+            elif nrows * ncols < 6:
+                piesize = .08
+            elif nrows * ncols < 8:
+                piesize = .1
+            else:
+                piesize = .12
+
+            p2 = piesize / 2.5
+
+            a = plt.axes([xa - p2, ya - p2, piesize, piesize])
+
+            # For labelling cells in the imshow
+            real_x = np.array(range(0, ncols))
+            real_y = np.array(range(0, nrows))
             if len(real_x) > 1:
                 dx = (real_x[1] - real_x[0]) / 2.
             else:
                 dx = 0.5
-            if len(real_y)>1:
+            if len(real_y) > 1:
                 dy = (real_y[1] - real_y[0]) / 2.
             else:
                 dy = 0.5
             extent = [real_x[0] - dx, real_x[-1] + dx, real_y[0] - dy, real_y[-1] + dy]
+
+            # Include the current instance service identificator close to the node
 
             # Include the current instance service identificator close to the node
             a.imshow(data_occupation[n], cmap=newcmp, interpolation='none', norm=norm,extent=extent)
@@ -768,3 +763,4 @@ class NodeManager():
         self.snap_id += 1
         plt.close(fig)
 
+        print("YYYYYYYY \n" * 20)

@@ -229,9 +229,9 @@ class PolicyManager():
             ################################################################################
             # The agent communicates to the appOperator (MARIO) its operations
             ################################################################################
-            print(action)
-            nodeID = 0 #TODO get node from action
-            self.app_operator.get_actions_from_agents(nodeID,(self.name,self.DES,currentNode,action))
+            # print(action)
+            # nodeID = 0 #TODO get node from action
+            # self.app_operator.get_actions_from_agents(nodeID,(self.name,self.DES,currentNode,action))
 
 
     def run_prolog_model(self, facts, serviceID, current_node, path_results, sim):

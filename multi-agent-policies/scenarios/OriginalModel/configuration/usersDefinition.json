@@ -41,6 +41,15 @@
       "start": 20,
       "constraint": {"deadline":500,"cost":300}
     },
+        {
+      "id_resource": 6,
+      "app": 6,
+      "message": "M.USER.APP.6",
+      "lambda": 200,
+      "start": 20,
+      "constraint": {"deadline":500,"cost":300}
+    },
+
     {
       "id_resource": 7,
       "app": 3,
@@ -53,7 +62,7 @@
       "id_resource": 7,
       "app": 4,
       "message": "M.USER.APP.4",
-      "lambda": 1,
+      "lambda": 200,
       "start": 20,
       "constraint": {"deadline":500,"cost":300}
     },
@@ -69,7 +78,7 @@
       "id_resource": 8,
       "app": 3,
       "message": "M.USER.APP.3",
-      "lambda": 50,
+      "lambda": 200,
       "start": 20,
       "constraint": {"deadline":500,"cost":300}
     },
