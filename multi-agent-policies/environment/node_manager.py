@@ -13,22 +13,17 @@ import json
 from collections import Counter
 import tiledTopology
 import matplotlib.patches as mpatches
-
+from collections import defaultdict
 
 RENDERSNAP = False
 
-class Mario():
-    """
-    We called it Mario in honour to our video game moustached character ;)
-
-    """
-
+class NodeManager():
 
     def __init__(self, common_rules, service_rule_profile, path_csv_files, app_number, period, render, path_results, cloud_node, window_agent_size,
                     radius,reversepath ):
         self.create_initial_services = True
         self.logger = logging.getLogger(__name__)
-        self.memory = []
+        self.memory = defaultdict(list)
         # self.memory = deque(maxlen=200)
         self.period = period
         self.common_rules = common_rules
@@ -99,117 +94,120 @@ class Mario():
 
             self.snapshot(sim, path, routing)
         else:
-            if len(self.memory)>0:
-                self.step += 1
-                # DEBUG
-                # print("+"*20)
-                self.logger.debug("MARIO - Activation step: %i  - Time: %i" %(self.step,sim.env.now))
-                # print("- Size buffer of actions: %i" % len(self.memory))
-                # print("- Current situation:")
-                # sim.print_debug_assignaments()
 
-            if RENDERSNAP:
-                self.snapshot(sim, path, routing)
+            for k in self.memory:
 
-            # current implementation FCFS
-            self.UID += 1
-            take_last_action = [] # It perfoms the last set of agent rules
-            counter_actions = Counter()
-            clean_routing_cache = False
-            # (name, DES, currentNode, ('migrate', '2', 'n0lt0ln0'),)
-            for name,DES,currentNode,operations in reversed(self.memory):
+                if len(self.memory[k])>0:
+                    self.step += 1
+                    # DEBUG
+                    # print("+"*20)
+                    self.logger.debug("MARIO - Activation step: %i  - Time: %i" %(self.step,sim.env.now))
+                    # print("- Size buffer of actions: %i" % len(self.memory))
+                    # print("- Current situation:")
+                    # sim.print_debug_assignaments()
 
-                for (action,service_id,onNode,level) in operations:
-                    # print("+ MARIO + get actions from DES_service: ", DES)
-                    # print("\tService: ", name)
-                    # print("\tNode: ", currentNode)
-                    # print("\tAction: ", action)
-                    # print("\t+ OnNode:", onNode)
-
-                    service_id = int(service_id)
-                    if onNode == "self":
-                        onNode = currentNode
-
-                    if DES not in take_last_action: # One rule for agent we get the last one
-                        take_last_action.append(DES)
-
-                        #Reset the buffer of lastoutcome statements
-                        if self.window_agent_size == self.window_agent_comm[service_id]:
-                            self.window_agent_comm[service_id] = 0
-                            self.agent_communication[service_id] = []
-
-                        # The render of the action is done the state of the simulator changes
-                        if self.render_action and action != "nop":
-                            image_file = self.render(sim, path, routing,
-                                                       service=name,
-                                                       serviceID=service_id,
-                                                       currentNode=currentNode,
-                                                       action=action,
-                                                       onNode=onNode)
-
-
-                        done = self.perfom_action(sim,
-                                                  service = name,
-                                                  serviceID=service_id,
-                                                  currentNode = currentNode,
-                                                  action = action,
-                                                  onNode = onNode,
-                                                  level = level,
-                                                  routingAlgorithm= routing,
-                                                  path = path)
-
-
-
-                        if self.render_action and not done:
-                            try:
-                                # self.logger.warning("Image removed")
-                                os.remove(image_file)
-                            except FileNotFoundError:
-                                None
-
-
-                        if action == "undeploy" and service_id in self.agent_communication:
-                            del self.agent_communication[service_id]
-
-                        # status = "accepted"
-                        if done:
-                            if not clean_routing_cache:
-                                clean_routing_cache = (action != "nop")
-                            self.logger.debug("Action %s taken on Node %s." % (action, onNode))
-                            counter_actions[action] += 1
-                            self.actions_moves.write("%i,%i,%i,%s\n"%(service_id,self.get_app_identifier(name),sim.env.now,action))
-
-                            break
-                        else:
-                            self.logger.debug("Action %s on nNode %s not possible."%(action,onNode))
-                            counter_actions["none"] += 1
-                            status = "rejected"
-                            self.actions_moves.write(
-                                "%i,%i,%i,none\n" % (service_id, self.get_app_identifier(name), sim.env.now))
-                            self.agent_communication[service_id].append(((action, service_id, onNode), status))
-
-                #end for (operations)
-                self.window_agent_comm[service_id] += 1
-            #end for all-operations
-
-            self.memory = []
-            if clean_routing_cache:
-                # Cache routing data is stored to improve the execution time of the simulator
                 if RENDERSNAP:
-                    self.snapshot(sim, path, routing) # IMPORTANT previous to clean the cache!
-                # if the cache has to be cleared it is because there have been changes.
-                routing.clear_routing_cache()
+                    self.snapshot(sim, path, routing)
 
-            #writing stats
-            if len(counter_actions)>0:
-                # print(counter_actions)
-                line = ""
-                for k in ["undeploy","nop","migrate","replicate","none"]:
-                    line += "%i,"%counter_actions[k]
+                # current implementation FCFS
+                self.UID += 1
+                take_last_action = [] # It perfoms the last set of agent rules
+                counter_actions = Counter()
+                clean_routing_cache = False
+                # (name, DES, currentNode, ('migrate', '2', 'n0lt0ln0'),)
+                for name,DES,currentNode,operations in reversed(self.memory[k]):
 
-                # print(line[:-1])
-                self.action_stats.write("%i,%s\n"%(sim.env.now,line[:-1]))
-                self.action_stats.flush()
+                    for (action,service_id,onNode,level) in operations:
+                        # print("+ MARIO + get actions from DES_service: ", DES)
+                        # print("\tService: ", name)
+                        # print("\tNode: ", currentNode)
+                        # print("\tAction: ", action)
+                        # print("\t+ OnNode:", onNode)
+
+                        service_id = int(service_id)
+                        if onNode == "self":
+                            onNode = currentNode
+
+                        if DES not in take_last_action: # One rule for agent we get the last one
+                            take_last_action.append(DES)
+
+                            #Reset the buffer of lastoutcome statements
+                            if self.window_agent_size == self.window_agent_comm[service_id]:
+                                self.window_agent_comm[service_id] = 0
+                                self.agent_communication[service_id] = []
+
+                            # The render of the action is done the state of the simulator changes
+                            if self.render_action and action != "nop":
+                                image_file = self.render(sim, path, routing,
+                                                           service=name,
+                                                           serviceID=service_id,
+                                                           currentNode=currentNode,
+                                                           action=action,
+                                                           onNode=onNode)
+
+
+                            done = self.perfom_action(sim,
+                                                      service = name,
+                                                      serviceID=service_id,
+                                                      currentNode = currentNode,
+                                                      action = action,
+                                                      onNode = onNode,
+                                                      level = level,
+                                                      routingAlgorithm= routing,
+                                                      path = path)
+
+
+
+                            if self.render_action and not done:
+                                try:
+                                    # self.logger.warning("Image removed")
+                                    os.remove(image_file)
+                                except FileNotFoundError:
+                                    None
+
+
+                            if action == "undeploy" and service_id in self.agent_communication:
+                                del self.agent_communication[service_id]
+
+                            # status = "accepted"
+                            if done:
+                                if not clean_routing_cache:
+                                    clean_routing_cache = (action != "nop")
+                                self.logger.debug("Action %s taken on Node %s." % (action, onNode))
+                                counter_actions[action] += 1
+                                self.actions_moves.write("%i,%i,%i,%s\n"%(service_id,self.get_app_identifier(name),sim.env.now,action))
+
+                                break
+                            else:
+                                self.logger.debug("Action %s on nNode %s not possible."%(action,onNode))
+                                counter_actions["none"] += 1
+                                status = "rejected"
+                                self.actions_moves.write(
+                                    "%i,%i,%i,none\n" % (service_id, self.get_app_identifier(name), sim.env.now))
+                                self.agent_communication[service_id].append(((action, service_id, onNode), status))
+
+                    #end for (operations)
+                    self.window_agent_comm[service_id] += 1
+                #end for all-operations
+
+                self.memory[k] = list()
+                if clean_routing_cache:
+                    # Cache routing data is stored to improve the execution time of the simulator
+                    if RENDERSNAP:
+                        self.snapshot(sim, path, routing) # IMPORTANT previous to clean the cache!
+                    # if the cache has to be cleared it is because there have been changes.
+                    routing.clear_routing_cache()
+
+                #writing stats
+                if len(counter_actions)>0:
+                    # print(counter_actions)
+                    line = ""
+                    for k in ["undeploy","nop","migrate","replicate","none"]:
+                        line += "%i,"%counter_actions[k]
+
+                    # print(line[:-1])
+                    self.action_stats.write("%i,%s\n"%(sim.env.now,line[:-1]))
+                    self.action_stats.flush()
 
     def get_size_level(self,service,level):
         # TODO
@@ -330,14 +328,14 @@ class Mario():
         # print("Generating a new agent control from: %s with id: %i - Monitor: %i" % (service, des, id_monitor))
         self.active_monitor[des] = id_monitor
 
-    def get_actions_from_agents(self, something):
+    def get_actions_from_agents(self, nodeID, something):
         """
         Agents write in this buffer
 
         :param something:
         :return:
         """
-        self.memory.append(something)
+        self.memory[nodeID].append(something)
 
     def __draw_user(self, node, service, ax, newcolors,scenario=None):
         """

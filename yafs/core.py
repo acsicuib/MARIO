@@ -183,6 +183,12 @@ class Sim:
         self.coverage = None
         self.control_movement_class = None
 
+
+
+        #v3
+        self.alloc_level = {}
+        self.apps_level = {}
+
     # self.__send_message(app_name, message, idDES, self.SOURCE_METRIC)
     def __send_message(self, app_name, message, idDES, type):
         """
@@ -436,7 +442,12 @@ class Sim:
                 # att_node = self.topology.get_nodes_att()[id_node] # WARNING DEPRECATED from V1.0
                 att_node = self.topology.G.nodes[id_node]
 
-                time_service = message.inst / float(att_node["IPT"])
+                # version3. the service time is related to the level size
+                # Note Isaac
+                size = self.get_speed_service(app,self.alloc_level[des])
+                time_service = message.inst / float(size)
+                # time_service = message.inst / float(att_node["IPT"])
+
 
 
             """
@@ -831,7 +842,7 @@ class Sim:
         return idDES
 
     # idsrc = sim.deploy_module(app_name, module, id_node, register_consumer_msg)
-    def __deploy_module(self, app_name, module, id_node, register_consumer_msg):
+    def __deploy_module(self, app_name, module, id_node, register_consumer_msg,level):
         """
         Add a DES process for deploy  modules
         This function its used by (:mod:`Population`) algorithm
@@ -844,6 +855,8 @@ class Sim:
             module (str): module name
 
             msg (str): message?
+
+            level (str): module size
 
         Kwargs:
             param - the parameters of the *distribution* function
@@ -859,6 +872,9 @@ class Sim:
         self.__add_consumer_service_pipe(app_name, module, idDES)
 
         self.alloc_DES[idDES] = id_node
+        self.alloc_level[idDES] = level
+
+
         if module not in self.alloc_module[app_name]:
             self.alloc_module[app_name][module] = []
         self.alloc_module[app_name][module].append(idDES)
@@ -1011,7 +1027,7 @@ class Sim:
         return alloc_entities
 
 
-    def deploy_module(self,app_name,module, services,ids):
+    def deploy_module(self,app_name,module, services,ids,level):
         register_consumer_msg = []
         id_DES =[]
 
@@ -1043,7 +1059,7 @@ class Sim:
 
         if len(register_consumer_msg) > 0:
             for id_topology in ids:
-                id_DES.append(self.__deploy_module(app_name, module, id_topology, register_consumer_msg))
+                id_DES.append(self.__deploy_module(app_name, module, id_topology, register_consumer_msg,level))
 
         return id_DES
 
@@ -1065,6 +1081,7 @@ class Sim:
                 self.alloc_module[app_name][service_name].remove(des)
                 self.stop_process(des)
                 del self.alloc_DES[des]
+                del self.alloc_level[des]
 
     def undeploy_source(self, des):
         """ remove one source deployed in a node
@@ -1076,6 +1093,7 @@ class Sim:
             self.stop_process(des)
             del self.alloc_source[des]
             del self.alloc_DES[des]
+            del self.alloc_level[des]
 
 
     def undeploy_module(self, app_name,service_name, des):
@@ -1089,6 +1107,7 @@ class Sim:
                 self.alloc_module[app_name][service_name].remove(des)
                 self.stop_process(des)
                 del self.alloc_DES[des]
+                del self.alloc_level[des]
                 break
 
     def remove_node(self, id_node_topology):
@@ -1201,8 +1220,14 @@ class Sim:
     #     animation = AnimationTrack(self, dpi=100, bg_map=True, aspect='equal')
     #     animation.make_video(output_file=pathFile, framerate=10, linewidth=1.0)
 
+    def set_apps_levels(self, apps_level):
+        self.apps_level = apps_level
 
+    def get_size_service(self,app,level):
+        return self.apps_level[app][level][0]
 
+    def get_speed_service(self,app,level):
+        return self.apps_level[app][level][1]
 
     def set_movement_control(self,evol):
         self.control_movement_class = evol
@@ -1232,6 +1257,8 @@ class Sim:
             for app_name in place[1]["apps"]:
                 place[1]["placement_policy"].initial_allocation(self, app_name)  # internally consideres the apps in charge
 
+
+
         """
         A internal DES process will stop the simulation,
         *Simpy.run.until* wait to all pipers are empty. So, hundreds of messages should be service... We force with the stop
@@ -1241,6 +1268,9 @@ class Sim:
         self.env.process(self.__add_stop_monitor("Stop_Control_Monitor",self.__ctrl_progress_monitor,distribution,show_progress_monitor,time_shift=time_shift))
 
         self.print_debug_assignaments()
+
+        print("LEVELS of EACH idDES Process")
+        print(self.alloc_level)
 
 
         """

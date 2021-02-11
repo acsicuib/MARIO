@@ -5,6 +5,7 @@
     "HwReqs": 1,
     "MaxReqs": 5,
     "MaxLatency": 10,
+    "level": {"small":[1,10],"medium":[2,20],"large": [3,50]},
 
     "transmission": [
       {
@@ -14,10 +15,7 @@
     ],
     "module": [
       {
-        "id": 1,
-        "name": "1_01",
-        "type": "MODULE",
-        "RAM": 1
+        "name": "1_01"
       }
     ],
     "message": [
@@ -27,7 +25,7 @@
         "s": "None",
         "d": "1_01",
         "bytes": 1,
-        "instructions": 1
+        "instructions": 100
       }
     ]
   },
@@ -37,6 +35,7 @@
     "HwReqs": 1,
     "MaxReqs": 5,
     "MaxLatency": 10,
+   "level": {"small":[1,10],"medium":[2,20],"large": [3,50]},
 
     "transmission": [
       {
@@ -46,10 +45,7 @@
     ],
     "module": [
       {
-        "id": 2,
-        "name": "2_01",
-        "type": "MODULE",
-        "RAM": 1
+        "name": "2_01"
       }
     ],
     "message": [
@@ -59,7 +55,7 @@
         "s": "None",
         "d": "2_01",
         "bytes": 1,
-        "instructions": 1
+        "instructions": 100
       }
     ]
   },
@@ -69,7 +65,7 @@
     "HwReqs": 1,
     "MaxReqs": 5,
     "MaxLatency": 10,
-
+   "level": {"small":[1,10],"medium":[2,20],"large": [3,50]},
     "transmission": [
       {
         "message_in": "M.USER.APP.3",
@@ -78,10 +74,7 @@
     ],
     "module": [
       {
-        "id": 3,
-        "name": "3_01",
-        "type": "MODULE",
-        "RAM": 1
+        "name": "3_01"
       }
     ],
     "message": [
@@ -91,7 +84,7 @@
         "s": "None",
         "d": "3_01",
         "bytes": 1,
-        "instructions": 1
+        "instructions": 100
       }
     ]
   },
@@ -101,6 +94,7 @@
     "HwReqs": 1,
     "MaxReqs": 40,
     "MaxLatency": 1,
+   "level": {"small":[1,10],"medium":[2,20],"large": [3,50]},
 
     "transmission": [
       {
@@ -110,10 +104,7 @@
     ],
     "module": [
       {
-        "id": 4,
-        "name": "4_01",
-        "type": "MODULE",
-        "RAM": 1
+        "name": "4_01"
       }
     ],
     "message": [
@@ -123,7 +114,7 @@
         "s": "None",
         "d": "4_01",
         "bytes": 1,
-        "instructions": 1
+        "instructions": 100
       }
     ]
   },
@@ -133,6 +124,7 @@
     "HwReqs": 1,
     "MaxReqs": 40,
     "MaxLatency": 1,
+   "level": {"small":[1,10],"medium":[2,20],"large": [3,50]},
 
     "transmission": [
       {
@@ -142,10 +134,7 @@
     ],
     "module": [
       {
-        "id": 5,
-        "name": "5_01",
-        "type": "MODULE",
-        "RAM": 1
+        "name": "5_01"
       }
     ],
     "message": [
@@ -155,7 +144,7 @@
         "s": "None",
         "d": "5_01",
         "bytes": 1,
-        "instructions": 1
+        "instructions": 100
       }
     ]
   },
@@ -165,6 +154,7 @@
     "HwReqs": 1,
     "MaxReqs": 40,
     "MaxLatency": 1,
+   "level": {"small":[1,10],"medium":[2,20],"large": [3,50]},
 
     "transmission": [
       {
@@ -174,10 +164,7 @@
     ],
     "module": [
       {
-        "id": 6,
-        "name": "6_01",
-        "type": "MODULE",
-        "RAM": 1
+        "name": "6_01"
       }
     ],
     "message": [
@@ -187,7 +174,7 @@
         "s": "None",
         "d": "6_01",
         "bytes": 1,
-        "instructions": 1
+        "instructions": 100
       }
     ]
   }

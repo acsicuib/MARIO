@@ -23,7 +23,8 @@ from yafs.placement import JSONPlacement
 import trackanimation
 from environment.workload import DynamicWorkload
 from environment.path_routing import DeviceSpeedAwareRouting
-from environment.app_operator import Mario
+# from environment.app_operator import Mario
+from environment.node_manager import NodeManager
 from environment.problogRulesGenerator import Rules
 from userMovement import UserControlMovement
 from tiledTopology import TiledTopology
@@ -34,7 +35,7 @@ def create_applications_from_json(data):
         a = Application(name=app["name"])
         modules = [{"None": {"Type": Application.TYPE_SOURCE}}]
         for module in app["module"]:
-            modules.append({module["name"]: {"RAM": module["RAM"], "Type": Application.TYPE_MODULE}})
+            modules.append({module["name"]: {"level": app["level"],"Type": Application.TYPE_MODULE}})
         a.set_modules(modules)
 
         ms = {}
@@ -92,8 +93,19 @@ def main(number_simulation_steps,
     dataApp = json.load(open(experiment_path + conf_folder+ 'appDefinition.json'))
     apps = create_applications_from_json(dataApp)
 
+    apps_level = {}
     for app in dataApp:
-        globalrules.and_rule("service", app["name"], app["HwReqs"], app["MaxReqs"], app["MaxLatency"])
+        level = app["level"]
+        apps_level[app["name"]] = level
+        str_level = "["
+        for k in level:
+            str_level+="(%s,%i,%i),"%(k,level[k][0],level[k][1])
+        str_level = str_level[:-1]+"]"
+        globalrules.and_rule("service", app["name"],str_level, app["MaxLatency"])
+        # print(globalrules)
+        # globalrules.and_rule("service", app["name"], app["HwReqs"], app["MaxReqs"], app["MaxLatency"])
+        # globalrules.and_rule("service", app["name"], app["HwReqs"], app["MaxReqs"], app["MaxLatency"])
+
 
     service_rule_profile = {}
     for app in dataApp:
@@ -119,6 +131,7 @@ def main(number_simulation_steps,
     """
     path_csv_files = temporal_folder + "/Results_%s_%i" % (case, it)
     s = Sim(t, default_results_path=path_csv_files)
+    s.set_apps_levels(apps_level)
 
     """
     INITIAL DEPLOY OF SERVICES
@@ -149,7 +162,7 @@ def main(number_simulation_steps,
     """
     time_activation = deterministic_distribution(time=int(config.get('appOperator', 'activation_period')),
                                                  name="Deterministic")
-    appOp = Mario(globalrules, service_rule_profile, path_csv_files,
+    nM = NodeManager(globalrules, service_rule_profile, path_csv_files,
                   app_number=len(dataApp),
                   period=int(config.get('agent', 'activation_period')),
                   render=True,  # only snaps
@@ -160,7 +173,7 @@ def main(number_simulation_steps,
                   reversepath = reversepath
                   )
 
-    s.deploy_monitor("App-Operator", appOp, time_activation,
+    s.deploy_monitor("App-Operator", nM, time_activation,
                      **{"sim": s,
                         "routing": routingPath,
                         "path": experiment_path+"configuration/",
@@ -180,7 +193,7 @@ def main(number_simulation_steps,
     # appOp.render(s,experiment_path,routingPath,["END",-1,-1,"NONE"])
     # evol.write_map_user_des(temporal_folder + "/MapUserDES_%s_%i.csv" % (case, it))
 
-    appOp.close()
+    nM.close()
     s.print_debug_assignaments()
 
 

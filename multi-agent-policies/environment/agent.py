@@ -66,7 +66,8 @@ class PolicyManager():
             dict_module_node = sim.alloc_module[app]  # modules deployed
             for module in dict_module_node:
                 for des in dict_module_node[module]:
-                    currentOccupation[sim.alloc_DES[des]] -= 1
+                    size = sim.get_size_service(app,sim.alloc_level[des])
+                    currentOccupation[sim.alloc_DES[des]] -= size
         return currentOccupation
 
 
@@ -95,12 +96,14 @@ class PolicyManager():
 
             # current node where the service with id (self.DES) is deployed.
             currentNode = sim.alloc_DES[self.DES]
+            level = sim.alloc_level[self.DES]
+
 
             ################################################################################
             # SERVICEINSTANCE fact
             # serviceInstance(ServiceInstanceId, ServiceId, Node).
             ################################################################################
-            self.rules.and_rule("serviceInstance",self.DES,self.app_name,currentNode)
+            self.rules.and_rule("serviceInstance",self.DES,self.app_name,level,currentNode)
 
             ################################################################################
             # NODE fact
@@ -215,16 +218,20 @@ class PolicyManager():
                     action, service_id, onNode = prevOperation
                     self.rules.and_rule("refused",action, service_id, onNode)
 
+
+
             ################################################################################
             # RUN the model
             ################################################################################
-            action = self.run_prolog_model(self.rules, self.DES, currentNode, path_results, sim)
+            # action = self.run_prolog_model(self.rules, self.DES, currentNode, path_results, sim)
 
 
             ################################################################################
             # The agent communicates to the appOperator (MARIO) its operations
             ################################################################################
-            self.app_operator.get_actions_from_agents((self.name,self.DES,currentNode,action))
+            print(action)
+            nodeID = 0 #TODO get node from action
+            self.app_operator.get_actions_from_agents(nodeID,(self.name,self.DES,currentNode,action))
 
 
     def run_prolog_model(self, facts, serviceID, current_node, path_results, sim):
