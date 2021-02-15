@@ -1151,6 +1151,14 @@ class Sim:
                     fullAssignation[des] = {"DES": self.alloc_DES[des], "module": module}
         return fullAssignation
 
+    def get_module(self,DES):
+        for app in self.alloc_module:
+            for module in self.alloc_module[app]:
+                deployed = self.alloc_module[app][module]
+                for d in deployed:
+                    if d == DES:
+                        return module
+
 
     def print_debug_assignaments(self):
         """

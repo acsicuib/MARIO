@@ -103,7 +103,7 @@ class PolicyManager():
             # SERVICEINSTANCE fact
             # serviceInstance(ServiceInstanceId, ServiceId, Node).
             ################################################################################
-            self.rules.and_rule("serviceInstance",self.DES,self.app_name,level,currentNode)
+            self.rules.and_rule("serviceInstance",self.DES,self.app_name,level,"self")
 
             ################################################################################
             # NODE fact
@@ -143,9 +143,10 @@ class PolicyManager():
             neighbours = [e[1] for e in sim.topology.G.edges(currentNode)]
             neighbours = list(dict.fromkeys(neighbours))
             for n in nodesRadius:
-                self.rules.and_rule("node", n, available_space_on_node[n], [])
+                if n != currentNode:
+                    self.rules.and_rule("node", n, available_space_on_node[n], [])
 
-            self.rules.and_rule("node", currentNode, available_space_on_node[currentNode], neighbours)
+            self.rules.and_rule("node", "self", available_space_on_node[currentNode], neighbours)
 
             ## LIST OF DIRECT NODES to the CurrentNode
             # neighbours = [e[1] for e in sim.topology.G.edges(currentNode)]
@@ -223,15 +224,23 @@ class PolicyManager():
             ################################################################################
             # RUN the model
             ################################################################################
-            # action = self.run_prolog_model(self.rules, self.DES, currentNode, path_results, sim)
+            actions = self.run_prolog_model(self.rules, self.DES, currentNode, path_results, sim)
 
 
             ################################################################################
             # The agent communicates to the appOperator (MARIO) its operations
             ################################################################################
-            # print(action)
-            # nodeID = 0 #TODO get node from action
-            # self.app_operator.get_actions_from_agents(nodeID,(self.name,self.DES,currentNode,action))
+            # print(actions)
+            #the 3rd field is the nodeID
+            priorityActionIndex = 0
+            action = actions[priorityActionIndex]
+            node_requests_alloc = action[2]
+            if node_requests_alloc=="self":
+                node_requests_alloc = currentNode
+            # print(node_requests_alloc)
+            node_requests_alloc = int(node_requests_alloc)
+
+            self.app_operator.get_actions_from_agents(node_requests_alloc,(self.name,self.DES,currentNode,action))
 
 
     def run_prolog_model(self, facts, serviceID, current_node, path_results, sim):
@@ -242,7 +251,7 @@ class PolicyManager():
 
         # There is a lib.pl to clean the policy rules
         # this file is loaded in this point, but its path is implicit in self.rule_profile
-        loadOtherPLModels = ["lib","agentRequests"]
+        loadOtherPLModels = ["lib", "agentRequests"]
         pathparts = self.rule_profile.split("/")
         # Include other models
         rule_file = ""
@@ -290,7 +299,7 @@ class PolicyManager():
 
 
             it = iter("".join(c for c in expr if c not in "()[] ").split(","))
-            result = [(x, y, z ) for x, y, z in zip(it, it, it)]
+            result = [(x, y, z, v ) for x, y, z, v in zip(it, it, it, it)]
             ## result == [('migrate', '2', 'n0lt0ln0'), ('replicate', '2', 'n0lt0ln0')]
 
             # print("*-*-" * 5)
@@ -301,7 +310,7 @@ class PolicyManager():
 
             assert len(result)>=0, "(agent.py) Prolog return is incorrect"
 
-            result.append(("nop", serviceID, "UKN"))
+            result.append(("nop", serviceID, "UKN", "UKN"))
             return result
 
         except TimeoutExpired as err:

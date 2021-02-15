@@ -1,3 +1,5 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% "libray" of auxiliary predicates
 
 sumRequestRates([],0).
 sumRequestRates([(_,R,_)|Xs], Tot) :- sumRequestRates(Xs,TotXs), Tot is R+TotXs.
@@ -18,4 +20,3 @@ mostRequestsFrom2([X],X).
 mostRequestsFrom2([(Mx,Rx)|Xs],(M,R)) :-
     length(Xs,XsLength), XsLength>0, mostRequestsFrom2(Xs,(MXs,RXs)),
     ( (Rx>RXs, M=Mx, R=Rx); (Rx=<RXs, M=MXs, R=RXs) ).
-

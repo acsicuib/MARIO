@@ -1,10 +1,10 @@
 [
 
   {
-    "code": "Test",
-    "scenario":"X",
-    "policy":"policy1.pl",
-    "radius": 2,
+    "code": "Test01",
+    "scenario":"Test",
+    "policy":"osmotic1.pl",
+    "radius": 1,
     "reversepath": 1
   }
 ]

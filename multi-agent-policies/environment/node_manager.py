@@ -1,5 +1,7 @@
 from collections import defaultdict
 from agent import PolicyManager
+from problogRulesGenerator import Rules
+from yafs.topology import *
 from yafs.distribution import *
 import logging
 import matplotlib.pyplot as plt
@@ -14,7 +16,8 @@ from collections import Counter
 import tiledTopology
 import matplotlib.patches as mpatches
 from collections import defaultdict
-
+import pandas as pd
+from subprocess import Popen, PIPE, TimeoutExpired
 RENDERSNAP = False
 
 class NodeManager():
@@ -44,6 +47,8 @@ class NodeManager():
         self.active_monitor = {}
         # key: id_service (DES), value: id_monitor (DES)
 
+        self.load_samples_from = defaultdict(int)
+
         #STATS
         self.dump_stats = 0
 
@@ -61,7 +66,12 @@ class NodeManager():
         self.action_stats.close()
         self.actions_moves.close()
 
-
+    def get_latency(self, path, topology):
+        speed = 0
+        for i in range(len(path) - 1):
+            link = (path[i], path[i + 1])
+            speed += topology.G.edges[link][Topology.LINK_PR]
+        return speed
 
     def __call__(self, sim, routing, path):
         """
@@ -77,7 +87,7 @@ class NodeManager():
         # The occupation of a node can be managed by the simulator but to easy integration with the visualization both structures are different
 
         if self.create_initial_services:
-            self.logger.debug("MARIO - INIT - Time: %i" % (sim.env.now))
+            self.logger.debug("Node Managers - Global Initialization - Time: %i" % (sim.env.now))
             self.service_calls = defaultdict(list)
             for app in sim.alloc_module:
                 for service in sim.alloc_module[app]:
@@ -86,7 +96,7 @@ class NodeManager():
             self.create_initial_services = False #only one time
 
             self.action_stats = open(self.path_results+"action_stats.txt",'w')
-            self.action_stats.write("time,undeploy,nop,migrate,replicate,none\n")
+            self.action_stats.write("time,undeploy,nop,migrate,replicate,none,shrink,expand\n")
 
             self.actions_moves = open(self.path_results+"moves_stats.txt",'w')
             self.actions_moves.write("idService,app,time,action\n")
@@ -94,62 +104,137 @@ class NodeManager():
 
             self.snapshot(sim, path, routing)
         else:
-
-            for k in self.memory:
-
-                if len(self.memory[k])>0:
+            for nodeManagerId in self.memory:
+                if len(self.memory[nodeManagerId])>0:
                     self.step += 1
                     # DEBUG
                     # print("+"*20)
-                    self.logger.debug("MARIO - Activation step: %i  - Time: %i" %(self.step,sim.env.now))
+                    self.logger.debug("NodeManager Node %i - Activation step: %i  - Time: %i" %(nodeManagerId,self.step,sim.env.now))
                     # print("- Size buffer of actions: %i" % len(self.memory))
                     # print("- Current situation:")
                     # sim.print_debug_assignaments()
 
-                if RENDERSNAP:
-                    self.snapshot(sim, path, routing)
+                    if RENDERSNAP:
+                        self.snapshot(sim, path, routing)
 
-                # current implementation FCFS
-                self.UID += 1
-                take_last_action = [] # It perfoms the last set of agent rules
-                counter_actions = Counter()
-                clean_routing_cache = False
-                # (name, DES, currentNode, ('migrate', '2', 'n0lt0ln0'),)
-                for name,DES,currentNode,operations in reversed(self.memory[k]):
+                    # current implementation FCFS
+                    self.UID += 1
+                    take_last_action = [] # It perfoms the last set of agent rules
+                    counter_actions = Counter()
+                    clean_routing_cache = False
 
-                    for (action,service_id,onNode,level) in operations:
-                        # print("+ MARIO + get actions from DES_service: ", DES)
-                        # print("\tService: ", name)
-                        # print("\tNode: ", currentNode)
-                        # print("\tAction: ", action)
-                        # print("\t+ OnNode:", onNode)
+                    # (name, DES, currentNode, ('migrate', '2', 'n0lt0ln0'),)
+                    for name,DES,fromNode,operation in reversed(self.memory[nodeManagerId]):
+                        (action, serviceId, _, level) = operation
+                        # for action,serviceId,onNode,level in operation:
+                        print("+ Node Manager: %i + get actions from DES_service: %i"%(nodeManagerId,DES))
+                        print("\tService: ", name)
+                        appname = self.get_app_identifier(name)
+                        print("\tApp name: ", appname)
+                        print("\tServiceId: ", serviceId)
+                        print("\tFrom Node: ", fromNode)
+                        print("\tAction: ", action)
+                        print("\tFlavour:", level)
+                        # print("\tNodeManager:", onNode)
+                        serviceId = int(serviceId)
+                        # onNode = int(onNode)
+                        #### GENERATING NEW FACTS
+                        #TODO create some cache from same facts
+                        rules = Rules(self.common_rules)
 
-                        service_id = int(service_id)
+                        available_space_on_node = self.get_free_space_on_nodes(sim)
+                        nodesRadius = nx.single_source_shortest_path_length(sim.topology.G, source=nodeManagerId,cutoff=self.radius)
+                        neighbours = [e[1] for e in sim.topology.G.edges(nodeManagerId)]
+                        neighbours = list(dict.fromkeys(neighbours))
+                        for n in nodesRadius:
+                            if n != nodeManagerId:
+                                rules.and_rule("node", n, available_space_on_node[n], [])
+                        rules.and_rule("node", "self", available_space_on_node[nodeManagerId], neighbours)
+
+
+                        ####
+                        # Service Instance
+                        # Que servicios instnacias hay en nodos vecinos y self nodos.
+                        usedDES = set()
+                        neighbours = set(neighbours)
+                        for (path, des) in routing.controlServices.values():
+                            if path[-1] in neighbours:
+                                desOnThatNode = des
+                                if des not in usedDES:
+                                    usedDES.add(des)
+                                    appname = self.get_app_identifier(module)
+                                    level = sim.alloc_level[desOnThatNode]
+                                    module = sim.get_module(desOnThatNode)
+                                    if path[-1]==nodeManagerId:
+                                        rules.and_rule("serviceInstance", desOnThatNode, appname, level, "self")
+                                    else:
+                                        rules.and_rule("serviceInstance", desOnThatNode, appname, level, path[-1])
+
+                        ################################################################################
+                        # REQUEST fact
+                        # requests(ServiceInstanceId, Neighbour, RequestRate, LatencyToClient).
+                        ################################################################################
+                        requests = []
+                        for (path, des) in routing.controlServices.values():
+                            if path[-1]==nodeManagerId:
+                                requests.append([self.get_latency(path, sim.topology), path])
+
+                        sim.metrics.flush()
+                        # We only load samples that are generated along current period (self.activations-1,self.activation)
+                        df = pd.read_csv(self.path_csv_files + ".csv",
+                                         skiprows=range(1, self.load_samples_from[nodeManagerId]))  # It includes the csv header
+                        self.load_samples_from[nodeManagerId] += len(df.index) - 1  # avoid header
+                        df = df[df["DES.dst"] == serviceId]
+                        if len(df) > 0:
+                            # print("Number of samples: %i (from: %i)" % (len(df.index)-1, self.previous_number_samples))
+                            if len(requests) > 0:
+                                for (latencyPath, path) in requests:
+                                    node_user = path[0]  # The last node. It is not the ID-user.
+                                    n_messages = len(df[df["TOPO.src"] == node_user])
+                                    if n_messages > 0:
+                                        if len(path) == 1:
+                                            node_code = ["self"]
+                                        else:
+                                            if (self.reversepath + 1) > len(path) - 1:
+                                                node_code = path[0:-1]
+                                            else:
+                                                node_code = path[-(self.reversepath + 1):-1]
+                                        rules.and_rule("requests", serviceId, node_code, n_messages, latencyPath)
+
+                        # Current operation from the node
+                        rules.and_rule("operation",action,serviceId,"self",level)
+
+                        actions = self.run_prolog_model(rules, serviceId, nodeManagerId, self.path_results, sim,appname)
+
+                        print(actions)
+                        exit()
+
+
                         if onNode == "self":
-                            onNode = currentNode
+                            onNode = nodeManagerId
 
                         if DES not in take_last_action: # One rule for agent we get the last one
                             take_last_action.append(DES)
 
                             #Reset the buffer of lastoutcome statements
-                            if self.window_agent_size == self.window_agent_comm[service_id]:
-                                self.window_agent_comm[service_id] = 0
-                                self.agent_communication[service_id] = []
+                            if self.window_agent_size == self.window_agent_comm[serviceId]:
+                                self.window_agent_comm[serviceId] = 0
+                                self.agent_communication[serviceId] = []
 
                             # The render of the action is done the state of the simulator changes
                             if self.render_action and action != "nop":
                                 image_file = self.render(sim, path, routing,
                                                            service=name,
-                                                           serviceID=service_id,
-                                                           currentNode=currentNode,
+                                                           serviceID=serviceId,
+                                                           currentNode=fromNode,
                                                            action=action,
                                                            onNode=onNode)
 
 
                             done = self.perfom_action(sim,
                                                       service = name,
-                                                      serviceID=service_id,
-                                                      currentNode = currentNode,
+                                                      serviceID=serviceId,
+                                                      currentNode = fromNode,
                                                       action = action,
                                                       onNode = onNode,
                                                       level = level,
@@ -166,8 +251,8 @@ class NodeManager():
                                     None
 
 
-                            if action == "undeploy" and service_id in self.agent_communication:
-                                del self.agent_communication[service_id]
+                            if action == "undeploy" and serviceId in self.agent_communication:
+                                del self.agent_communication[serviceId]
 
                             # status = "accepted"
                             if done:
@@ -175,7 +260,7 @@ class NodeManager():
                                     clean_routing_cache = (action != "nop")
                                 self.logger.debug("Action %s taken on Node %s." % (action, onNode))
                                 counter_actions[action] += 1
-                                self.actions_moves.write("%i,%i,%i,%s\n"%(service_id,self.get_app_identifier(name),sim.env.now,action))
+                                self.actions_moves.write("%i,%i,%i,%s\n"%(serviceId,self.get_app_identifier(name),sim.env.now,action))
 
                                 break
                             else:
@@ -183,36 +268,103 @@ class NodeManager():
                                 counter_actions["none"] += 1
                                 status = "rejected"
                                 self.actions_moves.write(
-                                    "%i,%i,%i,none\n" % (service_id, self.get_app_identifier(name), sim.env.now))
-                                self.agent_communication[service_id].append(((action, service_id, onNode), status))
+                                    "%i,%i,%i,none\n" % (serviceId, self.get_app_identifier(name), sim.env.now))
+                                self.agent_communication[serviceId].append(((action, serviceId, onNode), status))
 
-                    #end for (operations)
-                    self.window_agent_comm[service_id] += 1
-                #end for all-operations
+                        #end for (operations)
+                        self.window_agent_comm[serviceId] += 1
+                    #end for all-operations
 
-                self.memory[k] = list()
-                if clean_routing_cache:
-                    # Cache routing data is stored to improve the execution time of the simulator
-                    if RENDERSNAP:
-                        self.snapshot(sim, path, routing) # IMPORTANT previous to clean the cache!
-                    # if the cache has to be cleared it is because there have been changes.
-                    routing.clear_routing_cache()
+                    self.memory[nodeManagerId] = list()
+                    if clean_routing_cache:
+                        # Cache routing data is stored to improve the execution time of the simulator
+                        if RENDERSNAP:
+                            self.snapshot(sim, path, routing) # IMPORTANT previous to clean the cache!
+                        # if the cache has to be cleared it is because there have been changes.
+                        routing.clear_routing_cache()
 
-                #writing stats
-                if len(counter_actions)>0:
-                    # print(counter_actions)
-                    line = ""
-                    for k in ["undeploy","nop","migrate","replicate","none"]:
-                        line += "%i,"%counter_actions[k]
+                    #writing stats
+                    if len(counter_actions)>0:
+                        # print(counter_actions)
+                        line = ""
+                        for nodeManagerId in ["undeploy","nop","migrate","replicate","none"]:
+                            line += "%i,"%counter_actions[nodeManagerId]
 
-                    # print(line[:-1])
-                    self.action_stats.write("%i,%s\n"%(sim.env.now,line[:-1]))
-                    self.action_stats.flush()
+                        # print(line[:-1])
+                        self.action_stats.write("%i,%s\n"%(sim.env.now,line[:-1]))
+                        self.action_stats.flush()
 
-    def get_size_level(self,service,level):
-        # TODO
-        size = 1
-        return size
+
+    def run_prolog_model(self, facts, serviceID, current_node, path_results, sim,app_name):
+        ###
+        ### MARIO v.2.5. or Node Manager
+        ###
+        ## It prepares the file (.pl) to run it in a terminal command
+
+        # There is a lib.pl to clean the policy rules
+        # this file is loaded in this point, but its path is implicit in self.rule_profile
+        loadOtherPLModels = ["nodeManagerRequest"]
+        # Include other models
+        rule_file = ""
+        for other in loadOtherPLModels:
+            pathModel = "policies/%s.pl" % other
+            with open(pathModel, "r") as f:
+                rule_file += f.read()
+
+        #TODO improve the load of specific policies
+        with open("policies/n_manager1.pl", "r") as f:
+            rule_file += f.read()
+
+        # Include agent facts
+        rules_and_facts = ":- initialization(main).\n\n " \
+                          "%s\n%s\n" % (rule_file, str(facts))
+
+        # Write rules and facts in a Prolog file *.pl
+        rules_dir = Path(path_results + "model_nmanager/")
+        rules_dir.mkdir(parents=True, exist_ok=True)
+        rules_dir = str(rules_dir)
+        model_file = rules_dir + "/model_NM%i_DES%s_%i.pl" % (current_node, serviceID, sim.env.now)
+
+        with open(model_file, "w") as f:
+            f.write(rules_and_facts)
+            f.write("\nmain :- current_prolog_flag(argv, Argv),\n" \
+                    "  nth0(0, Argv, Argument0),\n" \
+                    "  atom_number(Argument0, ServiceID),\n" \
+                    "  n_operations(RequestedActions),\n" \
+                    "  format('~q~n', [RequestedActions]),\n" \
+                    "  halt.\n" \
+                    "main :-\n" \
+                    "  halt(1).\n")
+
+        ### Run the model using swipl command on the terminal
+        try:
+            cmd = ["swipl", model_file, str(serviceID)]
+            p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+            stdout, stderr = p.communicate(timeout=10)
+
+            expr = stdout.decode("utf-8")
+            expr = expr.replace("\n", "")
+
+            it = iter("".join(c for c in expr if c not in "()[] ").split(","))
+            result = [(x, y, z, v) for x, y, z, v in zip(it, it, it, it)]
+
+            # print("*-*-" * 5)
+            # print("ServiceID: ",serviceID)
+            # print("model_file: ",model_file)
+            # print("Actions :",result)
+            # print("*-*-"*5)
+
+            assert len(result) >= 0, "(nodeManager.py) Prolog response is incorrect"
+            # result.append(("nop", serviceID, "UKN", "UKN"))
+            return result
+
+        except TimeoutExpired as err:
+            p.terminate()
+            raise Exception("Error running PYSWIP model on file: %s - TIMEOUT EXPERIED" % model_file)
+        # except Exception as err:
+        #     print(err)
+        #     raise Exception("Error running PYSWIP model on file: %s" % model_file)
+
 
     def perfom_action(self, sim,
                       service,
@@ -310,6 +462,18 @@ class NodeManager():
         # Creating a new monitor associated to the module
         self.create_monitor_of_module(des, experiment_path, routingAlgorithm, service, sim)
 
+    # News in MARIO 2.5
+    # shrink or enlarge
+    # HW checks should be done previously
+    def modify_level_module(self, sim, id_service,level):
+        sim.alloc_level[id_service] = level
+
+    # News in MARIO 2.5
+    def get_size_level(self,sim,service,level):
+        app_name = self.get_app_identifier(service)
+        return sim.apps_level[app_name][level][1]
+
+
     def create_monitor_of_module(self, des, path, routing, service, sim):
         period = deterministic_distribution(self.period, name="Deterministic")
         pm = PolicyManager(des, service, self.common_rules, self.service_rule_profile, self.path_csv_files, self, self.render,self.radius,self.reversepath)
@@ -376,6 +540,7 @@ class NodeManager():
                     size = sim.get_size_service(app, sim.alloc_level[des])
                     currentOccupation[sim.alloc_DES[des]] -= size
         return currentOccupation
+
 
     def get_nodes_with_services(self,sim):
         """
@@ -762,5 +927,3 @@ class NodeManager():
         pil_image.save(self.image_dir + "/snap_%05d.png" % self.snap_id)
         self.snap_id += 1
         plt.close(fig)
-
-        print("YYYYYYYY \n" * 20)

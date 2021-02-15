@@ -208,17 +208,18 @@ if __name__ == '__main__':
         experiments = json.load(f)
 
     for item in experiments:
-        experiment_path = "scenarios/OriginalModel/"
 
-        codeCase = item["code"]
+        code = item["code"]
         name = item["scenario"]
         policy = item["policy"]
         radius = item["radius"]
         reversepath = item["reversepath"]
 
+        experiment_path = "scenarios/%s/"%name
+
         # datestamp = time.strftime('%Y%m%d_%H%M')
         datestamp = "X"
-        temporal_folder = "results/results_%s_%s" % (codeCase, datestamp) + "/"
+        temporal_folder = "results/results_%s_%s" % (code, datestamp) + "/"
 
         config = ConfigParser()
         config.read(experiment_path + 'config.ini')

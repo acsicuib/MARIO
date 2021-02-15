@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "name": 1,
+    "HwReqs": 1,
+    "MaxReqs": 5,
+    "MaxLatency": 10,
+    "level": {"small":[1,10],"medium":[2,20],"large": [5,50]},
+
+    "transmission": [
+      {
+        "message_in": "M.USER.APP.1",
+        "module": "1_01"
+      }
+    ],
+    "module": [
+      {
+        "name": "1_01"
+      }
+    ],
+    "message": [
+      {
+        "id": 0,
+        "name": "M.USER.APP.1",
+        "s": "None",
+        "d": "1_01",
+        "bytes": 1,
+        "instructions": 100
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": 2,
+    "HwReqs": 1,
+    "MaxReqs": 5,
+    "MaxLatency": 10,
+   "level": {"small":[1,10],"medium":[2,20],"large": [3,50]},
+
+    "transmission": [
+      {
+        "message_in": "M.USER.APP.2",
+        "module": "2_01"
+      }
+    ],
+    "module": [
+      {
+        "name": "2_01"
+      }
+    ],
+    "message": [
+      {
+        "id": 1,
+        "name": "M.USER.APP.2",
+        "s": "None",
+        "d": "2_01",
+        "bytes": 1,
+        "instructions": 100
+      }
+    ]
+  }
+]

@@ -2,7 +2,7 @@
 
 - MARIO publication 
 - Target: Special Issue on Distributed Complex Systems: Governance, Engineering, and Maintenance
-- Base branch: scholar 
+- Extend branch: scholar 
 
 ## Acknowledge
 
@@ -13,9 +13,9 @@ PENDING
 In the article you can understand the behavior implemented in this project. Here we briefly comment on those aspects taken into account for its implementation:
 
 
-# Implementation of MARIO and Users(Taxis) in YAFS 
-YAFS is a skeleton for simulating Fog environments, and it accepts specific behaviors that allow it to adapt to any scenario. In this case, there is a DES process to implement MARIO; another DES process that controls the movement of users, and finally, as many DES processes as instances of applications are deployed.
+# Implementation of MARIO 2.5 and NodeManagers 
 
+YAFS is a skeleton for simulating Fog environments, and it accepts specific behaviors that allow it to adapt to any scenario. In this case, there is a DES process to implement MARIO; another DES process that controls the movement of users, and finally, as many DES processes as instances of applications are deployed.
 The next files provide this behaviour to the simulator. 
 ```bash
 enviroment folder
@@ -35,7 +35,7 @@ enviroment folder
 - problogRulesGenerator.py, it is a simple parser to generate the simulator facts into Prolog facts.
 
 
-# Definition of a scenario
+# Scenario definition
 
 A scenario has the following folder structure:
 ```bash
