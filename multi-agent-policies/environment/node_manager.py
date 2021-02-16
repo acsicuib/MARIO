@@ -107,37 +107,40 @@ class NodeManager():
             for nodeManagerId in self.memory:
                 if len(self.memory[nodeManagerId])>0:
                     self.step += 1
-                    # DEBUG
-                    # print("+"*20)
                     self.logger.debug("NodeManager Node %i - Activation step: %i  - Time: %i" %(nodeManagerId,self.step,sim.env.now))
-                    # print("- Size buffer of actions: %i" % len(self.memory))
-                    # print("- Current situation:")
-                    # sim.print_debug_assignaments()
 
                     if RENDERSNAP:
                         self.snapshot(sim, path, routing)
 
-                    # current implementation FCFS
                     self.UID += 1
-                    take_last_action = [] # It perfoms the last set of agent rules
+
                     counter_actions = Counter()
+                    previous_services = set()
                     clean_routing_cache = False
 
-                    # (name, DES, currentNode, ('migrate', '2', 'n0lt0ln0'),)
-                    for name,DES,fromNode,operation in reversed(self.memory[nodeManagerId]):
+                    #  LIFO agent request - reversed list - Only do the first one
+                    for service_name,DES,fromNode,operation in reversed(self.memory[nodeManagerId]):
                         (action, serviceId, _, level) = operation
+                        #assert DES == serviceId
+
+
+                        # We only deal with the last action of the agent that is possible
+                        if serviceId in previous_services: continue
+
+                        appname = self.get_app_identifier(service_name)
                         # for action,serviceId,onNode,level in operation:
                         print("+ Node Manager: %i + get actions from DES_service: %i"%(nodeManagerId,DES))
-                        print("\tService: ", name)
-                        appname = self.get_app_identifier(name)
+                        print("\tService: ", service_name)
                         print("\tApp name: ", appname)
                         print("\tServiceId: ", serviceId)
                         print("\tFrom Node: ", fromNode)
                         print("\tAction: ", action)
                         print("\tFlavour:", level)
                         # print("\tNodeManager:", onNode)
+
                         serviceId = int(serviceId)
-                        # onNode = int(onNode)
+
+
                         #### GENERATING NEW FACTS
                         #TODO create some cache from same facts
                         rules = Rules(self.common_rules)
@@ -162,13 +165,13 @@ class NodeManager():
                                 desOnThatNode = des
                                 if des not in usedDES:
                                     usedDES.add(des)
-                                    appname = self.get_app_identifier(module)
-                                    level = sim.alloc_level[desOnThatNode]
+                                    levelOnNode = sim.alloc_level[desOnThatNode]
                                     module = sim.get_module(desOnThatNode)
+                                    appname = self.get_app_identifier(module)
                                     if path[-1]==nodeManagerId:
-                                        rules.and_rule("serviceInstance", desOnThatNode, appname, level, "self")
+                                        rules.and_rule("serviceInstance", desOnThatNode, appname, levelOnNode, "self")
                                     else:
-                                        rules.and_rule("serviceInstance", desOnThatNode, appname, level, path[-1])
+                                        rules.and_rule("serviceInstance", desOnThatNode, appname, levelOnNode, path[-1])
 
                         ################################################################################
                         # REQUEST fact
@@ -204,77 +207,35 @@ class NodeManager():
                         # Current operation from the node
                         rules.and_rule("operation",action,serviceId,"self",level)
 
+                        # Run Prolog Model
                         actions = self.run_prolog_model(rules, serviceId, nodeManagerId, self.path_results, sim,appname)
+                        ###
 
+                        print("Actions debugging by NodeManager %i "%nodeManagerId)
+                        print("\tRaw actions from prolog:")
                         print(actions)
-                        exit()
+                        #TODO rethink the sort of the actions.
+                        #TODO all these actions are coherent, is it important the order?
 
+                        for (accept,service,operation,level) in actions:
+                            print("\tAction: ")
+                            print(accept,service,operation,level)
+                            if accept == "accept":
+                                assert action == operation, "Actions are different in NodeManager"
+                                assert int(service) == serviceId, "ServiceId (DES) should be equals in NodeManager"
+                                done = self.prepare_perform_action(sim, routing, path, serviceId,operation, service_name, serviceId, operation, fromNode,nodeManagerId,level)
+                                if done: #it should be done
+                                    clean_routing_cache = (action != "reject") or (clean_routing_cache != True)
+                                    self.logger.debug("Action %s taken on NodeManager %s." % (action, nodeManagerId))
+                                    counter_actions[action] += 1
+                                    self.actions_moves.write(
+                                        "%i, %i,%i,%i,%s, %s\n" % (
+                                        nodeManagerId, serviceId, self.get_app_identifier(service_name), sim.env.now, action, level))
 
-                        if onNode == "self":
-                            onNode = nodeManagerId
+                                    previous_services.add(serviceId)
+                        # End-for actions from NodeManager with the serviceID
 
-                        if DES not in take_last_action: # One rule for agent we get the last one
-                            take_last_action.append(DES)
-
-                            #Reset the buffer of lastoutcome statements
-                            if self.window_agent_size == self.window_agent_comm[serviceId]:
-                                self.window_agent_comm[serviceId] = 0
-                                self.agent_communication[serviceId] = []
-
-                            # The render of the action is done the state of the simulator changes
-                            if self.render_action and action != "nop":
-                                image_file = self.render(sim, path, routing,
-                                                           service=name,
-                                                           serviceID=serviceId,
-                                                           currentNode=fromNode,
-                                                           action=action,
-                                                           onNode=onNode)
-
-
-                            done = self.perfom_action(sim,
-                                                      service = name,
-                                                      serviceID=serviceId,
-                                                      currentNode = fromNode,
-                                                      action = action,
-                                                      onNode = onNode,
-                                                      level = level,
-                                                      routingAlgorithm= routing,
-                                                      path = path)
-
-
-
-                            if self.render_action and not done:
-                                try:
-                                    # self.logger.warning("Image removed")
-                                    os.remove(image_file)
-                                except FileNotFoundError:
-                                    None
-
-
-                            if action == "undeploy" and serviceId in self.agent_communication:
-                                del self.agent_communication[serviceId]
-
-                            # status = "accepted"
-                            if done:
-                                if not clean_routing_cache:
-                                    clean_routing_cache = (action != "nop")
-                                self.logger.debug("Action %s taken on Node %s." % (action, onNode))
-                                counter_actions[action] += 1
-                                self.actions_moves.write("%i,%i,%i,%s\n"%(serviceId,self.get_app_identifier(name),sim.env.now,action))
-
-                                break
-                            else:
-                                self.logger.debug("Action %s on nNode %s not possible."%(action,onNode))
-                                counter_actions["none"] += 1
-                                status = "rejected"
-                                self.actions_moves.write(
-                                    "%i,%i,%i,none\n" % (serviceId, self.get_app_identifier(name), sim.env.now))
-                                self.agent_communication[serviceId].append(((action, serviceId, onNode), status))
-
-                        #end for (operations)
-                        self.window_agent_comm[serviceId] += 1
-                    #end for all-operations
-
+                    # End-for. Managed all operations in memory of the NodeManager.
                     self.memory[nodeManagerId] = list()
                     if clean_routing_cache:
                         # Cache routing data is stored to improve the execution time of the simulator
@@ -283,17 +244,51 @@ class NodeManager():
                         # if the cache has to be cleared it is because there have been changes.
                         routing.clear_routing_cache()
 
-                    #writing stats
+                    # Writing stats
                     if len(counter_actions)>0:
-                        # print(counter_actions)
                         line = ""
-                        for nodeManagerId in ["undeploy","nop","migrate","replicate","none"]:
+                        for nodeManagerId in ["undeploy","nop","migrate","replicate","none","shrink","evict","reject"]:
                             line += "%i,"%counter_actions[nodeManagerId]
-
-                        # print(line[:-1])
                         self.action_stats.write("%i,%s\n"%(sim.env.now,line[:-1]))
                         self.action_stats.flush()
 
+    def prepare_perform_action(self, sim, routing, path, service_name, serviceId, action, fromNode, onNode, level):
+        # Reset the buffer of lastoutcome statements
+        if self.window_agent_size == self.window_agent_comm[serviceId]:
+            self.window_agent_comm[serviceId] = 0
+            self.agent_communication[serviceId] = []
+
+        # The render of the action is done before the action is perfomed and internal variables of the simulator changes
+        if self.render_action and action != "nop":
+            image_file = self.render(sim, path, routing,
+                                     service=service_name,
+                                     serviceID=serviceId,
+                                     currentNode=fromNode,
+                                     action=action,
+                                     onNode=onNode)
+
+        done = self.perfom_action(sim,
+                                  service=service_name,
+                                  serviceID=serviceId,
+                                  currentNode=fromNode,
+                                  action=action,
+                                  onNode=onNode,
+                                  level=level,
+                                  routingAlgorithm=routing,
+                                  path=path)
+
+        if self.render_action and not done:
+            try:
+                self.logger.critical("Action %s not done on NodeManager %i " % (action, onNode))
+                os.remove(image_file)
+            except FileNotFoundError:
+                None
+
+        if action == "undeploy" and serviceId in self.agent_communication:
+            del self.agent_communication[serviceId]
+
+        self.window_agent_comm[serviceId] += 1
+        return done
 
     def run_prolog_model(self, facts, serviceID, current_node, path_results, sim,app_name):
         ###
@@ -348,22 +343,12 @@ class NodeManager():
             it = iter("".join(c for c in expr if c not in "()[] ").split(","))
             result = [(x, y, z, v) for x, y, z, v in zip(it, it, it, it)]
 
-            # print("*-*-" * 5)
-            # print("ServiceID: ",serviceID)
-            # print("model_file: ",model_file)
-            # print("Actions :",result)
-            # print("*-*-"*5)
-
             assert len(result) >= 0, "(nodeManager.py) Prolog response is incorrect"
-            # result.append(("nop", serviceID, "UKN", "UKN"))
             return result
 
         except TimeoutExpired as err:
             p.terminate()
             raise Exception("Error running PYSWIP model on file: %s - TIMEOUT EXPERIED" % model_file)
-        # except Exception as err:
-        #     print(err)
-        #     raise Exception("Error running PYSWIP model on file: %s" % model_file)
 
 
     def perfom_action(self, sim,
