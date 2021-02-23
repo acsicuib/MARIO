@@ -2,12 +2,12 @@ import logging
 
 import time
 from yafs.distribution import *
+import numpy as np
 
 class UserControlMovement:
 
     def __init__(self,
                  experiment_path,
-                 doExecutionVideo,
                  appOp,
                  record_movements,
                  limit_steps,
@@ -31,6 +31,7 @@ class UserControlMovement:
         self.appOp = appOp
         self.edgeNodes = edgeNodes
 
+        self.probability_matriz = np.random.random((len(self.edgeNodes),len(self.edgeNodes)))
 
     def __call__(self, sim, routingAlgorithm,case, stop_time, it):
         """
@@ -52,20 +53,17 @@ class UserControlMovement:
                 self.logger.info("Movement number (#%i) at time: %i" % (self.current_step, sim.env.now))
                 start_time = time.time()
 
-                if (random.random()>0.2):
+                for user in usersDES:
                     # We move some users
-                    numberUsersToMove = np.random.choice(np.random.randint(3, 6))
-                    ids = np.random.choice(usersDES, numberUsersToMove)
-                    toNode = np.random.choice(self.edgeNodes,numberUsersToMove)
-                    usersDestination = zip(ids,toNode)
-                    for idDES, new_node in usersDestination:
-
-                        if new_node != sim.alloc_DES[idDES]:
-                            old_node = sim.alloc_DES[idDES]
-                            self.logger.debug("A new movement of user (#%s) from node %s to node %s" % (
-                            idDES, sim.alloc_DES[idDES], new_node))
-                            sim.alloc_DES[idDES] = new_node
-                            self.record_movements.write("%i,%i,%i,%i,%s\n" % (sim.alloc_source[idDES]["app"],idDES, sim.env.now, old_node,new_node))
+                    current_node = sim.alloc_DES[user]
+                    pos_node, = np.where(self.edgeNodes==current_node)
+                    if random.random()>self.probability_matriz[pos_node][pos_node]:
+                        options = self.probability_matriz[pos_node]
+                        options[pos_node] = 0
+                        toNode = np.random.choice(options, 1)
+                        self.logger.debug("A new movement of user (#%s) from node %s to node %s" % (user, current_node, toNode))
+                        sim.alloc_DES[user] = toNode
+                        self.record_movements.write("%i,%i,%i,%i,%s\n" % (sim.alloc_source[user]["app"],user, sim.env.now, current_node,toNode))
                 else:
                     self.logger.info("\t without user movements  ")
 

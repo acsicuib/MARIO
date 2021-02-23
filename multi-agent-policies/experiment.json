@@ -2,8 +2,8 @@
   {
     "code": "ModelAdapt",
     "scenario":"Model_withAdapt",
-    "policy":"osmotic3.pl",
-    "radius": 1,
+    "policy":"app_manager2.pl",
+    "radius": 2,
     "reversepath": 1
   }
 ]

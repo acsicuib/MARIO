@@ -138,15 +138,21 @@ class PolicyManager():
 
             # print("HERE")
             # print(currentNode)
-            nodesRadius = nx.single_source_shortest_path_length(sim.topology.G, source=currentNode, cutoff=self.radius)
 
+            # Generate the node fact of the current node
             neighbours = [e[1] for e in sim.topology.G.edges(currentNode)]
             neighbours = list(dict.fromkeys(neighbours))
+            self.rules.and_rule("node", "self", available_space_on_node[currentNode], neighbours)
+
+            # Generate the node fact from neighbourds
+            nodesRadius = nx.single_source_shortest_path_length(sim.topology.G, source=currentNode, cutoff=self.radius)
             for n in nodesRadius:
                 if n != currentNode:
-                    self.rules.and_rule("node", n, available_space_on_node[n], [])
+                    neighbours = [e[1] for e in sim.topology.G.edges(n)]
+                    neighbours = list(dict.fromkeys(neighbours))
+                    self.rules.and_rule("node", n, available_space_on_node[n], neighbours)
 
-            self.rules.and_rule("node", "self", available_space_on_node[currentNode], neighbours)
+
 
             ## LIST OF DIRECT NODES to the CurrentNode
             # neighbours = [e[1] for e in sim.topology.G.edges(currentNode)]
@@ -216,27 +222,6 @@ class PolicyManager():
                             else:
                                 node_code = path[-(self.reversepath+1):-1]
                         self.rules.and_rule("requests", self.DES, node_code, sumMessages, latency)
-
-                # # print("Number of samples: %i (from: %i)" % (len(df.index)-1, self.previous_number_samples))
-                # if len(requests)>0:
-                #     # print(df[["TOPO.src","TOPO.dst"]])
-                #     for (latencyPath,path) in requests:
-                #         node_user = path[0] # The last node. It is not the ID-user.
-                #         n_messages = len(df[df["TOPO.src"] == node_user])
-                #
-                #         print("NMessages: ",n_messages)
-                #         if n_messages > 0:
-                #             if len(path)==1:
-                #                 node_code= ["self"]
-                #             else:
-                #                 node_code = path[-2]
-                #                 if (self.reversepath + 1) > len(path)-1:
-                #                     node_code = path[0:-1]
-                #                 else:
-                #                     node_code = path[-(self.reversepath+1):-1]
-                #
-                #             # if self.reversepath
-                #             self.rules.and_rule("requests", self.DES, node_code, n_messages,latencyPath)
             else:
                 # print("INFO - No messages among users and service")
                 self.logger.warning("WARN - There are not new messages among users and service")
@@ -261,7 +246,10 @@ class PolicyManager():
             ################################################################################
             # The agent communicates to the appOperator (MARIO) its operations
             ################################################################################
+            # print(" ACTION FROM THE SERVICE: %i SIM.TIME: %i"%(self.DES,sim.env.now))
             # print(actions)
+            # print("*"*10)
+
             #the 3rd field is the nodeID
             priorityActionIndex = 0
             action = actions[priorityActionIndex]

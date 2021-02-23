@@ -4,13 +4,8 @@
 import os
 import time
 import json
-import sys
 import logging.config
-import gpxpy.gpx
-import datetime
-import subprocess
-import pandas as pd
-import networkx as nx
+
 from configparser import ConfigParser
 
 from yafs.core import Sim
@@ -20,14 +15,11 @@ from yafs.distribution import *
 from yafs.utils import fractional_selectivity
 from yafs.placement import JSONPlacement
 
-import trackanimation
+
 from environment.workload import DynamicWorkload
 from environment.path_routing import DeviceSpeedAwareRouting
-# from environment.app_operator import Mario
 from environment.node_manager import NodeManager
 from environment.problogRulesGenerator import Rules
-from userMovement import UserControlMovement
-from tiledTopology import TiledTopology
 
 def create_applications_from_json(data):
     applications = {}
@@ -83,6 +75,7 @@ def main(number_simulation_steps,
     cloudNode = 0 # "id == 0"
 
     edgeNodes = [id for (id,degree) in t.G.degree() if degree == 1]
+    edgeNodes = edgeNodes[1:] #to avoid the cloud in this topology
 
     """
     Global Rules for all services
@@ -104,9 +97,6 @@ def main(number_simulation_steps,
             str_level+="(%s,%i,%i),"%(k,level[k][0],level[k][1])
         str_level = str_level[:-1]+"]"
         globalrules.and_rule("service", app["name"],str_level, app["MaxLatency"])
-        # print(globalrules)
-        # globalrules.and_rule("service", app["name"], app["HwReqs"], app["MaxReqs"], app["MaxLatency"])
-        # globalrules.and_rule("service", app["name"], app["HwReqs"], app["MaxReqs"], app["MaxLatency"])
 
 
     service_rule_profile = {}
