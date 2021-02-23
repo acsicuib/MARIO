@@ -1173,12 +1173,29 @@ class Sim:
                     fullAssignation[des] = {"ID":self.alloc_DES[des],"Module":module} #DES process are unique for each module/element
 
         print("-"*40)
-        print("DES\t| TOPO \t| Src.Mod \t| Modules")
+        print("DES\t| TOPO \t| Src.Mod \t| Modules \t| Level")
         print("-" * 40)
         for k in self.alloc_DES:
-            print(k,"\t|",self.alloc_DES[k],"\t|",self.alloc_source[k]["name"] if k in self.alloc_source.keys() else "--","\t\t|",fullAssignation[k]["Module"] if k in fullAssignation.keys() else "--")
+            # print(k,"\t|",self.alloc_DES[k],"\t|",self.alloc_source[k]["name"] if k in self.alloc_source.keys() else "--","\t\t|",fullAssignation[k]["Module"] if k in fullAssignation.keys() else "--")
+            try:
+                level = self.alloc_level[k]
+            except KeyError:
+                level = ""
+
+            if k in self.alloc_source.keys():
+                module = self.alloc_source[k]["name"]
+            else:
+                module = "-- -- -- --"
+
+            print("%i\t|%i\t|%s\t|%s\t|%s\t|"%(k,
+                                         self.alloc_DES[k],
+                                         module,
+                                         fullAssignation[k]["Module"] if k in fullAssignation.keys() else "--",
+                                         level))
+
+
         print("-" * 40)
-        # exit()
+
 
     #
     # ### MOBILE ADAPTATION SECTION
@@ -1276,10 +1293,6 @@ class Sim:
         self.env.process(self.__add_stop_monitor("Stop_Control_Monitor",self.__ctrl_progress_monitor,distribution,show_progress_monitor,time_shift=time_shift))
 
         self.print_debug_assignaments()
-
-        print("LEVELS of EACH idDES Process")
-        print(self.alloc_level)
-
 
         """
         RUN

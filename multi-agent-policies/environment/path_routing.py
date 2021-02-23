@@ -88,11 +88,14 @@ class DeviceSpeedAwareRouting(Selection):
 
         else:
             path, des = self.cache[(from_des, node_src, tuple(DES_dst))]
-
-
         self.controlServices[(from_des,node_src, service)] = (path, des)
 
         return [path], [des]
+
+    def get_path_from_src_dst(self,sim, node_src, node_dst):
+        path = list(nx.shortest_path(sim.topology.G, source=node_src, target=node_dst))
+        return path
+
 
     def clear_routing_cache(self):
         self.invalid_cache_value = False

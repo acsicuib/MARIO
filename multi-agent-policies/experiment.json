@@ -1,9 +1,8 @@
 [
-
   {
-    "code": "Test01",
-    "scenario":"Test",
-    "policy":"osmotic1.pl",
+    "code": "ModelAdapt",
+    "scenario":"Model_withAdapt",
+    "policy":"osmotic3.pl",
     "radius": 1,
     "reversepath": 1
   }

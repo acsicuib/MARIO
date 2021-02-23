@@ -18,7 +18,9 @@ import matplotlib.patches as mpatches
 from collections import defaultdict
 import pandas as pd
 from subprocess import Popen, PIPE, TimeoutExpired
+
 RENDERSNAP = False
+DEBUG_TEXT_ON_RENDER = True
 
 class NodeManager():
 
@@ -38,7 +40,8 @@ class NodeManager():
         self.path_csv_files = path_csv_files
         self.total_services = app_number
         self.path_results = path_results
-        #render
+
+        # Render
         self.render_action = render
         self.image_id =0
         self.snap_id =0
@@ -96,36 +99,61 @@ class NodeManager():
             self.create_initial_services = False #only one time
 
             self.action_stats = open(self.path_results+"action_stats.txt",'w')
-            self.action_stats.write("time,undeploy,nop,migrate,replicate,none,shrink,expand\n")
+            self.action_stats.write("time,undeploy,nop,migrate,replicate,none,shrink,expand,DES,app\n")
 
             self.actions_moves = open(self.path_results+"moves_stats.txt",'w')
-            self.actions_moves.write("idService,app,time,action\n")
+            self.actions_moves.write("idService,app,time,action,level\n")
 
-
-            self.snapshot(sim, path, routing)
+            # Initial snapshot for debugging issues
+            self.snapshot(sim, routing)
         else:
+            clean_routing_cache = False
+
             for nodeManagerId in self.memory:
+                counter_actions = Counter()
+                #
+                # if nodeManagerId < 0 and len(self.memory[nodeManagerId])>0: #Special treatment of nop operations only for recording stats
+                #     counter_actions["nop"] += 1 #len(self.memory[nodeManagerId])
+                #     line = ""
+                #     for nodeManagerId in ["undeploy", "nop", "migrate", "replicate", "none", "shrink", "evict",
+                #                           "reject"]:
+                #         line += "%i," % counter_actions[nodeManagerId]
+                #     self.action_stats.write("%i,%s\n" % (sim.env.now, line[:-1]))
+                #     self.action_stats.flush()
+                #     # self.memory[nodeManagerId] = list()
+
                 if len(self.memory[nodeManagerId])>0:
                     self.step += 1
-                    self.logger.debug("NodeManager Node %i - Activation step: %i  - Time: %i" %(nodeManagerId,self.step,sim.env.now))
+                    self.logger.info("NodeManager Node %i - Activation step: %i  - Time: %i" %(nodeManagerId,self.step,sim.env.now))
 
                     if RENDERSNAP:
-                        self.snapshot(sim, path, routing)
-
+                        self.snapshot(sim, routing)
                     self.UID += 1
 
-                    counter_actions = Counter()
                     previous_services = set()
-                    clean_routing_cache = False
-
                     #  LIFO agent request - reversed list - Only do the first one
-                    for service_name,DES,fromNode,operation in reversed(self.memory[nodeManagerId]):
+
+
+                    # print("Action NodeManager: ",nodeManagerId)
+                    # print(list(self.memory[nodeManagerId]))
+
+                    for service_name,DES,fromNode,operation in self.memory[nodeManagerId]:
                         (action, serviceId, _, level) = operation
                         #assert DES == serviceId
-
-
                         # We only deal with the last action of the agent that is possible
                         if serviceId in previous_services: continue
+                        previous_services.add(serviceId)
+
+                        if action == "nop":
+                            counter_actions["nop"] += 1  # len(self.memory[nodeManagerId])
+                            line = ""
+                            for item in ["undeploy", "nop", "migrate", "replicate", "none", "shrink", "evict", "reject", "adapt"]:
+                                line += "%i," % counter_actions[item]
+                            line +="%i,%s"%(serviceId, self.get_app_identifier(service_name))
+                            # self.action_stats.write("%i,%s\n" % (sim.env.now, line[:-1]))
+                            self.action_stats.write("%i,%s\n" % (sim.env.now, line))
+                            self.action_stats.flush()
+                            continue
 
                         appname = self.get_app_identifier(service_name)
                         # for action,serviceId,onNode,level in operation:
@@ -158,29 +186,36 @@ class NodeManager():
                         ####
                         # Service Instance
                         # Que servicios instnacias hay en nodos vecinos y self nodos.
+
                         usedDES = set()
                         neighbours = set(neighbours)
+                        neighbours.add(nodeManagerId)
                         for (path, des) in routing.controlServices.values():
                             if path[-1] in neighbours:
                                 desOnThatNode = des
                                 if des not in usedDES:
                                     usedDES.add(des)
-                                    levelOnNode = sim.alloc_level[desOnThatNode]
-                                    module = sim.get_module(desOnThatNode)
-                                    appname = self.get_app_identifier(module)
-                                    if path[-1]==nodeManagerId:
-                                        rules.and_rule("serviceInstance", desOnThatNode, appname, levelOnNode, "self")
-                                    else:
-                                        rules.and_rule("serviceInstance", desOnThatNode, appname, levelOnNode, path[-1])
+                                    try:
+                                        levelOnNode = sim.alloc_level[desOnThatNode]
+                                        module = sim.get_module(desOnThatNode)
+                                        appname = self.get_app_identifier(module)
+                                        if path[-1] == nodeManagerId:
+                                            rules.and_rule("serviceInstance", desOnThatNode, appname, levelOnNode, "self")
+                                        else:
+                                            rules.and_rule("serviceInstance", desOnThatNode, appname, levelOnNode, path[-1])
+                                    except KeyError:
+                                        self.logger.warning("At serviceInstance rule fact. A service was moved in previous operation")
+                                        continue
+
 
                         ################################################################################
                         # REQUEST fact
                         # requests(ServiceInstanceId, Neighbour, RequestRate, LatencyToClient).
                         ################################################################################
-                        requests = []
-                        for (path, des) in routing.controlServices.values():
-                            if path[-1]==nodeManagerId:
-                                requests.append([self.get_latency(path, sim.topology), path])
+                        # requests = []
+                        # for (path, des) in routing.controlServices.values():
+                        #     if path[-1]==nodeManagerId:
+                        #         requests.append([self.get_latency(path, sim.topology), path])
 
                         sim.metrics.flush()
                         # We only load samples that are generated along current period (self.activations-1,self.activation)
@@ -189,20 +224,36 @@ class NodeManager():
                         self.load_samples_from[nodeManagerId] += len(df.index) - 1  # avoid header
                         df = df[df["DES.dst"] == serviceId]
                         if len(df) > 0:
-                            # print("Number of samples: %i (from: %i)" % (len(df.index)-1, self.previous_number_samples))
-                            if len(requests) > 0:
-                                for (latencyPath, path) in requests:
-                                    node_user = path[0]  # The last node. It is not the ID-user.
-                                    n_messages = len(df[df["TOPO.src"] == node_user])
-                                    if n_messages > 0:
-                                        if len(path) == 1:
-                                            node_code = ["self"]
+                            # WARNING . If the topology changes (ie. node failure) this code should be checked again
+                            dg = df.groupby("TOPO.src")["TOPO.src"].count()
+                            for node_src, sumMessages in dg.iteritems():
+                                path = routing.get_path_from_src_dst(sim, node_src, nodeManagerId)
+
+                                latency = self.get_latency(path, sim.topology)
+                                if sumMessages > 0:
+                                    if len(path) == 1:
+                                        node_code = ["self"]
+                                    else:
+                                        node_code = path[-2]
+                                        if (self.reversepath + 1) > len(path) - 1:
+                                            node_code = path[0:-1]
                                         else:
-                                            if (self.reversepath + 1) > len(path) - 1:
-                                                node_code = path[0:-1]
-                                            else:
-                                                node_code = path[-(self.reversepath + 1):-1]
-                                        rules.and_rule("requests", serviceId, node_code, n_messages, latencyPath)
+                                            node_code = path[-(self.reversepath + 1):-1]
+                                    rules.and_rule("requests", serviceId, node_code, sumMessages, latency)
+                            # print("Number of samples: %i (from: %i)" % (len(df.index)-1, self.previous_number_samples))
+                            # if len(requests) > 0:
+                            #     for (latencyPath, path) in requests:
+                            #         node_user = path[0]  # The last node. It is not the ID-user.
+                            #         n_messages = len(df[df["TOPO.src"] == node_user])
+                            #         if n_messages > 0:
+                            #             if len(path) == 1:
+                            #                 node_code = ["self"]
+                            #             else:
+                            #                 if (self.reversepath + 1) > len(path) - 1:
+                            #                     node_code = path[0:-1]
+                            #                 else:
+                            #                     node_code = path[-(self.reversepath + 1):-1]
+                            #             rules.and_rule("requests", serviceId, node_code, n_messages, latencyPath)
 
                         # Current operation from the node
                         rules.and_rule("operation",action,serviceId,"self",level)
@@ -211,48 +262,58 @@ class NodeManager():
                         actions = self.run_prolog_model(rules, serviceId, nodeManagerId, self.path_results, sim,appname)
                         ###
 
-                        print("Actions debugging by NodeManager %i "%nodeManagerId)
-                        print("\tRaw actions from prolog:")
-                        print(actions)
+                        # print("Actions debugging by NodeManager %i "%nodeManagerId)
+                        # print("\tRaw actions from prolog:")
+                        # print(actions)
                         #TODO rethink the sort of the actions.
                         #TODO all these actions are coherent, is it important the order?
 
-                        for (accept,service,operation,level) in actions:
+                        for (accept,service,operation,levelaction) in actions:
+                            # TODO debug and implement
                             print("\tAction: ")
-                            print(accept,service,operation,level)
+                            print(accept,service,operation,levelaction)
+
                             if accept == "accept":
+                                # print(action)
+                                # print(operation)
                                 assert action == operation, "Actions are different in NodeManager"
                                 assert int(service) == serviceId, "ServiceId (DES) should be equals in NodeManager"
-                                done = self.prepare_perform_action(sim, routing, path, serviceId,operation, service_name, serviceId, operation, fromNode,nodeManagerId,level)
+                                done = self.prepare_perform_action(sim, routing, path, service_name, serviceId, operation, fromNode,nodeManagerId,level,"Accept")
                                 if done: #it should be done
                                     clean_routing_cache = (action != "reject") or (clean_routing_cache != True)
                                     self.logger.debug("Action %s taken on NodeManager %s." % (action, nodeManagerId))
                                     counter_actions[action] += 1
-                                    self.actions_moves.write(
-                                        "%i, %i,%i,%i,%s, %s\n" % (
+                                    self.actions_moves.write("%i,%i,%i,%i,%s,%s\n" % (
                                         nodeManagerId, serviceId, self.get_app_identifier(service_name), sim.env.now, action, level))
 
-                                    previous_services.add(serviceId)
+
                         # End-for actions from NodeManager with the serviceID
 
+                    sim.print_debug_assignaments()
                     # End-for. Managed all operations in memory of the NodeManager.
                     self.memory[nodeManagerId] = list()
-                    if clean_routing_cache:
-                        # Cache routing data is stored to improve the execution time of the simulator
-                        if RENDERSNAP:
-                            self.snapshot(sim, path, routing) # IMPORTANT previous to clean the cache!
-                        # if the cache has to be cleared it is because there have been changes.
-                        routing.clear_routing_cache()
-
                     # Writing stats
-                    if len(counter_actions)>0:
+                    if len(counter_actions) > 0:
                         line = ""
-                        for nodeManagerId in ["undeploy","nop","migrate","replicate","none","shrink","evict","reject"]:
-                            line += "%i,"%counter_actions[nodeManagerId]
-                        self.action_stats.write("%i,%s\n"%(sim.env.now,line[:-1]))
+                        for item in ["undeploy", "nop", "migrate", "replicate", "none", "shrink", "evict", "reject", "adapt"]:
+                            line += "%i," % counter_actions[item]
+                        line += "%i,%i" % (int(serviceId), self.get_app_identifier(service_name))
+                        # self.action_stats.write("%i,%s\n" % (sim.env.now, line[:-1]))
+                        self.action_stats.write("%i,%s\n" % (sim.env.now, line))
                         self.action_stats.flush()
 
-    def prepare_perform_action(self, sim, routing, path, service_name, serviceId, action, fromNode, onNode, level):
+            #End all node managers
+            if clean_routing_cache:
+                # if the cache has to be cleared it is because there have been changes.
+                routing.clear_routing_cache()
+                # Cache routing data is stored to improve the execution time of the simulator
+                if RENDERSNAP: #there are changes due to modifictions in the cache
+                    self.snapshot(sim, path, routing) # IMPORTANT previous to clean the cache!
+
+
+
+
+    def prepare_perform_action(self, sim, routing, path, service_name, serviceId, action, fromNode, onNode, level,message):
         # Reset the buffer of lastoutcome statements
         if self.window_agent_size == self.window_agent_comm[serviceId]:
             self.window_agent_comm[serviceId] = 0
@@ -260,29 +321,33 @@ class NodeManager():
 
         # The render of the action is done before the action is perfomed and internal variables of the simulator changes
         if self.render_action and action != "nop":
-            image_file = self.render(sim, path, routing,
+            image_file = self.render(sim, routing,
                                      service=service_name,
                                      serviceID=serviceId,
                                      currentNode=fromNode,
                                      action=action,
-                                     onNode=onNode)
+                                     onNode=onNode,
+                                     level=level,
+                                     message = message)
+
 
         done = self.perfom_action(sim,
                                   service=service_name,
-                                  serviceID=serviceId,
-                                  currentNode=fromNode,
+                                  serviceId=serviceId,
+                                  fromNode=fromNode,
                                   action=action,
-                                  onNode=onNode,
+                                  toNode=onNode,
                                   level=level,
                                   routingAlgorithm=routing,
                                   path=path)
 
-        if self.render_action and not done:
-            try:
-                self.logger.critical("Action %s not done on NodeManager %i " % (action, onNode))
-                os.remove(image_file)
-            except FileNotFoundError:
-                None
+
+        # if self.render_action and not done:
+        #     try:
+        #         self.logger.critical("Action %s not done on NodeManager %i " % (action, onNode))
+        #         os.remove(image_file)
+        #     except FileNotFoundError:
+        #         None
 
         if action == "undeploy" and serviceId in self.agent_communication:
             del self.agent_communication[serviceId]
@@ -353,10 +418,10 @@ class NodeManager():
 
     def perfom_action(self, sim,
                       service,
-                      serviceID,
-                      currentNode,
+                      serviceId,
+                      fromNode,
                       action,
-                      onNode,
+                      toNode,
                       level,
                       routingAlgorithm,
                       path):
@@ -367,17 +432,26 @@ class NodeManager():
         :param action:
         :return:
         """
+        print("*"*10)
+        print("-: ACTION :-")
+        print("\tService: ", service)
+        print("\tDES-ServiceId: ", serviceId)
+        print("\tAction: ", action)
+        print("\tOn Node:", fromNode)
+        print("\tTo Node: ", toNode)
+        print("\tFlavour:", level)
+
 
         if action == "replicate": #it is prepared to get a list of nodes
-            nodes_to_replicate = [onNode]
+            nodes_to_replicate = [toNode]
             space_on_node = self.get_free_space_on_nodes(sim)
             # All these comments made mandatory that all nodes have capacity to host the all instances.
             # feasible = True #
-            size = self.get_size_level(service, level)
+            size = self.get_size_level(sim, service, level)
 
             nodes_with_space = []
             for n in nodes_to_replicate:
-                if space_on_node[n]==0:
+                if space_on_node[n] < size:
                     self.logger.warning("There is not more free space on node: %s"%n)
                     # print("\t WARNING: NO FREE SPACE ON NODE:%s"%n)
                 else:
@@ -386,46 +460,60 @@ class NodeManager():
             for n in nodes_with_space:
                 self.logger.debug("Action Replicate new instance of %s on node: %s" % (service, n))
                 # print("\t\t+Action Replicate new instance of %s on node: %s" % (service, n))
-                self.deploy_module(sim, service, n, routingAlgorithm, path)
+                self.deploy_module(sim, service, n, routingAlgorithm, path,level)
 
             return len(nodes_with_space)>0
 
         elif action == "migrate":
-            # Example
-            # parameters: 0,[3, 2]
             try:
-                target_node = onNode
-                space_on_node = self.get_free_space_on_nodes(sim)
-                size = self.get_size_level(service, level)
+                target_node = toNode
+                space_on_nodes = self.get_free_space_on_nodes(sim) # double check, but there're always space due to rules
+                size = self.get_size_level(sim, service, level)
 
-                feasible = True
-                if space_on_node[target_node] <= 0: #check the size
+                # print("MIGRATE ")
+                # print(sim.apps_level)
+                # print("space on nodes")
+                # print(space_on_nodes)
+                # print("NODE target",target_node)
+                # print("Size necesario",size)
+
+
+                if space_on_nodes[target_node] < size: #check the size
                     self.logger.warning("There is not more free space on node: %s" % target_node)
                     print("\t WARNING: NO FREE SPACE ON NODE:%s" % target_node)
                     return False
                 else:
                     self.logger.debug("Action Migrate new instance of %s on node: %s" % (service, target_node))
                     # print("\t\t+Action Migrate new instance of %s on node: %s" % (service, target_node))
-                    self.deploy_module(sim, service, target_node, routingAlgorithm, path,level)
-                    self.logger.debug("\t Remove current instance %s on node: %s" % (service, currentNode))
+                    self.deploy_module(sim, service, target_node, routingAlgorithm, path, level)
+                    self.logger.debug("\t Remove current instance %s on node: %s" % (service, fromNode))
                     # print("\t\t+Remove current instance of %s on node: %s" % (service, currentNode))
-                    self.undeploy_module(sim, service, currentNode, serviceID)
+                    self.undeploy_module(sim, service, fromNode, serviceId)
                     return True
             except:
                 self.logger.critical("A migration rule with no target node")
                 # print("A migration rule with no target node")
                 return False
 
+
+        elif action == "adapt":
+            # no arguments
+            self.logger.debug("Action ADAPT instance %i to level %s" % (serviceId, level))
+            sim.alloc_level[serviceId] = level
+            print("\n ADAPT \n")
+            print(sim.alloc_level[serviceId])
+            return True
+
         elif action == "undeploy":
             # no arguments
-            self.logger.debug("Action UNDEPLOY instance %s on node: %s" % (service, currentNode))
-            self.undeploy_module(sim,service,currentNode,serviceID)
+            self.logger.debug("Action UNDEPLOY instance %s on node: %s" % (service, fromNode))
+            self.undeploy_module(sim, service, fromNode, serviceId)
 
             return True
 
         elif action == "nop":
             # Doing nothing
-            self.logger.debug("Action NOP instance %s on node: %s" % (service, currentNode))
+            self.logger.debug("Action NOP instance %s on node: %s" % (service, fromNode))
             return True
 
         elif action == "fusion":
@@ -456,7 +544,7 @@ class NodeManager():
     # News in MARIO 2.5
     def get_size_level(self,sim,service,level):
         app_name = self.get_app_identifier(service)
-        return sim.apps_level[app_name][level][1]
+        return sim.apps_level[app_name][level][0]
 
 
     def create_monitor_of_module(self, des, path, routing, service, sim):
@@ -566,7 +654,7 @@ class NodeManager():
 
         return currentOccupation,currentIDoccupation
 
-    def render(self,sim,path,routing,service,serviceID,currentNode,action,onNode):
+    def render(self,sim,routing,service,serviceID,currentNode,action,onNode,level,message=""):
         # if "Grid" in path:
         #     scenario="Grid"
         # else:
@@ -616,7 +704,7 @@ class NodeManager():
 
         # Get the POLICY FILE
         # As the service is named: "idApp_IdModule", we can get the app id from there.
-        dataApps = json.load(open(path + 'appDefinition.json'))
+
         # rule_policy = ""
         #
         # try:
@@ -632,18 +720,37 @@ class NodeManager():
         # info_text = "App: %i with policy: %s" % (idApp, rule_policy)
         # plt.text(3.5, top -1.5, info_text, {'color': color_app, 'fontsize': 10})
 
+        proportion = width/top
+        if DEBUG_TEXT_ON_RENDER:
+            plt.text(.5, top-(top/4), "Simulation time: %i" % sim.env.now, {'color': "black", 'fontsize': 14})
+            info_text = "Action: %s on node: %s with level: %s" % (action, onNode,level)
+            plt.text(.5, top-(top/4)-0.2, info_text, {'color': color_app, 'fontsize': 14})
 
-        plt.text(-width, top-0.1, "Simulation time: %i" % sim.env.now, {'color': "black", 'fontsize': 14})
+            info_text = "by Service: S%i in node: %s" % (serviceID, tiledTopology.getAbbrNodeName(currentNode))
+            plt.text(.5, top-(top/4)-0.4, info_text, {'color': color_app, 'fontsize': 14})
 
-        info_text = "Action %s on node: %s" % (action, onNode)
-        plt.text(-width, top-0.2, info_text, {'color': color_app, 'fontsize': 14})
+            info_text = "Service: model_B%i_n%s_DES%i_X_X.pl" % (self.UID, tiledTopology.getAbbrNodeName(currentNode), serviceID)
+            plt.text(.5, top-(top/4)-0.6, info_text, {'color': color_app, 'fontsize': 14})
 
-        info_text = "by Service: S%i on Node: %s" % (serviceID, tiledTopology.getAbbrNodeName(currentNode))
-        plt.text(-width, top-0.3, info_text, {'color': color_app, 'fontsize': 14})
+            info_text = "NM: model_NM_%i_DES%s_%i.pl" %(currentNode, serviceID, sim.env.now)
+            plt.text(.5,top-(top/4)-0.8, info_text, {'color': "black", 'fontsize': 14})
+            plt.text(.5,top-(top/4)-1., "Action: %s"%message, {'color': "black", 'fontsize': 14})
 
-        info_text = "Prolog file: model_B%i_nn%s_DES%i_X_%i.pl" % (
-        self.UID, tiledTopology.getAbbrNodeName(currentNode), serviceID, sim.env.now)
-        plt.text(-width, top-0.4, info_text, {'color': color_app, 'fontsize': 14})
+        # if DEBUG_TEXT_ON_RENDER:
+        #     plt.text(.5, top-0.4, "Simulation time: %i" % sim.env.now, {'color': "black", 'fontsize': 14})
+        #     info_text = "Action: %s on node: %s with level: %s" % (action, onNode,level)
+        #     plt.text(.5, top-0.45, info_text, {'color': color_app, 'fontsize': 14})
+        #
+        #     info_text = "by Service: S%i in node: %s" % (serviceID, tiledTopology.getAbbrNodeName(currentNode))
+        #     plt.text(.5, top-0.50, info_text, {'color': color_app, 'fontsize': 14})
+        #
+        #     info_text = "Service: model_B%i_n%s_DES%i_X_X.pl" % (self.UID, tiledTopology.getAbbrNodeName(currentNode), serviceID)
+        #     plt.text(.5, top-0.55, info_text, {'color': color_app, 'fontsize': 14})
+        #
+        #     info_text = "NM: model_NM_%i_DES%s_%i.pl" %(currentNode, serviceID, sim.env.now)
+        #     plt.text(.5, top - 0.60, info_text, {'color': "black", 'fontsize': 14})
+        #     plt.text(.5, top - 0.65, "Action: %s"%message, {'color': "black", 'fontsize': 14})
+
 
 
         # Labels on nodes
@@ -654,13 +761,12 @@ class NodeManager():
                 ax.text(self.pos[x][0] - (width/35), self.pos[x][1] + (width/50) , tiledTopology.getAbbrNodeName(x), fontsize=20,fontweight="bold")
 
 
-
         if not "closers" in self.image_dir:
             legendItems = []
-            for i in range(1,len(dataApps)+1):
+            for i in range(1,self.total_services+1):
                 color_app = newcmp(i)
                 legendItems.append(mpatches.Patch(facecolor=color_app, edgecolor="black", linewidth=".7" ,label='App: %i'%i))
-            plt.legend(loc="upper left",handles=legendItems, ncol=len(dataApps)//2,fontsize=18)
+            plt.legend(loc="upper left",handles=legendItems, ncol=self.total_services//2,fontsize=18)
 
         # Plotting users dots
         self.__draw_controlUser = {}
@@ -757,16 +863,13 @@ class NodeManager():
         # pil_image.save(self.image_dir + "/network_%05d.pdf" % self.image_id)
         # pil_image.save(self.image_dir + "/network__UID%i_n%i_s%i_X_%i.png" % (self.UID, currentNode, serviceID, sim.env.now))
         pil_image.save(self.image_dir + "/network_%05d.png" % self.image_id)
+        # print("Saving render image at: %s"%(self.image_dir + "/network_%05d.png" % self.image_id))
+
         self.image_id += 1
-
         plt.close(fig)
-
-
-        # print("Rendering fILE: %s"%(self.image_dir + "/network_%05d.png" % self.image_id))
         return self.image_dir + "/network_%05d.png" % self.image_id
 
-
-    def snapshot(self,sim,path,routing):
+    def snapshot(self,sim,routing):
         """
         An alternative to render for having a global view of the situation in each
 
@@ -808,7 +911,6 @@ class NodeManager():
         # piesize = .08
         p2 = piesize / 2.5
 
-        dataApps = json.load(open(path + 'appDefinition.json'))
 
         # Labels on nodes
         for x in sim.topology.G.nodes:
@@ -819,11 +921,11 @@ class NodeManager():
 
         if not "closers" in self.image_dir:
             legendItems = []
-            for i in range(1,len(dataApps)+1):
+            for i in range(1,self.total_services+1):
                 color_app = newcmp(i)
                 legendItems.append(mpatches.Patch(facecolor=color_app, edgecolor="black", linewidth=".7" ,label='App: %i'%i))
             # plt.legend(loc="lower center",handles=legendItems, ncol=len(dataApps),fontsize=14)
-            plt.legend(loc="upper left",handles=legendItems, ncol=len(dataApps)//2,fontsize=18)
+            plt.legend(loc="upper left",handles=legendItems, ncol=self.total_services//2,fontsize=18)
 
 
         # Plotting users dots

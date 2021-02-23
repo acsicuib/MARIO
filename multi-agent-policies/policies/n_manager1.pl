@@ -42,13 +42,23 @@ n_operation(evict,Si,N,_) :-
 
 n_operation(accept,Si,SOp,_) :-
     % always accepts undeploy
-    operation(undeploy,Si,self,_) ; 
+    operation(undeploy,Si,self,_),SOp=undeploy ;
     % accepts replicate/migrate/adapt if hardware is enough + 0.25 units
-    ( operation(SOp,Si,self,V), ( SOp=replicate; SOp=adapt; SOp=migrate ), node(self, AvailableHW, _),
-      serviceInstance(Si,S,_,_), service(S,Vs,_), member((V,HWV,_),Vs), AvailableHW >= HWV + 0.25 ).
+    (   operation(SOp,Si,self,V),
+    	(SOp=replicate; SOp=migrate ),
+    	node(self, AvailableHW, _),
+      	serviceInstance(Si,S,_,_), service(S,Vs,_), member((V,HWV,_),Vs),
+	    AvailableHW >= HWV + 0.25 ) ;
+    (
+	    operation(SOp,Si,self,V),
+     	SOp=adapt ,
+	    node(self, AvailableHW, _),
+      	serviceInstance(Si,S,VOld,_), service(S,Vs,_), member((V,HWV,_),Vs),
+        member((VOld,HWVOld,_),Vs),
+        (AvailableHW + HWVOld - HWV) >= (0 + 0.25) ).
 
 % rejects any operation not handled above
-n_operation(reject,_,_,_) :- \+ ( n_operation(SOp,_,_,_), (SOp=accept; SOp=shrink; SOp=evict) ).
+n_operation(reject,_,_,_) :-  operation(SOp,_,self,_), \+ ( n_operation(SOp,_,_,_), (SOp=accept; SOp=shrink; SOp=evict) ).
 
 
 

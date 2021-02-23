@@ -118,11 +118,11 @@ class PolicyManager():
             ## LIST OF NODES to the CurrentNode from PATH REQUEST
             # neighbours = [currentNode]
             # alllinkedNodes = []
-            requests = [] #(latency of the path, path)
-            # print("\t All paths [wl-node,service-node: ",routing.controlServices)
-            for (path,des) in routing.controlServices.values():
-                if des==self.DES:
-                    requests.append([self.get_latency(path, sim.topology), path])
+            # requests = [] #(latency of the path, path)
+            # # print("\t All paths [wl-node,service-node: ",routing.controlServices)
+            # for (path,des) in routing.controlServices.values():
+            #     if des==self.DES:
+            #         requests.append([self.get_latency(path, sim.topology), path])
                     # alllinkedNodes.append(path)
                     # neighbours += path # Uncomment in case of considering nodes from user-paths
             # allRelatedNodes = set()
@@ -184,28 +184,59 @@ class PolicyManager():
             # To obtain the the number of msg get need to analyse the simulation results on the csv file
             sim.metrics.flush()
             # We only load samples that are generated along current period (self.activations-1,self.activation)
-            df = pd.read_csv(self.path_csv_files + ".csv", skiprows=range(1, self.load_samples_from))  # It includes the csv header
-            self.load_samples_from += len(df.index) - 1  # avoid header
-            df = df[df["DES.dst"] == self.DES]
-            if len(df) > 0:
-                # print("Number of samples: %i (from: %i)" % (len(df.index)-1, self.previous_number_samples))
-                if len(requests)>0:
-                    # print(df[["TOPO.src","TOPO.dst"]])
-                    for (latencyPath,path) in requests:
-                        node_user = path[0] # The last node. It is not the ID-user.
-                        n_messages = len(df[df["TOPO.src"] == node_user])
-                        if n_messages > 0:
-                            if len(path)==1:
-                                node_code= ["self"]
-                            else:
-                                node_code = path[-2]
-                                if (self.reversepath + 1) > len(path)-1:
-                                    node_code = path[0:-1]
-                                else:
-                                    node_code = path[-(self.reversepath+1):-1]
+            df = pd.read_csv(self.path_csv_files + ".csv", skiprows=range(1,self.load_samples_from))  # It includes the csv header
+            self.load_samples_from += len(df.index)   # avoid header
+            # print("AGENT LOADING REQUESTS")
+            # print("SERVICE DES:",self.DES)
+            # print("TIME:",sim.env.now)
+            # print("OFFSET: ",self.load_samples_from)
+            # print("DF len : ",len(df))
+            # print("REQUEST ",requests)
 
-                            # if self.reversepath
-                            self.rules.and_rule("requests", self.DES, node_code, n_messages,latencyPath)
+            df = df[df["DES.dst"] == self.DES]
+
+            #TODO debug
+            # if self.DES == 16:
+            #     df.to_csv("test16_%i.csv"%sim.env.now)
+
+            if len(df) > 0:
+                #WARNING . If the topology changes (ie. node failure) this code should be checked again
+                dg = df.groupby("TOPO.src")["TOPO.src"].count()
+                for node_src, sumMessages in dg.iteritems():
+                    path = routing.get_path_from_src_dst(sim,node_src,currentNode)
+
+                    latency = self.get_latency(path,sim.topology)
+                    if sumMessages > 0:
+                        if len(path)==1:
+                            node_code= ["self"]
+                        else:
+                            node_code = path[-2]
+                            if (self.reversepath + 1) > len(path)-1:
+                                node_code = path[0:-1]
+                            else:
+                                node_code = path[-(self.reversepath+1):-1]
+                        self.rules.and_rule("requests", self.DES, node_code, sumMessages, latency)
+
+                # # print("Number of samples: %i (from: %i)" % (len(df.index)-1, self.previous_number_samples))
+                # if len(requests)>0:
+                #     # print(df[["TOPO.src","TOPO.dst"]])
+                #     for (latencyPath,path) in requests:
+                #         node_user = path[0] # The last node. It is not the ID-user.
+                #         n_messages = len(df[df["TOPO.src"] == node_user])
+                #
+                #         print("NMessages: ",n_messages)
+                #         if n_messages > 0:
+                #             if len(path)==1:
+                #                 node_code= ["self"]
+                #             else:
+                #                 node_code = path[-2]
+                #                 if (self.reversepath + 1) > len(path)-1:
+                #                     node_code = path[0:-1]
+                #                 else:
+                #                     node_code = path[-(self.reversepath+1):-1]
+                #
+                #             # if self.reversepath
+                #             self.rules.and_rule("requests", self.DES, node_code, n_messages,latencyPath)
             else:
                 # print("INFO - No messages among users and service")
                 self.logger.warning("WARN - There are not new messages among users and service")
@@ -237,6 +268,7 @@ class PolicyManager():
             node_requests_alloc = action[2]
             if node_requests_alloc=="self":
                 node_requests_alloc = currentNode
+
             # print(node_requests_alloc)
             node_requests_alloc = int(node_requests_alloc)
 
@@ -273,6 +305,8 @@ class PolicyManager():
         rules_dir.mkdir(parents=True, exist_ok=True)
         rules_dir = str(rules_dir)
         model_file = rules_dir + "/model_B%i_n%s_DES%s_%i_%i.pl" % (self.app_operator.UID + 1, current_node, serviceID, self.action_on_render, sim.env.now)
+
+        # print(model_file)
         self.action_on_render += 1
 
         with open(model_file, "w") as f:
@@ -310,7 +344,7 @@ class PolicyManager():
 
             assert len(result)>=0, "(agent.py) Prolog return is incorrect"
 
-            result.append(("nop", serviceID, "UKN", "UKN"))
+            result.append(("nop", serviceID, current_node, "UKN"))
             return result
 
         except TimeoutExpired as err:

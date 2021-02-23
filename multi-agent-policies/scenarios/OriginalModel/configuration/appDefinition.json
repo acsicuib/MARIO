@@ -5,7 +5,7 @@
     "HwReqs": 1,
     "MaxReqs": 5,
     "MaxLatency": 10,
-    "level": {"small":[1,10],"medium":[2,20],"large": [3,50]},
+    "level": {"small":[1,10],"medium":[2,20],"large": [5,50]},
 
     "transmission": [
       {
@@ -66,6 +66,7 @@
     "MaxReqs": 5,
     "MaxLatency": 10,
    "level": {"small":[1,10],"medium":[2,20],"large": [3,50]},
+
     "transmission": [
       {
         "message_in": "M.USER.APP.3",
@@ -79,7 +80,7 @@
     ],
     "message": [
       {
-        "id": 2,
+        "id": 1,
         "name": "M.USER.APP.3",
         "s": "None",
         "d": "3_01",
@@ -92,8 +93,8 @@
     "id": 4,
     "name": 4,
     "HwReqs": 1,
-    "MaxReqs": 40,
-    "MaxLatency": 1,
+    "MaxReqs": 5,
+    "MaxLatency": 10,
    "level": {"small":[1,10],"medium":[2,20],"large": [3,50]},
 
     "transmission": [
@@ -109,7 +110,7 @@
     ],
     "message": [
       {
-        "id": 3,
+        "id": 1,
         "name": "M.USER.APP.4",
         "s": "None",
         "d": "4_01",
@@ -117,13 +118,14 @@
         "instructions": 100
       }
     ]
-  },
+  }
+  ,
   {
     "id": 5,
     "name": 5,
     "HwReqs": 1,
-    "MaxReqs": 40,
-    "MaxLatency": 1,
+    "MaxReqs": 5,
+    "MaxLatency": 10,
    "level": {"small":[1,10],"medium":[2,20],"large": [3,50]},
 
     "transmission": [
@@ -139,7 +141,7 @@
     ],
     "message": [
       {
-        "id": 4,
+        "id": 1,
         "name": "M.USER.APP.5",
         "s": "None",
         "d": "5_01",
@@ -147,15 +149,15 @@
         "instructions": 100
       }
     ]
-  },
+  }
+  ,
   {
     "id": 6,
     "name": 6,
     "HwReqs": 1,
-    "MaxReqs": 40,
-    "MaxLatency": 1,
-   "level": {"small":[1,10],"medium":[2,20],"large": [3,50]},
-
+    "MaxReqs": 5,
+    "MaxLatency": 10,
+    "level": {"small":[1,10],"medium":[2,20],"large": [3,50]},
     "transmission": [
       {
         "message_in": "M.USER.APP.6",
@@ -169,7 +171,7 @@
     ],
     "message": [
       {
-        "id": 5,
+        "id": 1,
         "name": "M.USER.APP.6",
         "s": "None",
         "d": "6_01",
@@ -178,4 +180,6 @@
       }
     ]
   }
+
+
 ]

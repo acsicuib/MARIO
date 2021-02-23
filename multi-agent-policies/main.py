@@ -82,6 +82,8 @@ def main(number_simulation_steps,
     t.load_all_node_attr(dataNetwork)
     cloudNode = 0 # "id == 0"
 
+    edgeNodes = [id for (id,degree) in t.G.degree() if degree == 1]
+
     """
     Global Rules for all services
     """
@@ -160,15 +162,15 @@ def main(number_simulation_steps,
     """
     MARIO app controller & Agent generator
     """
-    time_activation = deterministic_distribution(time=int(config.get('appOperator', 'activation_period')),
+    time_activation = deterministic_distribution(time=int(config.get('nodeManager', 'activation_period')),
                                                  name="Deterministic")
     nM = NodeManager(globalrules, service_rule_profile, path_csv_files,
                   app_number=len(dataApp),
-                  period=int(config.get('agent', 'activation_period')),
+                  period=int(config.get('service', 'activation_period')),
                   render=True,  # only snaps
                   path_results=temporal_folder,
                   cloud_node=cloudNode,
-                  window_agent_size=int(config.get('agent', 'window_agent_outcome')),
+                  window_agent_size=int(config.get('service', 'window_agent_outcome')),
                   radius = radius,
                   reversepath = reversepath
                   )
@@ -180,6 +182,36 @@ def main(number_simulation_steps,
                         }
                      )
 
+
+    """
+    Create the custom monitor that it manages the user movements according with random distributions
+    The user operations are: CREATION, MOVEMENT (change associated node)
+    """
+
+    # dStart = deterministicDistributionStartPoint(0, time_in_each_step, name="Deterministic")
+    #
+    # record_movements = open(temporal_folder+"/movements.csv","w")
+    # record_movements.write("app,DES,time,nodeSRC,nodeDST\n")
+    # evol = UserControlMovement(
+    #                     experiment_path = experiment_path,
+    #                     appOp = nM,
+    #                     record_movements = record_movements,
+    #                     limit_steps = int(config.get('simulation', 'UsersSteps')),
+    #                     edgeNodes = edgeNodes
+    # )
+    #
+    # s.deploy_monitor("Traces_localization_update", evol, dStart,
+    #                  **{"sim": s,
+    #                     "routingAlgorithm": routingPath,
+    #                     "case": case,
+    #                     "stop_time": simulation_duration,
+    #                     "it": it})
+    #
+    # s.set_movement_control(evol)
+
+
+
+
     """
     RUNNING
     """
@@ -190,9 +222,12 @@ def main(number_simulation_steps,
     Storing results from other monitors
     & Render the last movement
     """
-    # appOp.render(s,experiment_path,routingPath,["END",-1,-1,"NONE"])
+    nM.DEBUG_TEXT_ON_RENDER = False
+    nM.render(s,routingPath,"-1",0,0,"Nop",0,"")
+
     # evol.write_map_user_des(temporal_folder + "/MapUserDES_%s_%i.csv" % (case, it))
 
+    # record_movements.close()
     nM.close()
     s.print_debug_assignaments()
 
@@ -224,7 +259,7 @@ if __name__ == '__main__':
         config = ConfigParser()
         config.read(experiment_path + 'config.ini')
 
-        number_simulation_steps = int(config.get('simulation', 'stopSteps')) + 1
+        number_simulation_steps = int(config.get('simulation', 'UsersSteps')) + 1
         time_in_each_step = int(config.get('simulation', 'time_in_each_step'))
         nSimulations = int(config.get('simulation', 'nSimulations'))
 
