@@ -2,9 +2,7 @@
 :- discontiguous serviceInstance/4.
 :- discontiguous operator/3.
 
-operation(undeploy,Si,self,_) :-
-    \+ requests(Si,_,_,_).
-
+operation(undeploy,Si,self,_) :- \+ requests(Si,_,_,_).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Adapts service instance Si to a different flavour when
@@ -23,12 +21,10 @@ adaptMembrane(Versions,AvailableHW,UsedHW,RequestRate,V) :-
     % does not exist V2 handling the same amount of requests (or more), and requiring less hardware
     \+ ( member((V2,HWV2,MaxReqRateV2),Versions), dif(V2,V), MaxReqRateV2 >= RequestRate, HWV2 < HWV ).
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Replicates onto the node from which most requests come
 % (can be self), adapt if needed.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 operation(replicate,Si,M,U) :-
     findall((H,R,L),requests(Si,[H|_],R,L),Requests),
     serviceInstance(Si, S, U, self), service(S,Versions,_), member((U,_,MaxRequestRateU),Versions),
@@ -44,25 +40,23 @@ replicateMembrane(Versions,M,RequestRate,V) :-
     % does not exist deployable V2 that handles more requests than V
     \+ ( member((V2,HWV2,MaxReqRateV2),Versions), dif(V2,V), HWV2 =< AvailableHW, RequestRate - MaxReqRateV2 =< D1).
 
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Migrates to the farthest node in the reverse common
 % path from which all requests are coming. Adapts, if needed
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 operation(migrate,Si,M,U) :-
     findall((Path,R,L),requests(Si,Path,R,L),Requests),
-    serviceInstance(Si, S, U, self), service(S,Versions,_), member((U,HWU,_),Versions),
+    serviceInstance(Si, S, _, self), service(S,Versions,_), member((U,HWU,_),Versions),
     sumRequestRates(Requests,TotalRequestRate), %TotalRequestRate>MaxRequestRateU,      %(1a)
     findall(Path,member((Path,_,_),Requests),Paths),
     sort(Paths,SinglePaths),
     longestPrefix0fPaths(SinglePaths,Prefix),
-    migrateMembrane(Prefix,HWU,TotalRequestRate,M,V).
+    dif(M,self),
+    migrateMembrane(Prefix,HWU,TotalRequestRate,M,U).
 
 % finds farthest node in the longest prefix of paths
-migrateMembrane(Prefix,HWU,RequestRate,M,V) :-
+migrateMembrane(Prefix,HWU,RequestRate,M,U) :-
     append(Ps,[X],Prefix),
     ( ( node(X, AvailableHW, _), AvailableHW >= HWU, M=X );
-      %(node(X,_,XNeighbours), member(Y,XNeighbours), node(Y,AvailableHW,_), AvailableHW>=RequiredHW, M=Y) % Y would be out of radius
-      migrateMembrane(Ps,HWU,RequestRate,M,V)
+      migrateMembrane(Ps,HWU,RequestRate,M,U)
     ).

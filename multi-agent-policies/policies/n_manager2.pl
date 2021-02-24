@@ -1,4 +1,3 @@
-:- discontiguous requests/4.
 :- discontiguous n_operation/4.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -13,15 +12,20 @@ n_operation(shrink,Si,_,V) :-
     % SNew asks to replicate or migrate to node self from node M, and hardware of self is not sufficient
     ( operation(replicate,SNew,self,VNew); operation(migrate,SNew,self,VNew) ),
     serviceInstance(SNew, S, _, M), dif(M,self), service(S,SNewVersions,_), member((VNew,HWNew,_),SNewVersions),
+    operator(_, OpInstances1, subscriber), member(SNew, OpInstances1), % only shrinks Si if SNew is from a subscriber
     AvailableHW =< HWNew + 0.25,
+    % shrinks one of the service with lower rank Si to version V, which allows to accommodate SNew + 0.25 hardware units
+    serviceInstancesByIncreasingRank(self, ServiceInstances),
+    member((_,_,HWVOld,Si,_,_,Versions), ServiceInstances), 
+    operator(_, OpInstances2, free), member(Si, OpInstances2), % only shrinks free instances
+    member((V,HWV,_), Versions), ((AvailableHW + HWVOld - HWV) >= (HWNew + 0.25)). % find suitable version
+
+serviceInstancesByIncreasingRank(self, ServiceInstances) :- 
     % finds all service instances Sj deployed on self
     serviceInstancesWithHW(self,ServicesOnSelf), 
     serviceInstanceWithReqs(ServicesOnSelf, Tmp), 
-    % shrinks one of the service with lower rank Si to version V, which allows to accommodate SNew + 0.25 hardware units
     serviceInstancesWithRank(Tmp, RankedServices),
-    sort(RankedServices, SRankedServices), % sort by increasing rank
-    member((_,_,HWVOld,Si,_,_,Versions), SRankedServices), 
-    member((V,HWV,_), Versions), ((AvailableHW + HWVOld - HWV) >= (HWNew + 0.25)). % find suitable version
+    sort(1, @=<, RankedServices, ServiceInstances). % sorts only by rank
 
 % force migration of service instance Si with less requests per hardware unit 
 % to the neighbour with more free resources, if possible
@@ -30,34 +34,22 @@ n_operation(evict,Si,N,_) :-
     %Sk asks to replicate or migrate to node self and hardware is not sufficient
     ( operation(replicate,SNew,self,VNew); operation(migrate,SNew,self,VNew) ),
     serviceInstance(SNew, S, _, M), dif(M,self), service(S,SNewVersions,_), member((VNew,HWNew,_),SNewVersions),
+    operator(_, OpInstances1, subscriber), member(SNew, OpInstances1), % only evicts Si if SNew is from a subscriber
     AvailableHW =< HWNew + 0.25,
-    % finds all service instances Sj deployed on self
-    serviceInstancesWithHW(self,ServicesOnSelf), 
-    serviceInstanceWithReqs(ServicesOnSelf, Tmp), 
-    % shrinks one of the service with lower rank Si to version V, which allows to accommodate SNew + 0.25 hardware units
-    serviceInstancesWithRank(Tmp, RankedServices),
-    sort(RankedServices, SRankedServices), % sort by increasing rank
-    member((_,HWV,Si,_,_,_), SRankedServices), HWN > HWV + 0.25, (AvailableHW + HWV) > (HWNew + 0.25).
+    serviceInstancesByIncreasingRank(self, ServiceInstances),
+    member((_,_,HWV,Si,_,_,_), ServiceInstances), 
+    operator(_, OpInstances2, free), member(Si, OpInstances2), % only shrinks free instances
+    HWN > HWV + 0.25, (AvailableHW + HWV) > (HWNew + 0.25).
 
 n_operation(accept,Si,SOp,_) :-
     % always accepts undeploy
-    operation(undeploy,Si,self,_),SOp=undeploy ;
+    operation(undeploy,Si,self,_) ; 
     % accepts replicate/migrate/adapt if hardware is enough + 0.25 units
-    (   operation(SOp,Si,self,V),
-    	(SOp=replicate; SOp=migrate ),
-    	node(self, AvailableHW, _),
-      	serviceInstance(Si,S,_,_), service(S,Vs,_), member((V,HWV,_),Vs),
-	    AvailableHW >= HWV + 0.25 ) ;
-    (
-	    operation(SOp,Si,self,V),
-     	SOp=adapt ,
-	    node(self, AvailableHW, _),
-      	serviceInstance(Si,S,VOld,_), service(S,Vs,_), member((V,HWV,_),Vs),
-        member((VOld,HWVOld,_),Vs),
-        (AvailableHW + HWVOld - HWV) >= (0 + 0.25) ).
+    ( operation(SOp,Si,self,V), ( SOp=replicate; SOp=adapt; SOp=migrate ), node(self, AvailableHW, _), 
+      serviceInstance(Si,S,_,_), service(S,Vs,_), member((V,HWV,_),Vs), AvailableHW >= HWV + 0.25 ).
 
 % rejects any operation not handled above
-n_operation(reject,_,_,_) :-  operation(SOp,_,self,_), \+ ( n_operation(SOp,_,_,_), (SOp=accept; SOp=shrink; SOp=evict) ).
+n_operation(reject,_,_,_) :- operation(SOp,_,self,_), \+ ( n_operation(SOp,_,_,_), (SOp=accept; SOp=shrink; SOp=evict) ).
 
 
 %%%%%%%%%%%%%%%
@@ -96,3 +88,11 @@ serviceInstancesWithRank([(Reqs,HW,Si,S,V,Versions)|Ss],[(Score,Reqs,HW,Si,S,V,V
 freestNeighbour(Neighbours, N, HWN) :- 
     member(N, Neighbours), node(N, HWN,_),
     \+ ( member(M, Neighbours), dif(M,N), node(M, HWM,_), HWM > HWN ).
+
+
+% operation(undeploy,Si,self,_).
+% operation(replicate,Si,self,V).
+% operation(adapt,Si,self,V).
+% operation(replicate,Si,M,V). % external replicate
+% operation(migrate,Si,M,V). % external replicate
+

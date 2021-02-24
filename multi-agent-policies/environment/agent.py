@@ -103,7 +103,7 @@ class PolicyManager():
             # SERVICEINSTANCE fact
             # serviceInstance(ServiceInstanceId, ServiceId, Node).
             ################################################################################
-            self.rules.and_rule("serviceInstance",self.DES,self.app_name,level,"self")
+            self.rules.and_rule("serviceInstance","s%i"%self.DES,"app%i"%self.app_name,level,"self")
 
             ################################################################################
             # NODE fact
@@ -142,6 +142,7 @@ class PolicyManager():
             # Generate the node fact of the current node
             neighbours = [e[1] for e in sim.topology.G.edges(currentNode)]
             neighbours = list(dict.fromkeys(neighbours))
+            neighbours = ["n%i"%x for x in neighbours]
             self.rules.and_rule("node", "self", available_space_on_node[currentNode], neighbours)
 
             # Generate the node fact from neighbourds
@@ -150,7 +151,8 @@ class PolicyManager():
                 if n != currentNode:
                     neighbours = [e[1] for e in sim.topology.G.edges(n)]
                     neighbours = list(dict.fromkeys(neighbours))
-                    self.rules.and_rule("node", n, available_space_on_node[n], neighbours)
+                    neighbours = ["n%i"%x for x in neighbours]
+                    self.rules.and_rule("node", "n%i"%n, available_space_on_node[n], neighbours)
 
 
 
@@ -214,14 +216,16 @@ class PolicyManager():
                     latency = self.get_latency(path,sim.topology)
                     if sumMessages > 0:
                         if len(path)==1:
-                            node_code= ["self"]
+                            # node_code= ["self"]
+                            node_name = ["self"]
                         else:
                             node_code = path[-2]
                             if (self.reversepath + 1) > len(path)-1:
                                 node_code = path[0:-1]
                             else:
                                 node_code = path[-(self.reversepath+1):-1]
-                        self.rules.and_rule("requests", self.DES, node_code, sumMessages, latency)
+                            node_name = ["n%i"%x for x in node_code]
+                        self.rules.and_rule("requests", "s%i"%self.DES, node_name, sumMessages, latency)
             else:
                 # print("INFO - No messages among users and service")
                 self.logger.warning("WARN - There are not new messages among users and service")
@@ -233,7 +237,7 @@ class PolicyManager():
             if self.DES in self.app_operator.agent_communication:
                 for (prevOperation,status) in self.app_operator.agent_communication[self.DES]:
                     action, service_id, onNode = prevOperation
-                    self.rules.and_rule("refused",action, service_id, onNode)
+                    self.rules.and_rule("refused",action, "s%i"%service_id, "n%i"%onNode)
 
 
 
@@ -256,6 +260,8 @@ class PolicyManager():
             node_requests_alloc = action[2]
             if node_requests_alloc=="self":
                 node_requests_alloc = currentNode
+            else:
+                node_requests_alloc = node_requests_alloc.replace("n","")
 
             # print(node_requests_alloc)
             node_requests_alloc = int(node_requests_alloc)
@@ -301,8 +307,8 @@ class PolicyManager():
             f.write(rules_and_facts)
             f.write("\nmain :- current_prolog_flag(argv, Argv),\n" \
                     "  nth0(0, Argv, Argument0),\n" \
-                    "  atom_number(Argument0, ServiceID),\n"\
-                    "  operations(ServiceID,RequestedActions),\n"\
+                    # "  atom_number(Argument0, ServiceID),\n"\
+                    "  operations(Argument0,RequestedActions),\n"\
                     "  format('~q~n', [RequestedActions]),\n"\
                     "  halt.\n"\
                     "main :-\n"\
@@ -311,7 +317,9 @@ class PolicyManager():
 
         ### Run the model using swipl command on the terminal
         try:
-            cmd = ["swipl", model_file, str(serviceID)]
+            cmd = ["swipl", model_file, "s"+str(serviceID)]
+
+            # print(cmd)
             p = Popen(cmd, stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(timeout=10)
 
@@ -332,7 +340,7 @@ class PolicyManager():
 
             assert len(result)>=0, "(agent.py) Prolog return is incorrect"
 
-            result.append(("nop", serviceID, current_node, "UKN"))
+            result.append(("nop", "s%i"%serviceID, "n%i"%current_node, "UKN"))
             return result
 
         except TimeoutExpired as err:

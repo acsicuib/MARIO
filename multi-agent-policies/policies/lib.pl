@@ -1,3 +1,4 @@
+%% Lib.
 
 sumRequestRates([],0).
 sumRequestRates([(_,R,_)|Xs], Tot) :- sumRequestRates(Xs,TotXs), Tot is R+TotXs.

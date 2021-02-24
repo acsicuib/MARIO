@@ -2,9 +2,7 @@
 :- discontiguous serviceInstance/4.
 :- discontiguous operator/3.
 
-
-operation(undeploy,Si,self,_) :-
-    \+ requests(Si,_,_,_).
+operation(undeploy,Si,self,_) :- \+ requests(Si,_,_,_).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Adapts service instance Si to a different flavour when
@@ -22,7 +20,6 @@ adaptMembrane(Versions,AvailableHW,UsedHW,RequestRate,V) :-
     HWV =< AvailableHW + UsedHW,
     % does not exist V2 handling the same amount of requests (or more), and requiring less hardware
     \+ ( member((V2,HWV2,MaxReqRateV2),Versions), dif(V2,V), MaxReqRateV2 >= RequestRate, HWV2 < HWV ).
-
 
 operation(migrate,Si,M,U) :-
     findall((H,R,L),requests(Si,[H|_],R,L),Requests),
@@ -43,7 +40,6 @@ operation(migrate,Si,M,U) :-
               (node(P,HWP,NeighboursP), dif(P,M), length(NeighboursP,DegP), ((DegP > DegM);(DegP=DegM,HWP>HWM)))
             )
     ).
-
 
 operation(replicate,Si,M,V) :-
     findall((H,R,L),requests(Si,[H|_],R,L),Requests),
@@ -70,4 +66,3 @@ replicateMembrane(Versions,M,RequestRate,V) :-
     HWV =< AvailableHW,
     % does not exist deployable V2 that handles more requests than V
     \+ ( member((V2,HWV2,MaxReqRateV2),Versions), dif(V2,V), HWV2 =< AvailableHW, RequestRate - MaxReqRateV2 =< D1 ).
-

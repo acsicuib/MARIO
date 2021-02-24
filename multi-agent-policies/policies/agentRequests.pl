@@ -5,4 +5,3 @@ operations(Si,RequestedActions) :-
 
 :-dynamic refused/3.
 :-dynamic requests/4.
-

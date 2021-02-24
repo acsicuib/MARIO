@@ -62,7 +62,8 @@ def main(number_simulation_steps,
          it,
          radius,
          reversepath,
-         policy_file=None  # if None we use the policy defined in the APP
+         policy_file=None,  # if None we use the policy defined in the APP
+         nm_policy= None
          ):
     simulation_duration = number_simulation_steps * time_in_each_step
 
@@ -96,7 +97,7 @@ def main(number_simulation_steps,
         for k in level:
             str_level+="(%s,%i,%i),"%(k,level[k][0],level[k][1])
         str_level = str_level[:-1]+"]"
-        globalrules.and_rule("service", app["name"],str_level, app["MaxLatency"])
+        globalrules.and_rule("service", "app%i"%app["name"],str_level, app["MaxLatency"])
 
 
     service_rule_profile = {}
@@ -162,7 +163,8 @@ def main(number_simulation_steps,
                   cloud_node=cloudNode,
                   window_agent_size=int(config.get('service', 'window_agent_outcome')),
                   radius = radius,
-                  reversepath = reversepath
+                  reversepath = reversepath,
+                  nm_policy = nm_policy
                   )
 
     s.deploy_monitor("App-Operator", nM, time_activation,
@@ -237,6 +239,7 @@ if __name__ == '__main__':
         code = item["code"]
         name = item["scenario"]
         policy = item["policy"]
+        nm_policy = item["n_policy"]
         radius = item["radius"]
         reversepath = item["reversepath"]
 
@@ -277,7 +280,8 @@ if __name__ == '__main__':
                  it=iteration,
                  radius=radius,
                  reversepath=reversepath,
-                 policy_file=policy
+                 policy_file=policy,
+                 nm_policy = nm_policy
                  )
 
             print("\n--- %s seconds ---" % (time.time() - start_time))

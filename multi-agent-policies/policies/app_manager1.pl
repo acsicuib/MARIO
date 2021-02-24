@@ -2,15 +2,12 @@
 :- discontiguous serviceInstance/4.
 :- discontiguous operator/3.
 
-operation(undeploy,Si,self,_) :-
-    \+ requests(Si,_,_,_).
-
-
+operation(undeploy,Si,self,_) :-   \+ requests(Si,_,_,_).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Migrates and adapts, if needed
 
-operation(migrate,Si,M,V) :-
+operation(migrate,Si,M,U) :-
     findall((H,R,L),requests(Si,[H|_],R,L),Requests),
     serviceInstance(Si, S, U, _), service(S,Versions,_), member((U,_,MaxRequestRateU),Versions),
     sumRequestRates(Requests,TotalRequestRate), dif(TotalRequestRate,MaxRequestRateU),
@@ -27,7 +24,7 @@ migrateMembrane(Versions,M,RequestRate,V) :-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Replicates and adapts, if needed
 
-operation(replicate,Si,M,V) :-
+operation(replicate,Si,M,U) :-
     findall((H,R,L),requests(Si,[H|_],R,L),Requests),
     serviceInstance(Si, S, U, self), service(S,Versions,_), member((U,_,MaxRequestRateU),Versions),
     sumRequestRates(Requests,TotalRequestRate), TotalRequestRate>MaxRequestRateU,      

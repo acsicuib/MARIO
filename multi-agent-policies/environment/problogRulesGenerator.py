@@ -10,8 +10,14 @@ class Rules():
         self.statements = []
 
     def and_rule(self,name,*args):
-        args = [str(ar) for ar in args]
-        param = ",".join(args)
+        st_arg = []
+        for ar in args:
+            if type(ar)==list:
+                st_arg .append("[%s]"%','.join(ar))
+            else:
+                st_arg .append(str(ar))
+        # args = [str(ar) for ar in args ]
+        param = ",".join(st_arg )
         self.statements.append("%s(%s).\n"%(name,param))
 
     def inner_rule(self, name, *args):
