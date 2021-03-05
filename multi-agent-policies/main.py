@@ -20,6 +20,7 @@ from environment.workload import DynamicWorkload
 from environment.path_routing import DeviceSpeedAwareRouting
 from environment.node_manager import NodeManager
 from environment.problogRulesGenerator import Rules
+from environment.userMovement import UserControlMovement
 
 def create_applications_from_json(data):
     applications = {}
@@ -180,26 +181,26 @@ def main(number_simulation_steps,
     The user operations are: CREATION, MOVEMENT (change associated node)
     """
 
-    # dStart = deterministicDistributionStartPoint(0, time_in_each_step, name="Deterministic")
-    #
-    # record_movements = open(temporal_folder+"/movements.csv","w")
-    # record_movements.write("app,DES,time,nodeSRC,nodeDST\n")
-    # evol = UserControlMovement(
-    #                     experiment_path = experiment_path,
-    #                     appOp = nM,
-    #                     record_movements = record_movements,
-    #                     limit_steps = int(config.get('simulation', 'UsersSteps')),
-    #                     edgeNodes = edgeNodes
-    # )
-    #
-    # s.deploy_monitor("Traces_localization_update", evol, dStart,
-    #                  **{"sim": s,
-    #                     "routingAlgorithm": routingPath,
-    #                     "case": case,
-    #                     "stop_time": simulation_duration,
-    #                     "it": it})
-    #
-    # s.set_movement_control(evol)
+    dStart = deterministicDistributionStartPoint(0, time_in_each_step, name="Deterministic")
+
+    record_movements = open(temporal_folder+"/movements.csv","w")
+    record_movements.write("app,DES,time,nodeSRC,nodeDST\n")
+    evol = UserControlMovement(
+                        experiment_path = experiment_path,
+                        appOp = nM,
+                        record_movements = record_movements,
+                        limit_steps = int(config.get('simulation', 'UsersSteps')),
+                        edgeNodes = edgeNodes
+    )
+
+    s.deploy_monitor("Traces_localization_update", evol, dStart,
+                     **{"sim": s,
+                        "routingAlgorithm": routingPath,
+                        "case": case,
+                        "stop_time": simulation_duration,
+                        "it": it})
+
+    s.set_movement_control(evol)
 
 
 
@@ -295,6 +296,8 @@ if __name__ == '__main__':
 # ffmpeg -r 1 -i multi-agent-policies/scenarios/TaxiRome/results_20201028/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p video.mp4
 # ffmpeg -r 1 -i multi-agent-policies/scenarios/TaxiRome/results_P1_20201028/images/snap_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p P1_size6.mp4
 
+# ffmpeg -r 1 -i network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p video.mp4
+
 
 # ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P1_20201028/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P1_size6.mp4
 # ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P1_20201120/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P1_size3.mp4
@@ -302,3 +305,4 @@ if __name__ == '__main__':
 # ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P12_20201120/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P12_size3.mp4
 # ffmpeg -t 20 -i P12_size6.mp4 -vf "fps=10,scale=520:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 output.gif
 #TODO
+

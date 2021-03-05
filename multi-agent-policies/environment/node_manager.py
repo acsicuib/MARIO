@@ -91,6 +91,8 @@ class NodeManager():
         """
         # The occupation of a node can be managed by the simulator but to easy integration with the visualization both structures are different
 
+        list_of_operations = ["undeploy", "nop", "migrate", "replicate", "none", "shrink", "evict", "reject", "adapt"]
+
         if self.create_initial_services:
             self.logger.debug("Node Managers - Global Initialization - Time: %i" % (sim.env.now))
             self.service_calls = defaultdict(list)
@@ -101,7 +103,9 @@ class NodeManager():
             self.create_initial_services = False #only one time
 
             self.action_stats = open(self.path_results+"action_stats.txt",'w')
-            self.action_stats.write("time,undeploy,nop,migrate,replicate,none,shrink,expand,DES,app\n")
+            self.action_stats.write("time,"+str(",".join(list_of_operations))+",DES,app\n")
+
+                # "time,undeploy,nop,migrate,replicate,none,shrink,expand,DES,app\n")
 
             self.actions_moves = open(self.path_results+"moves_stats.txt",'w')
             self.actions_moves.write("idService,app,time,action,level\n")
@@ -110,6 +114,8 @@ class NodeManager():
             self.snapshot(sim, routing)
         else:
             clean_routing_cache = False
+
+            sim.print_debug_assignaments()
 
             for nodeManagerId in self.memory:
                 counter_actions = Counter()
@@ -133,16 +139,12 @@ class NodeManager():
                     self.UID += 1
 
                     previous_services = set()
+
                     #  LIFO agent request - reversed list - Only do the first one
-
-
-                    # print("Action NodeManager: ",nodeManagerId)
-                    # print(list(self.memory[nodeManagerId]))
-
+                    offset = 0
                     for service_name,DES,fromNode,operation in self.memory[nodeManagerId]:
                         (action, serviceId, _, level) = operation
                         serviceId = int(serviceId.replace("s",""))
-                        #assert DES == serviceId
                         # We only deal with the last action of the agent that is possible
                         if serviceId in previous_services: continue
                         previous_services.add(serviceId)
@@ -150,7 +152,7 @@ class NodeManager():
                         if action == "nop":
                             counter_actions["nop"] += 1  # len(self.memory[nodeManagerId])
                             line = ""
-                            for item in ["undeploy", "nop", "migrate", "replicate", "none", "shrink", "evict", "reject", "adapt"]:
+                            for item in list_of_operations:
                                 line += "%i," % counter_actions[item]
                             line +="%i,%s"%(serviceId, self.get_app_identifier(service_name))
                             # self.action_stats.write("%i,%s\n" % (sim.env.now, line[:-1]))
@@ -158,22 +160,20 @@ class NodeManager():
                             self.action_stats.flush()
                             continue
 
-                        appname = self.get_app_identifier(service_name)
-                        # for action,serviceId,onNode,level in operation:
-                        print("+ Node Manager: %i + get actions from DES_service: %i"%(nodeManagerId,DES))
-                        print("\tService: ", service_name)
-                        print("\tApp name: ", appname)
-                        print("\tServiceId: ", serviceId)
-                        print("\tFrom Node: ", fromNode)
-                        print("\tAction: ", action)
-                        print("\tFlavour:", level)
-                        # print("\tNodeManager:", onNode)
 
+                        appname = self.get_app_identifier(service_name)
                         serviceId = int(serviceId)
 
+                        # print("+ Node Manager: %i + get actions from DES_service: %i"%(nodeManagerId,DES))
+                        # print("\tService: ", service_name)
+                        # print("\tApp name: ", appname)
+                        # print("\tServiceId: ", serviceId)
+                        # print("\tFrom Node: ", fromNode)
+                        # print("\tAction: ", action)
+                        # print("\tFlavour:", level)
 
-                        #### GENERATING NEW FACTS
-                        #TODO create some cache from same facts
+
+                        #### GENERATING FACTS
                         rules = Rules(self.common_rules)
 
                         available_space_on_node = self.get_free_space_on_nodes(sim)
@@ -206,62 +206,93 @@ class NodeManager():
                         # Service Instance
                         # Que servicios instnacias hay en nodos vecinos y self nodos.
 
-                        usedDES = set()
+                        # usedDES = set()
                         neighbours = set(neighbours)
                         neighbours.add(nodeManagerId)
-                        for (path, des) in routing.controlServices.values():
-                            if path[-1] in neighbours:
-                                desOnThatNode = des
-                                if des not in usedDES:
-                                    usedDES.add(des)
-                                    try:
-                                        levelOnNode = sim.alloc_level[desOnThatNode]
-                                        module = sim.get_module(desOnThatNode)
-                                        appname = "app%i"%self.get_app_identifier(module)
-                                        if path[-1] == nodeManagerId:
-                                            rules.and_rule("serviceInstance", "s%i"%desOnThatNode, appname, levelOnNode, "self")
-                                        else:
 
-                                            rules.and_rule("serviceInstance", "s%i"%desOnThatNode, appname, levelOnNode, "n%i"%path[-1])
-                                    except KeyError:
-                                        self.logger.warning("At serviceInstance rule fact. A service was moved in previous operation")
-                                        continue
+                        for n in neighbours:
+                            modules = sim.get_modules_from_node(n)
+                            for desOnThatNode in modules.keys():
+                                levelOnNode = sim.alloc_level[desOnThatNode]
+                                module = sim.get_module(desOnThatNode)
+                                appname_label = "app%i" % self.get_app_identifier(modules[desOnThatNode])
+
+                                message_level = "(%s,%i,%i)" % (
+                                    levelOnNode, sim.get_size_service(self.get_app_identifier(module), levelOnNode),
+                                    sim.get_speed_service(self.get_app_identifier(module), levelOnNode))
+
+                                if n == nodeManagerId:
+                                    rules.and_rule("serviceInstance", "s%i" % desOnThatNode, appname_label,
+                                                   message_level, "self")
+                                else:
+                                    rules.and_rule("serviceInstance", "s%i" % desOnThatNode, appname_label,
+                                                   message_level, "n%i" % n)
 
 
-                        ################################################################################
-                        # REQUEST fact
-                        # requests(ServiceInstanceId, Neighbour, RequestRate, LatencyToClient).
-                        ################################################################################
-                        # requests = []
-                        # for (path, des) in routing.controlServices.values():
-                        #     if path[-1]==nodeManagerId:
-                        #         requests.append([self.get_latency(path, sim.topology), path])
 
-                        sim.metrics.flush()
+                        modules = sim.get_modules_from_node(nodeManagerId)
                         # We only load samples that are generated along current period (self.activations-1,self.activation)
-                        df = pd.read_csv(self.path_csv_files + ".csv",
-                                         skiprows=range(1, self.load_samples_from[nodeManagerId]))  # It includes the csv header
-                        self.load_samples_from[nodeManagerId] += len(df.index) - 1  # avoid header
-                        df = df[df["DES.dst"] == serviceId]
-                        if len(df) > 0:
-                            # WARNING . If the topology changes (ie. node failure) this code should be checked again
-                            dg = df.groupby("TOPO.src")["TOPO.src"].count()
-                            for node_src, sumMessages in dg.iteritems():
-                                path = routing.get_path_from_src_dst(sim, node_src, nodeManagerId)
+                        sim.metrics.flush()
+                        df = pd.read_csv(self.path_csv_files + ".csv", skiprows=range(1, self.load_samples_from[nodeManagerId]))  # It includes the csv header
+                        offset = len(df)-1
 
-                                latency = self.get_latency(path, sim.topology)
-                                if sumMessages > 0:
-                                    if len(path) == 1:
-                                        # node_code = ["self"]
-                                        node_name = ["self"]
-                                    else:
-                                        node_code = path[-2]
-                                        if (self.reversepath + 1) > len(path) - 1:
-                                            node_code = path[0:-1]
+                        # print("Node:%i , TIME:%i - Services: %s"%(nodeManagerId,sim.env.now,modules.keys()))
+                        # print("Node:%i , TIME:%i - DF.Size:%i"%(nodeManagerId,sim.env.now,len(df)))
+                        # sim.print_debug_assignaments()
+
+                        for deployedService in modules.keys():
+
+                            df2 = df[df["DES.dst"] == deployedService]
+                            if len(df2) > 0:
+                                # WARNING . If the topology changes (ie. node failure) this code should be checked again
+                                dg = df2.groupby(["TOPO.src","DES.dst"])["TOPO.src"].count()
+                                for tupleSRC_DES, sumMessages in dg.iteritems():
+                                    node_src = tupleSRC_DES[0]
+                                    path = routing.get_path_from_src_dst(sim, node_src, nodeManagerId)
+                                    latency = self.get_latency(path, sim.topology)
+                                    if sumMessages > 0:
+                                        if len(path) == 1:
+                                            node_name = ["self"]
                                         else:
-                                            node_code = path[-(self.reversepath + 1):-1]
-                                        node_name = ["n%i" % x for x in node_code]
-                                    rules.and_rule("requests", "s%i"%serviceId, node_name, sumMessages, latency)
+                                            node_code = path[-2]
+                                            if (self.reversepath + 1) > len(path) - 1:
+                                                node_code = path[0:-1]
+                                            else:
+                                                node_code = path[-(self.reversepath + 1):-1]
+                                            node_name = ["n%i" % x for x in node_code]
+                                        rules.and_rule("requests", "s%i"%deployedService, node_name, sumMessages, latency)
+                            else:
+                                self.logger.warning("\t NodeManager %i. In time %i not has REQUESTS from Service DES:%i" %
+                                                    (nodeManagerId,sim.env.now,deployedService))
+                                rules.and_rule("requests", "s%i" % deployedService, "[_]", 1, 1)
+                                # df.to_csv("now_%i.csv" % deployedService)
+
+                        # df = pd.read_csv(self.path_csv_files + ".csv",
+                        #                  skiprows=range(1, self.load_samples_from[
+                        #                      nodeManagerId]))  # It includes the csv header
+                        # self.load_samples_from[nodeManagerId] += len(df.index) - 1  # avoid header
+
+                        # df2 = df[df["DES.dst"] == serviceId]
+                        # if len(df2) > 0:
+                        #     # WARNING . If the topology changes (ie. node failure) this code should be checked again
+                        #     dg = df2.groupby(["TOPO.src", "DES.dst"])["TOPO.src"].count()
+                        #     for tupleSRC_DES, sumMessages in dg.iteritems():
+                        #         node_src = tupleSRC_DES[0]
+                        #         path = routing.get_path_from_src_dst(sim, node_src, nodeManagerId)
+                        #
+                        #         latency = self.get_latency(path, sim.topology)
+                        #         if sumMessages > 0:
+                        #             if len(path) == 1:
+                        #                 # node_code = ["self"]
+                        #                 node_name = ["self"]
+                        #             else:
+                        #                 node_code = path[-2]
+                        #                 if (self.reversepath + 1) > len(path) - 1:
+                        #                     node_code = path[0:-1]
+                        #                 else:
+                        #                     node_code = path[-(self.reversepath + 1):-1]
+                        #                 node_name = ["n%i" % x for x in node_code]
+                        #             rules.and_rule("requests", "s%i" % serviceId, node_name, sumMessages, latency)
 
                             # print("Number of samples: %i (from: %i)" % (len(df.index)-1, self.previous_number_samples))
                             # if len(requests) > 0:
@@ -279,103 +310,129 @@ class NodeManager():
                             #             rules.and_rule("requests", serviceId, node_code, n_messages, latencyPath)
 
                         # Current operation from the node
-                        rules.and_rule("operation",action,"s%i"%serviceId,"self",level)
+                        message_level = "(%s,%i,%i)" % (level, sim.get_size_service(appname, level),sim.get_speed_service(appname, level))
+                        rules.and_rule("operation",action,"s%i"%serviceId,message_level)
 
                         # Run Prolog Model
-                        actions = self.run_prolog_model(rules, serviceId, nodeManagerId, self.path_results, sim,appname)
+                        action = self.run_prolog_model(rules, serviceId, nodeManagerId, self.path_results, sim,appname)
                         ###
 
-                        # print("Actions debugging by NodeManager %i "%nodeManagerId)
-                        # print("\tRaw actions from prolog:")
-                        # print(actions)
-                        #TODO rethink the sort of the actions.
-                        #TODO all these actions are coherent, is it important the order?
+                        # print("Actions debugging by NodeManager %i - Time: %i "%(nodeManagerId,sim.env.now))
+                        # print("Raw action from prolog:")
+                        # print(action)
+                        # print("*"*10)
 
-                        for (accept,service,operation,levelaction) in actions:
-                            # TODO debug and implement
-                            # service = int(service.replace("s",""))
-                            print("\tAction: ")
-                            print(accept,service,operation,levelaction)
+                        type = action[0]
 
-                            if accept == "accept":
-                                service = int(service.replace("s", ""))
-                                print(operation)
+                        if type == "accept":
+                            oper = action[1]
+                            service = action[2]
 
-                                assert action == operation, "Actions are different in NodeManager"
-                                assert int(service) == serviceId, "ServiceId (DES) should be equals in NodeManager"
-                                done = self.prepare_perform_action(sim, routing, path, service_name, serviceId, operation, fromNode,nodeManagerId,level,"Accept")
-                                if done: #it should be done
-                                    clean_routing_cache = (action != "reject") or (clean_routing_cache != True)
-                                    self.logger.debug("Action %s taken on NodeManager %s." % (action, nodeManagerId))
-                                    counter_actions[action] += 1
-                                    self.actions_moves.write("%i,%i,%i,%i,%s,%s\n" % (
-                                        nodeManagerId, serviceId, self.get_app_identifier(service_name), sim.env.now, action, level))
+                            if oper == "adapt":
+                                level = action[3]
 
-                            if accept == "reject":
-                                # print(action)
-                                # print(operation)
-                                counter_actions["reject"] += 1
-                                counter_actions[action] += 1
-
-                            if accept == "shrink":
-                                service_toshrink = int(service.replace("s",""))
-                                level = levelaction
-
-                                #Two actions shrink and migrate
-                                self.logger.debug("Action %s taken on NodeManager %s." % ("shrink", nodeManagerId))
-                                done = self.prepare_perform_action(sim, routing, path, service_name, service_toshrink,
-                                                                   "adapt", nodeManagerId, nodeManagerId, level, "Accept")
-                                counter_actions["shrink"] += 1
+                            service = int(service.replace("s", ""))
+                            assert oper == operation[0], "Actions are different in NodeManager"
+                            assert service == serviceId, "ServiceId (DES) should be equals in NodeManager"
+                            done = self.prepare_perform_action(sim, routing, path, service_name, serviceId, oper, fromNode,nodeManagerId,level,"Accept")
+                            if done: #it should be done
+                                clean_routing_cache = (clean_routing_cache != True)
+                                self.logger.debug("Action %s taken on NodeManager %s." % (oper, nodeManagerId))
+                                counter_actions[oper] += 1
                                 self.actions_moves.write("%i,%i,%i,%i,%s,%s\n" % (
-                                    nodeManagerId, service_toshrink, self.get_app_identifier(service_name), sim.env.now,
-                                    "shrink", level))
+                                    nodeManagerId, serviceId, self.get_app_identifier(service_name), sim.env.now, oper, level))
 
-                                self.logger.debug("\t AND Action %s taken on NodeManager %s." % (action, nodeManagerId))
-                                done = self.prepare_perform_action(sim, routing, path, service_name, serviceId,
-                                                                   operation, fromNode, nodeManagerId, level, "Accept")
-                                counter_actions[action] += 1
-                                self.actions_moves.write("%i,%i,%i,%i,%s,%s\n" % (
-                                    nodeManagerId, serviceId, self.get_app_identifier(service_name), sim.env.now,
-                                    action, level))
+                        if type == "reject":
+                            # print(action)
+                            # print(operation)
+                            oper = action[1]
+                            counter_actions["reject"] += 1
+                            counter_actions[oper] += 1
+                            self.logger.warning("Action %s taken on NodeManager %s. REJECTED " % (oper, nodeManagerId))
 
-                                clean_routing_cache = (action != "reject") or (clean_routing_cache != True)
 
-                            if accept == "evict":
-                                service_toshrink = int(service.replace("s",""))
-                                level = levelaction
-                                node_dst = int(operation.replace("n", ""))
-                                #Two actions shrink and migrate
-                                self.logger.debug("Action %s taken on NodeManager %s." % ("evict", nodeManagerId))
-                                done = self.prepare_perform_action(sim, routing, path, service_name, service_toshrink,
-                                                                   "migrate", node_dst, nodeManagerId, level, "Accept")
-                                counter_actions["evict"] += 1
-                                self.actions_moves.write("%i,%i,%i,%i,%s,%s\n" % (
-                                    nodeManagerId, service_toshrink, self.get_app_identifier(service_name), sim.env.now,
-                                    "evict", level))
+                        if type == "shrinkANDaccept":
+                            # result = ["shrinkANDaccept", it[1], it[2], it[3], it[6], it[10]]
+                            #  [shrinkANDaccept, migrate, s53, medium, s55,  small),
+                            oper = action[1]
+                            service = int(action[2].replace("s", ""))
+                            level = action[3]
 
-                                self.logger.debug("\t AND Action %s taken on NodeManager %s." % (action, nodeManagerId))
-                                done = self.prepare_perform_action(sim, routing, path, service_name, serviceId,
-                                                                   operation, fromNode, nodeManagerId, level, "Accept")
-                                counter_actions[action] += 1
-                                self.actions_moves.write("%i,%i,%i,%i,%s,%s\n" % (
-                                    nodeManagerId, serviceId, self.get_app_identifier(service_name), sim.env.now,
-                                    action, level))
+                            service_to_shrink = int(action[4].replace("s", ""))
+                            level_to_shrink = action[5]
+                            service_name_to_evict = sim.get_module(service_to_shrink)
 
-                                clean_routing_cache = (action != "reject") or (clean_routing_cache != True)
-                        # End-for actions from NodeManager with the serviceID
+                            #Two actions shrink and migrate
+                            self.logger.debug("Action %s taken on NodeManager %s." % ("shrink", nodeManagerId))
+                            done = self.prepare_perform_action(sim, routing, path, service_name_to_evict, service_to_shrink,
+                                                               "adapt", nodeManagerId, nodeManagerId, level_to_shrink, "Accept",infotype="shrinkANDaccept_1")
+                            counter_actions["shrink"] += 1
+                            self.actions_moves.write("%i,%i,%i,%i,%s,%s\n" % (
+                                nodeManagerId, service_to_shrink, self.get_app_identifier(service_name), sim.env.now,
+                                "shrink", level))
 
-                    sim.print_debug_assignaments()
+                            self.logger.debug("\t AND Action %s taken on NodeManager %s." % (action, nodeManagerId))
+                            done = self.prepare_perform_action(sim, routing, path, service_name, service,
+                                                               oper, fromNode, nodeManagerId, level, "Accept",infotype="shrinkANDaccept_2")
+                            counter_actions[oper] += 1
+                            self.actions_moves.write("%i,%i,%i,%i,%s,%s\n" % (
+                                nodeManagerId, service, self.get_app_identifier(service_name), sim.env.now,
+                                oper, level))
+
+                            clean_routing_cache = (action != "reject") or (clean_routing_cache != True)
+
+                        # [(evictANDaccept,(migrate,s51,medium,2,5),s4,(medium,4,20),n3)
+                        # result = ["evictANDaccept", it[1], it[2], it[3], it[6], it[7], it[10]]
+                        #                 0               1       2    3       4      5    6
+                        if type == "evictANDaccept":
+
+                            oper = action[1]
+                            service = int(action[2].replace("s",""))
+                            level = action[3]
+
+
+                            service_to_evict = int(action[4].replace("s",""))
+                            level_to_evict = action[5]
+                            node_to_evict = int(action[6].replace("n", ""))
+                            service_name_to_evict = sim.get_module(service_to_evict)
+
+
+
+                            #Two actions shrink and migrate
+                            self.logger.debug("Action %s taken on NodeManager %s." % ("evict", nodeManagerId))
+                            done = self.prepare_perform_action(sim, routing, path, service_name_to_evict, service_to_evict,
+                                                               "migrate", nodeManagerId, node_to_evict , level_to_evict, "Accept",infotype="evictAndAccept_1")
+                            counter_actions["evict"] += 1
+                            self.actions_moves.write("%i,%i,%i,%i,%s,%s\n" % (
+                                nodeManagerId, service_to_evict, self.get_app_identifier(service_name), sim.env.now,
+                                "evict", level_to_evict))
+
+                            self.logger.debug("\t AND Action %s taken on NodeManager %s." % (action, nodeManagerId))
+                            done = self.prepare_perform_action(sim, routing, path, service_name, service,
+                                                               oper, fromNode, nodeManagerId, level, "Accept",infotype="evictAndAccept_2")
+                            counter_actions[oper] += 1
+                            self.actions_moves.write("%i,%i,%i,%i,%s,%s\n" % (
+                                nodeManagerId, service, self.get_app_identifier(service_name), sim.env.now,
+                                oper, level))
+
+                            clean_routing_cache = (clean_routing_cache != True)
+                    # End-for actions from NodeManager with the serviceID
+
+
                     # End-for. Managed all operations in memory of the NodeManager.
+                    self.load_samples_from[nodeManagerId] += offset   # avoid header
                     self.memory[nodeManagerId] = list()
                     # Writing stats
                     if len(counter_actions) > 0:
                         line = ""
-                        for item in ["undeploy", "nop", "migrate", "replicate", "none", "shrink", "evict", "reject", "adapt"]:
+                        for item in list_of_operations:
                             line += "%i," % counter_actions[item]
                         line += "%i,%i" % (int(serviceId), self.get_app_identifier(service_name))
                         # self.action_stats.write("%i,%s\n" % (sim.env.now, line[:-1]))
                         self.action_stats.write("%i,%s\n" % (sim.env.now, line))
                         self.action_stats.flush()
+
+
 
             #End all node managers
             if clean_routing_cache:
@@ -388,7 +445,7 @@ class NodeManager():
 
 
 
-    def prepare_perform_action(self, sim, routing, path, service_name, serviceId, action, fromNode, onNode, level,message):
+    def prepare_perform_action(self, sim, routing, path, service_name, serviceId, action, fromNode, onNode, level,message,infotype=""):
         # Reset the buffer of lastoutcome statements
         if self.window_agent_size == self.window_agent_comm[serviceId]:
             self.window_agent_comm[serviceId] = 0
@@ -414,7 +471,8 @@ class NodeManager():
                                   toNode=onNode,
                                   level=level,
                                   routingAlgorithm=routing,
-                                  path=path)
+                                  path=path,
+                                  infotype=infotype)
 
 
         # if self.render_action and not done:
@@ -438,7 +496,7 @@ class NodeManager():
 
         # There is a lib.pl to clean the policy rules
         # this file is loaded in this point, but its path is implicit in self.rule_profile
-        loadOtherPLModels = ["nodeManagerRequest"]
+        loadOtherPLModels = ["interfaceNMRequests"]
         # Include other models
         rule_file = ""
         for other in loadOtherPLModels:
@@ -462,6 +520,7 @@ class NodeManager():
 
         with open(model_file, "w") as f:
             f.write(rules_and_facts)
+            f.write("\n%% Self-NODE is: n%i\n"%current_node)
             f.write("\nmain :- current_prolog_flag(argv, Argv),\n" \
                     "  nth0(0, Argv, Argument0),\n" \
                     # "  atom_number(Argument0, ServiceID),\n" \
@@ -480,15 +539,47 @@ class NodeManager():
             expr = stdout.decode("utf-8")
             expr = expr.replace("\n", "")
 
-            it = iter("".join(c for c in expr if c not in "()[] ").split(","))
-            result = [(x, y, z, v) for x, y, z, v in zip(it, it, it, it)]
-
+            # it = iter("".join(c for c in expr if c not in "()[] ").split(","))
+            # result = [(x, y, z, v, w) for x, y, z, v, w in zip(it, it, it, it, it)]
+            result = self.outputparsersAccordingWithArgsOperation(expr)
             assert len(result) >= 0, "(nodeManager.py) Prolog response is incorrect"
             return result
 
         except TimeoutExpired as err:
             p.terminate()
             raise Exception("Error running PYSWIP model on file: %s - TIMEOUT EXPERIED" % model_file)
+
+    def outputparsersAccordingWithArgsOperation(self,expr):
+        #Horrible function but each operation has different commands....
+        # print(expr)
+        it = list(iter("".join(c for c in expr if c not in "()[] ").split(",")))
+
+        if it[0] == "accept":
+            if it[1] == "undeploy":
+                result=["accept","undeploy",it[2]]
+                return result
+            if it[1] == "migrate" or "replicate" or "adapt":
+                result = ["accept", it[1], it[2], it[3]]
+                return result
+
+        if it[0] == "reject":
+            result=["reject",it[1],it[2]]
+            return result
+
+        if it[0] == "evictANDaccept":
+            #[(evictANDaccept,(migrate,s51,medium,2,5),s4,(medium,4,20),n3)
+            result = ["evictANDaccept", it[1], it[2],it[3],it[6],it[7],it[10]]
+            return result
+
+        if it[0] == "shrinkANDaccept":
+            # [(shrinkANDaccept, (migrate, s53, medium, 4, 20), s55, (medium, 2, 5), small, 1, 2),  (reject, (migrate, s53, medium, 4, 20), _5516)]
+            #            0          1        2      3   4   5    6      7     8  9    10
+            # n_operation(shrinkANDaccept, (Op, Si, SiFlavour(X;Y;Z), (Sj, SjFlavour, NewSjFlavour)): -
+            #                       0       1   2  3         4 5 6     7    8  9 10    11  12  13
+            result = ["shrinkANDaccept", it[1], it[2],it[3], it[6],it[10]]
+            #  [shrinkANDaccept, migrate, s53, medium, s55,  small),
+            return result
+
 
 
     def perfom_action(self, sim,
@@ -499,7 +590,8 @@ class NodeManager():
                       toNode,
                       level,
                       routingAlgorithm,
-                      path):
+                      path,
+                      infotype):
         """
         Decode the action and perfom the action in the simulator
 
@@ -507,14 +599,15 @@ class NodeManager():
         :param action:
         :return:
         """
-        print("*"*10)
-        print("-: ACTION :-")
-        print("\tService: ", service)
-        print("\tDES-ServiceId: ", serviceId)
-        print("\tAction: ", action)
-        print("\tOn Node:", fromNode)
-        print("\tTo Node: ", toNode)
-        print("\tFlavour:", level)
+        # print("*"*10)
+        # print("-: On Node MANAGER - ACTION :-")
+        # print("\tService: ", service)
+        # print("\tDES-ServiceId: ", serviceId)
+        # print("\tAction: ", action)
+        # print("\tOn Node:", fromNode)
+        # print("\tTo Node: ", toNode)
+        # print("\tFlavour:", level)
+        # print("\t TYPE : ",infotype)
 
 
         if action == "replicate": #it is prepared to get a list of nodes
@@ -593,10 +686,13 @@ class NodeManager():
 
 
     def undeploy_module(self,sim,service,node,id_service):
-        sim.undeploy_module(self.get_app_identifier(service), service, id_service)
-        #Remove stop process
-        del self.active_monitor[id_service]
-        sim.stop_process(id_service)
+        try:
+            sim.undeploy_module(self.get_app_identifier(service), service, id_service)
+            #Remove stop process
+            del self.active_monitor[id_service]
+            sim.stop_process(id_service)
+        except KeyError:
+            self.logger.warning("An undeploy operation can not be done since the service goes out in other operation. ServiceDES: %i"%id_service)
 
     def deploy_module(self, sim, service, node, routingAlgorithm, experiment_path,level):
         # Allocation the module in the simulator

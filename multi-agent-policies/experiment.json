@@ -2,8 +2,8 @@
   {
     "code": "ModelAdapt",
     "scenario":"Model_withAdapt",
-    "policy":"app_manager2.pl",
-    "n_policy": "n_manager1.pl",
+    "policy":"am.pl",
+    "n_policy": "nm.pl",
     "radius": 1,
     "reversepath": 1
   }

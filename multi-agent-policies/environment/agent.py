@@ -103,7 +103,10 @@ class PolicyManager():
             # SERVICEINSTANCE fact
             # serviceInstance(ServiceInstanceId, ServiceId, Node).
             ################################################################################
-            self.rules.and_rule("serviceInstance","s%i"%self.DES,"app%i"%self.app_name,level,"self")
+            message_level = "(%s,%i,%i)"%(level,sim.get_size_service(self.app_name, level),sim.get_speed_service(self.app_name,level))
+
+
+            self.rules.and_rule("serviceInstance","s%i"%self.DES,"app%i"%self.app_name,message_level,"self")
 
             ################################################################################
             # NODE fact
@@ -250,15 +253,21 @@ class PolicyManager():
             ################################################################################
             # The agent communicates to the appOperator (MARIO) its operations
             ################################################################################
-            # print(" ACTION FROM THE SERVICE: %i SIM.TIME: %i"%(self.DES,sim.env.now))
+
+            # print(" ACTIONS FROM SERVICE: %i in NOde: %i, SIM.TIME: %i"%(self.DES,currentNode,sim.env.now))
             # print(actions)
             # print("*"*10)
 
             #the 3rd field is the nodeID
             priorityActionIndex = 0
             action = actions[priorityActionIndex]
-            node_requests_alloc = action[2]
-            if node_requests_alloc=="self":
+
+            if "_" in action[2]: #TODO improve with the final version of the rules
+                node_requests_alloc = "self"
+            else:
+                node_requests_alloc = action[2]
+
+            if node_requests_alloc =="self":
                 node_requests_alloc = currentNode
             else:
                 node_requests_alloc = node_requests_alloc.replace("n","")
@@ -275,9 +284,11 @@ class PolicyManager():
         ###
         ## It prepares the file (.pl) to run it in a terminal command
 
-        # There is a lib.pl to clean the policy rules
-        # this file is loaded in this point, but its path is implicit in self.rule_profile
-        loadOtherPLModels = ["lib", "agentRequests"]
+
+        # External pl files to be included in the rules
+        #loadOtherPLModels = ["lib", "agentRequests"]
+        loadOtherPLModels = ["interfaceAMRequests"]
+
         pathparts = self.rule_profile.split("/")
         # Include other models
         rule_file = ""

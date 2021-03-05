@@ -5,7 +5,7 @@
     "HwReqs": 1,
     "MaxReqs": 5,
     "MaxLatency": 10,
-    "level": {"small":[1,10],"medium":[2,20],"large": [5,50]},
+    "level": {"small":[1,5],"medium":[2,10],"large": [5,20]},
 
     "transmission": [
       {
@@ -35,7 +35,7 @@
     "HwReqs": 1,
     "MaxReqs": 5,
     "MaxLatency": 10,
-   "level": {"small":[1,10],"medium":[2,20],"large": [3,30]},
+   "level": {"small":[1,2],"medium":[2,5],"large": [3,30]},
 
     "transmission": [
       {
@@ -54,6 +54,37 @@
         "name": "M.USER.APP.2",
         "s": "None",
         "d": "2_01",
+        "bytes": 1,
+        "instructions": 100
+      }
+    ]
+  }
+  ,
+  {
+    "id": 3,
+    "name": 3,
+    "HwReqs": 1,
+    "MaxReqs": 5,
+    "MaxLatency": 10,
+    "level": {"medium":[4,20]},
+
+    "transmission": [
+      {
+        "message_in": "M.USER.APP.3",
+        "module": "3_01"
+      }
+    ],
+    "module": [
+      {
+        "name": "3_01"
+      }
+    ],
+    "message": [
+      {
+        "id": 1,
+        "name": "M.USER.APP.3",
+        "s": "None",
+        "d": "3_01",
         "bytes": 1,
         "instructions": 100
       }

@@ -29,9 +29,9 @@ class UserControlMovement:
         self.record_movements = record_movements
         # Mario is here to control the deployment of new modules in the cloud node when there is requested by new users.
         self.appOp = appOp
-        self.edgeNodes = edgeNodes
+        self.edgeNodes = list(edgeNodes)
 
-        self.probability_matriz = np.random.random((len(self.edgeNodes),len(self.edgeNodes)))
+        self.probability_matriz = {}
 
     def __call__(self, sim, routingAlgorithm,case, stop_time, it):
         """
@@ -47,6 +47,29 @@ class UserControlMovement:
         Returns:
             None
         """
+        if self.probability_matriz == {}:
+            self.probability_matriz[1]=[ ## AKA USERS - TEACHERS
+                [0.2, 0.4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.4 ],
+                [0.1, 0.2, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5 ],
+                [0.0, 0.05, 0.1, 0.05, 0.0, 0.1, 0.0, 0.0,0.7],
+                [0.0, 0.0, 0.2, 0.2, 0.1, 0.0, 0.0, 0.0,.5],
+                [0.0, 0.0, 0.0, 0.3, 0.1, 0.0, 0.0, 0.0, 0.6],
+                [0.0, 0.0, 0.05, 0.0, 0.0, 0.4, 0.1, 0.0,.45],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.1,0.6],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.4,0.4]
+            ]
+            ## AKA USERS - Studens
+            self.probability_matriz[2]= [
+                [0.66, 0.34, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [0.2, 0.6, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [0.0, 0.1, 0.7, 0.1, 0.0, 0.1, 0.0, 0.0],
+                [0.0, 0.0, 0.2, 0.6, 0.2, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 0.34, 0.66, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 0.6, 0.0, 0.0, 0.2, 0.2, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.6, 0.2, 0.2],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.8, 0.2]
+            ]
+
         usersDES = list(sim.alloc_source.keys())
         if len(usersDES) > 0:
             if self.current_step<=self.limit_step:
@@ -56,14 +79,34 @@ class UserControlMovement:
                 for user in usersDES:
                     # We move some users
                     current_node = sim.alloc_DES[user]
-                    pos_node, = np.where(self.edgeNodes==current_node)
-                    if random.random()>self.probability_matriz[pos_node][pos_node]:
-                        options = self.probability_matriz[pos_node]
-                        options[pos_node] = 0
-                        toNode = np.random.choice(options, 1)
-                        self.logger.debug("A new movement of user (#%s) from node %s to node %s" % (user, current_node, toNode))
-                        sim.alloc_DES[user] = toNode
-                        self.record_movements.write("%i,%i,%i,%i,%s\n" % (sim.alloc_source[user]["app"],user, sim.env.now, current_node,toNode))
+
+                    pos_node = self.edgeNodes.index(current_node)
+                    app = sim.alloc_source[user]["app"]
+                    if app != 3 and app == 2: #users from app.3 are in the same place
+                        probabilities = list(self.probability_matriz[app][pos_node])
+                        toNode =  np.random.choice(self.edgeNodes,1,p=probabilities)[0]
+                        if current_node != toNode:
+                            self.logger.debug("A new movement of user (#%s) from node %s to node %s" % (user, current_node, toNode))
+                            sim.alloc_DES[user] = toNode
+                            self.record_movements.write("%i,%i,%i,%i,%s\n" % (sim.alloc_source[user]["app"],user, sim.env.now, current_node,toNode))
+
+
+                    if app != 3 and app == 1:  # users from app.3 are in the same place
+                        probabilities = list(self.probability_matriz[app][pos_node])
+                        toNode = np.random.choice(self.edgeNodes+[-1], 1, p=probabilities)[0]
+                        if current_node != toNode and toNode >= 0:
+                            self.logger.debug(
+                                "A new movement of user (#%s) from node %s to node %s" % (user, current_node, toNode))
+                            sim.alloc_DES[user] = toNode
+                            self.record_movements.write("%i,%i,%i,%i,%s\n" % (
+                            sim.alloc_source[user]["app"], user, sim.env.now, current_node, toNode))
+                        elif toNode == -1:
+                            self.logger.debug(
+                                "A new movement of user (#%s) from node %s to EXIT" % (user, current_node))
+                            self.record_movements.write("%i,%i,%i,%i,%s\n" % (
+                                sim.alloc_source[user]["app"], user, sim.env.now, current_node, toNode))
+                            sim.undeploy_source(user)
+
                 else:
                     self.logger.info("\t without user movements  ")
 

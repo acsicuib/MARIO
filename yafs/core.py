@@ -1016,16 +1016,31 @@ class Sim:
         for id_des_process in self.alloc_source:
             src_deployed = self.alloc_source[id_des_process]
             # print "Module (SRC): %s(%s) - deployed at entity.id: %s" %(src_deployed["module"],src_deployed["app"],src_deployed["id"])
-            alloc_entities[src_deployed["id"]].append(src_deployed["app"]+"#"+src_deployed["module"])
+            alloc_entities[src_deployed["id"]].append(str(src_deployed["app"])+"#"+str(src_deployed["module"]))
 
         for app in self.alloc_module:
             for module in self.alloc_module[app]:
                 # print "Module (MOD): %s(%s) - deployed at entities.id: %s" % (module,app,self.alloc_module[app][module])
                 for idDES in self.alloc_module[app][module]:
-                    alloc_entities[self.alloc_DES[idDES]].append(app+"#"+module)
+                    alloc_entities[self.alloc_DES[idDES]].append(str(app)+"#"+str(module))
 
         return alloc_entities
 
+
+    def get_modules_from_node(self,node):
+        allModulesAtNode = [des for (des, value) in self.alloc_DES.items() if value == node]
+        fullAssignation = {}
+        for app in self.alloc_module:
+            for module in self.alloc_module[app]:
+                deployed = self.alloc_module[app][module]
+                for des in deployed:
+                    fullAssignation[des] = module  # DES process are unique for each module/element
+
+        listModules = {}
+        for des in allModulesAtNode:
+            if des in fullAssignation.keys():
+                listModules[des]=fullAssignation[des]
+        return listModules
 
     def deploy_module(self,app_name,module, services,ids,level):
         register_consumer_msg = []
@@ -1093,8 +1108,19 @@ class Sim:
             self.stop_process(des)
             del self.alloc_source[des]
             del self.alloc_DES[des]
-            del self.alloc_level[des]
 
+
+    def undeploy_module(self, des):
+        """ remove one source deployed in a node
+        from app_name
+        deployed in id_topo
+        """
+        # Clearing related structures
+        if des in self.alloc_source:
+            self.stop_process(des)
+            del self.alloc_source[des]
+            del self.alloc_DES[des]
+            del self.alloc_level[des]
 
     def undeploy_module(self, app_name,service_name, des):
         """ remove one module deployed in a node
@@ -1148,7 +1174,7 @@ class Sim:
             for module in self.alloc_module[app]:
                 deployed = self.alloc_module[app][module]
                 for des in deployed:
-                    fullAssignation[des] = {"DES": self.alloc_DES[des], "module": module}
+                    fullAssignation[des] = {"DES": self.alloc_DES[des], "module": module} #TODO change key "DES" to "NODE"
         return fullAssignation
 
     def get_module(self,DES):
