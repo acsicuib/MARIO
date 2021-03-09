@@ -1,4 +1,7 @@
+### TODO improve readme file 
+
 # Description
+ 
 
 - MARIO publication 
 - Target: Special Issue on Distributed Complex Systems: Governance, Engineering, and Maintenance
@@ -229,28 +232,27 @@ git clone --branch SI-SoSs https://github.com/acsicuib/MARIO
 
 #git reset --hard HEAD
 #git pull
-git pull origin SI-SoSs
+#git pull origin SI-SoSs
 
 apt-get install python3-venv
 apt install pkg-config 
 python3 -m pip install virtualenv
 python3 -m venv marioenv
 source marioenv/bin/activate
-(mariovenv - configure a virtual env.)
  
 python -m pip install -r requirements.txt 
 
-(on MARIO/multi-agent-policies/ folder)
+#on MARIO/multi-agent-policies/ folder)
 export PYTHONPATH="/home/isaac/projects/SIMARIO/MARIO:/home/isaac/projects/SIMARIO/MARIO/multi-agent-policies/environment:$PYTHONPATH"
 python3 main.py
 
-(video generation - or -)
-ffmpeg -r 1 -i multi-agent-policies/scenarios/TaxiRome/results_20201028/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p video.mp4
-ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P12_20201120/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P12_size3.mp4
+# The next lines are for me, sorry - copypaste
 
-ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P12_20201122/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P1_size3.mp4
-ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P1_s3_20201124/images/network_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P1_size3.mp4
-(This lines are for me ;) -  copypaste)
-scp isaac@deepblue:/home/isaac/projects/MARIO/video.mp4 .
-scp isaac@deepblue:/home/isaac/projects/MARIO/multi-agent-policies/scenarios/TaxiRome/results_20201028/models/rules_swi_UID96_nn0lt0ln0_s0_X_9700.pl .
+rsync -rav -e ssh --include '*.txt' --include='*.mp4' --include="*.pdf" --exclude='*.*' --exclude='images/*.pdf' \
+isaac@cloudlab:/home/isaac/projects/SIMARIO/MARIO/multi-agent-policies/results/ \ 
+~/Donwloads/fromServer/
+
+
 ```
+
+
