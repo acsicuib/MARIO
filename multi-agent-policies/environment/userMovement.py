@@ -3,6 +3,7 @@ import logging
 import time
 from yafs.distribution import *
 import numpy as np
+import random
 
 class UserControlMovement:
 
@@ -11,6 +12,7 @@ class UserControlMovement:
                  appOp,
                  record_movements,
                  limit_steps,
+                 limit_movements,
                  edgeNodes,
                  logger=None):
 
@@ -30,7 +32,7 @@ class UserControlMovement:
         # Mario is here to control the deployment of new modules in the cloud node when there is requested by new users.
         self.appOp = appOp
         self.edgeNodes = list(edgeNodes)
-
+        self.limit_movements = limit_movements
         self.probability_matriz = {}
 
     def __call__(self, sim, routingAlgorithm,case, stop_time, it):
@@ -49,49 +51,59 @@ class UserControlMovement:
         """
         if self.probability_matriz == {}:
             self.probability_matriz[1]=[ ## AKA USERS - TEACHERS
-                [0.2, 0.4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.4 ],
-                [0.1, 0.2, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5 ],
-                [0.0, 0.05, 0.1, 0.05, 0.0, 0.1, 0.0, 0.0,0.7],
+                [0.2, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3 ],
+                [0.1, 0.3, 0.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3 ],
+                [0.0, 0.05, 0.3, 0.05, 0.0, 0.1, 0.0, 0.0,0.5],
                 [0.0, 0.0, 0.2, 0.2, 0.1, 0.0, 0.0, 0.0,.5],
                 [0.0, 0.0, 0.0, 0.3, 0.1, 0.0, 0.0, 0.0, 0.6],
-                [0.0, 0.0, 0.05, 0.0, 0.0, 0.4, 0.1, 0.0,.45],
-                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.1,0.6],
+                [0.0, 0.0, 0.1, 0.0, 0.0, 0.6, 0.1, 0.0,.2],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.4, 0.2,0.4],
                 [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.4,0.4]
             ]
-            ## AKA USERS - Studens
+            ## AKA USERS - Students
             self.probability_matriz[2]= [
-                [0.66, 0.34, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-                [0.2, 0.6, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0],
-                [0.0, 0.1, 0.7, 0.1, 0.0, 0.1, 0.0, 0.0],
-                [0.0, 0.0, 0.2, 0.6, 0.2, 0.0, 0.0, 0.0],
-                [0.0, 0.0, 0.0, 0.34, 0.66, 0.0, 0.0, 0.0],
-                [0.0, 0.0, 0.6, 0.0, 0.0, 0.2, 0.2, 0.0],
-                [0.0, 0.0, 0.0, 0.0, 0.0, 0.6, 0.2, 0.2],
-                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.8, 0.2]
+                [0.36, 0.34, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, .3],
+                [0.2, 0.3, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3],
+                [0.0, 0.1, 0.5, 0.1, 0.0, 0.2, 0.0, 0.0, 0.1],
+                [0.0, 0.0, 0.1, 0.4, 0.2, 0.1, 0.0, 0.0, 0.2],
+                [0.0, 0.0, 0.0, 0.14, 0.46, 0.0, 0.0, 0.0, 0.4],
+                [0.0, 0.0, 0.4, 0.0, 0.0, 0.2, 0.1, 0.0, 0.3],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.2, 0.2, 0.1],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.6, 0.2, 0.2]
             ]
+
 
         usersDES = list(sim.alloc_source.keys())
         if len(usersDES) > 0:
             if self.current_step<=self.limit_step:
                 self.logger.info("Movement number (#%i) at time: %i" % (self.current_step, sim.env.now))
                 start_time = time.time()
-
+                current_moves = 0
+                random.shuffle(usersDES)
                 for user in usersDES:
                     # We move some users
                     current_node = sim.alloc_DES[user]
 
                     pos_node = self.edgeNodes.index(current_node)
                     app = sim.alloc_source[user]["app"]
-                    if app != 3 and app == 2: #users from app.3 are in the same place
+                    if app == 2:
                         probabilities = list(self.probability_matriz[app][pos_node])
-                        toNode =  np.random.choice(self.edgeNodes,1,p=probabilities)[0]
-                        if current_node != toNode:
+                        toNode =  np.random.choice(self.edgeNodes+[-1],1,p=probabilities)[0]
+
+                        if current_node != toNode and toNode >= 0:
                             self.logger.debug("A new movement of user (#%s) from node %s to node %s" % (user, current_node, toNode))
                             sim.alloc_DES[user] = toNode
                             self.record_movements.write("%i,%i,%i,%i,%s\n" % (sim.alloc_source[user]["app"],user, sim.env.now, current_node,toNode))
+                            current_moves +=1
+                        elif toNode == -1:
+                            self.logger.debug(
+                                "A new movement of user (#%s) from node %s to EXIT" % (user, current_node))
+                            self.record_movements.write("%i,%i,%i,%i,%s\n" % (
+                                sim.alloc_source[user]["app"], user, sim.env.now, current_node, toNode))
+                            sim.undeploy_source(user)
+                        current_moves += 1
 
-
-                    if app != 3 and app == 1:  # users from app.3 are in the same place
+                    if app == 1:
                         probabilities = list(self.probability_matriz[app][pos_node])
                         toNode = np.random.choice(self.edgeNodes+[-1], 1, p=probabilities)[0]
                         if current_node != toNode and toNode >= 0:
@@ -100,17 +112,22 @@ class UserControlMovement:
                             sim.alloc_DES[user] = toNode
                             self.record_movements.write("%i,%i,%i,%i,%s\n" % (
                             sim.alloc_source[user]["app"], user, sim.env.now, current_node, toNode))
+
                         elif toNode == -1:
                             self.logger.debug(
                                 "A new movement of user (#%s) from node %s to EXIT" % (user, current_node))
                             self.record_movements.write("%i,%i,%i,%i,%s\n" % (
                                 sim.alloc_source[user]["app"], user, sim.env.now, current_node, toNode))
                             sim.undeploy_source(user)
+                        current_moves += 1
 
-                else:
-                    self.logger.info("\t without user movements  ")
+                    if current_moves >= self.limit_movements:
+                        break
 
+                    # if app != 3:
+                    #     self.logger.info("\t without user movements  ")
 
+                #end for
                 self.logger.debug("\tEND movement #%i. Time taken: %s" %(self.current_step,(time.time()- start_time)))
                 # sim.print_debug_assignaments()
                 # we prepare the next execution of this function

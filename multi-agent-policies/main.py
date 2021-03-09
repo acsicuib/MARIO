@@ -156,6 +156,15 @@ def main(number_simulation_steps,
     """
     time_activation = deterministic_distribution(time=int(config.get('nodeManager', 'activation_period')),
                                                  name="Deterministic")
+
+    static_behaviour = False
+    try:
+        if bool(config.get('simulation',"notAllowedAllocation")):
+            static_behaviour = True
+    except:
+        None
+
+
     nM = NodeManager(globalrules, service_rule_profile, path_csv_files,
                   app_number=len(dataApp),
                   period=int(config.get('service', 'activation_period')),
@@ -165,7 +174,8 @@ def main(number_simulation_steps,
                   window_agent_size=int(config.get('service', 'window_agent_outcome')),
                   radius = radius,
                   reversepath = reversepath,
-                  nm_policy = nm_policy
+                  nm_policy = nm_policy,
+                  static_behaviour= static_behaviour
                   )
 
     s.deploy_monitor("App-Operator", nM, time_activation,
@@ -190,6 +200,7 @@ def main(number_simulation_steps,
                         appOp = nM,
                         record_movements = record_movements,
                         limit_steps = int(config.get('simulation', 'UsersSteps')),
+                        limit_movements = int(config.get('simulation', 'limitMovements')),
                         edgeNodes = edgeNodes
     )
 
@@ -287,9 +298,35 @@ if __name__ == '__main__':
 
             print("\n--- %s seconds ---" % (time.time() - start_time))
 
-            # do_video_from_execution_snaps(temporal_folder + "animation_snaps", 'snap_%05d.png', 10)
-    #
+        try:
+            import plot_actions
+            plot_actions.run()
+        except:
+            print("Problems generating actions runs")
+
+        try:
+            import plot_averageActionType
+            plot_averageActionType.run()
+        except:
+            print("Problems generating plot_averageActionType")
+
+        try:
+            import successful_requests
+            successful_requests.run()
+        except:
+            print("Problems generating actions runs")
+
+        try:
+            os.system("ffmpeg -r 1 -i %simages/network_%%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p %svideo_%s.mp4"%(temporal_folder,temporal_folder,code))
+        except:
+            print("Problems generating video")
+
     print("Simulation Done!")
+
+    # try:
+    #     os.system('python plot_actions.py')
+    # except:
+    #     print("Problems with plot_actions.py")
 
 # ffmpeg -r 1 -i results/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p results/out2.mp4
 # ffmpeg -r 1 -i results/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p results/out2.mp4

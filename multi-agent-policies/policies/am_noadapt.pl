@@ -10,30 +10,23 @@ operation(undeploy,Si,_,Flavour) :-
     \+ requests(Si,_,_,_).
 
 % Adapt Si into different flavour when current request rate differs from what current flavour can handle %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-operation(adapt,Si,_,NewSiFlavour) :-
-    trigger(adapt,Si,TotalRR),
-    membrane(adapt,Si,TotalRR,NewSiFlavour).
+%operation(adapt,Si,_,NewSiFlavour) :-
+%    trigger(adapt,Si,TotalRR),
+%    membrane(adapt,Si,TotalRR,NewSiFlavour).
+%
+%
+%trigger(adapt,Si,TotalRR) :-
+%    findall(R,requests(Si,_,R,_),Requests),
+%    sumIntList(Requests,TotalRR),
+%    serviceInstance(Si,_,(_,_,MaxRR_F),self),
+%    D is TotalRR / MaxRR_F, (D>1.1;D<0.9).
 
-
-trigger(adapt,Si,TotalRR) :-
-    findall(R,requests(Si,_,R,_),Requests),
-    sumIntList(Requests,TotalRR),
-    serviceInstance(Si,_,(_,_,MaxRR_F),self),
-    D is TotalRR / MaxRR_F, (D>1.1;D<0.9).
-
-membrane(adapt,Si,TotalRR,NewSiFlavour) :-
-    serviceInstance(Si, S, (Id_F,HW_F,_), self), service(S,SVersions,_),
-    node(self, AvailableHW, _),
-    member(NewSiFlavour, SVersions), NewSiFlavour=(Id_F2,HW_F2,MRR_F2), dif(Id_F2,Id_F),
-    MRR_F2 >= TotalRR, HW_F2 =< AvailableHW + HW_F,
-    \+ (member((_,HW_F3,MRR_F3), SVersions),  MRR_F3 >= TotalRR, HW_F3 < HW_F2).
-
-membrane(adapt,Si,_,NewSiFlavour) :-
-    serviceInstance(Si, S, (Id_F,HW_F,_), self), service(S,SVersions,_),
-    node(self, AvailableHW, _),
-    member(NewSiFlavour, SVersions), NewSiFlavour=(Id_F2,HW_F2,MRR_F2), dif(Id_F2,Id_F),
-    HW_F2 =< AvailableHW + HW_F,
-    \+ (member((_,HW_F3,MRR_F3), SVersions),  MRR_F3 > MRR_F2, HW_F3 =< AvailableHW + HW_F).
+%membrane(adapt,Si,_,NewSiFlavour) :-
+%    serviceInstance(Si, S, (Id_F,HW_F,_), self), service(S,SVersions,_),
+%    node(self, AvailableHW, _),
+%    member(NewSiFlavour, SVersions), NewSiFlavour=(Id_F2,HW_F2,MRR_F2), dif(Id_F2,Id_F),
+%    HW_F2 =< AvailableHW + HW_F,
+%    \+ (member((_,HW_F3,MRR_F3), SVersions),  MRR_F3 > MRR_F2, HW_F3 =< AvailableHW + HW_F).
 
 % Migrates %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 operation(migrate,Si,M,SiFlavour) :-

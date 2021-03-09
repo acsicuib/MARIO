@@ -1,10 +1,12 @@
 [
-  {
-    "code": "ModelAdapt",
-    "scenario":"Model_withAdapt",
+
+    {
+    "code": "Model_Adapt_r7",
+    "scenario":"Model",
     "policy":"am.pl",
     "n_policy": "nm.pl",
-    "radius": 1,
+    "radius": 7,
     "reversepath": 1
   }
+
 ]
