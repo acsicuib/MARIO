@@ -241,7 +241,7 @@ source marioenv/bin/activate
 python -m pip install -r requirements.txt 
 
 (on MARIO/multi-agent-policies/ folder)
-export PYTHONPATH="/home/isaac/projects/MARIO:/home/isaac/projects/MARIO/multi-agent-policies/environment:$PYTHONPATH"
+export PYTHONPATH="/home/isaac/projects/SIMARIO/MARIO:/home/isaac/projects/SIMARIO/MARIO/multi-agent-policies/environment:$PYTHONPATH"
 python3 main.py
 
 (video generation - or -)

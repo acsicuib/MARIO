@@ -32,8 +32,7 @@
     "n_policy": "nm.pl",
     "radius": 7,
     "reversepath": 1
-  }
-
+  },
  {
     "code": "Model_Cloud_r1",
     "scenario":"Model_Cloud",
