@@ -225,11 +225,11 @@ For built-in help, use ?- help(Topic). or ?- apropos(Word).
 
 Ok, thus... you should clone the project and configure Python third libraries (tested on Ubuntu Server 20.0) 
 ```
-git clone --branch MarioII https://github.com/acsicuib/MARIO
+git clone --branch SI-SoSs https://github.com/acsicuib/MARIO
 
 #git reset --hard HEAD
 #git pull
-git pull origin MarioII
+git pull origin SI-SoSs
 
 apt-get install python3-venv
 apt install pkg-config 
