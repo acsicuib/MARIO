@@ -322,6 +322,7 @@ if __name__ == '__main__':
             print("Problems generating video")
 
     print("Simulation Done!")
+    print(" HOPE WORKS WELL ;D")
 
     # try:
     #     os.system('python plot_actions.py')
