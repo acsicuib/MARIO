@@ -47,7 +47,7 @@ def run():
         res = pathcommon+"Results_%s_0.csv"%name
         spc_actions = pathcommon+"specific_actions.csv"
 
-        fileStats = open(pathcommon + "succ_rate_stats_%s.txt" % code, "w")
+        fileStats = open(pathcommon + "response_stats_%s.txt" % code, "w")
 
         # print("Experiment %s with code %s "%(item["scenario"],item["code"]))
         # pathFolder = "results/results_%s_%s/" %(item["code"],item["scenario"])
