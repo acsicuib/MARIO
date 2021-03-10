@@ -53,41 +53,41 @@ def run():
         # pathFolder = "results/results_%s_%s/" %(item["code"],item["scenario"])
         # path = pathFolder + "Results_%s_%i.csv" % (item["scenario"], 0) # 0 - iterations
 
-        df = pd.read_csv(res,usecols=usecols)
-        groupsAppUserRequests = df[df["module.src"] == "None"].groupby(['app', 'TOPO.src'])['id'].apply(list)
+        # df = pd.read_csv(res,usecols=usecols)
+        # groupsAppUserRequests = df[df["module.src"] == "None"].groupby(['app', 'TOPO.src'])['id'].apply(list)
 
         # fake deadline for each app
-        apps = np.unique(df.app)
-        deadline = [100] * len(apps)
-
-        global_satis = []
-        for (app, node) in groupsAppUserRequests.index:
-
-            myprint( "App: %i"%app,fileStats)
-            myprint("\t on node: %i"%node,fileStats)
-            ids = groupsAppUserRequests[(app, node)]
-            myprint("\t total requests: %i"%len(ids),fileStats)
-            dtmp = df[df["id"].isin(ids)]
-            dtmp["response"] = dtmp["time_out"] - dtmp["time_emit"]
-            myprint("\t average response: %f"%dtmp["response"].mean(),fileStats)
-            
-            satis = np.sum(dtmp["response"] < deadline[app - 1])
-            myprint("\t total successful requests: %f"%satis,fileStats)
-            satis = satis / float(len(dtmp))
-            global_satis.append(satis)
-            myprint("\t     %% successful requests: %.2f" % (satis),fileStats)
-            
-            fig, ax = plt.subplots(figsize=(20, 12))
-            dtmp.response.plot(ax=ax)
-            plt.title('Response .  User %i on APP: %i' % (node, app), fontsize=38)
-            # plt.show()
-            fig.savefig(pathcommon +"response_on_node%i.pdf" % node, dpi=400)
-            plt.close()
-
-        global_satis = np.array(global_satis)
-
-        myprint("Global %% of successful requests: %.2f" % global_satis.mean(),fileStats)
-        
+        # apps = np.unique(df.app)
+        # deadline = [100] * len(apps)
+        #
+        # global_satis = []
+        # for (app, node) in groupsAppUserRequests.index:
+        #
+        #     myprint( "App: %i"%app,fileStats)
+        #     myprint("\t on node: %i"%node,fileStats)
+        #     ids = groupsAppUserRequests[(app, node)]
+        #     myprint("\t total requests: %i"%len(ids),fileStats)
+        #     dtmp = df[df["id"].isin(ids)]
+        #     dtmp["response"] = dtmp["time_out"] - dtmp["time_emit"]
+        #     myprint("\t average response: %f"%dtmp["response"].mean(),fileStats)
+        #
+        #     satis = np.sum(dtmp["response"] < deadline[app - 1])
+        #     myprint("\t total successful requests: %f"%satis,fileStats)
+        #     satis = satis / float(len(dtmp))
+        #     global_satis.append(satis)
+        #     myprint("\t     %% successful requests: %.2f" % (satis),fileStats)
+        #
+        #     fig, ax = plt.subplots(figsize=(20, 12))
+        #     dtmp.response.plot(ax=ax)
+        #     plt.title('Response .  User %i on APP: %i' % (node, app), fontsize=38)
+        #     # plt.show()
+        #     fig.savefig(pathcommon +"response_on_node%i.pdf" % node, dpi=400)
+        #     plt.close()
+        #
+        # global_satis = np.array(global_satis)
+        #
+        # myprint("Global %% of successful requests: %.2f" % global_satis.mean(),fileStats)
+        #
         
         df = pd.read_csv(res,usecols=usecols)
         groupsAppUserRequests = df[df["module.src"] == "None"].groupby(['app','DES.src',])['id'].apply(list)
