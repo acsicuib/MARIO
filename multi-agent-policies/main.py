@@ -324,10 +324,10 @@ if __name__ == '__main__':
             print("Problems generating totalrequest")
 
 
-        try:
-            os.system("ffmpeg -r 1 -i %simages/network_%%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p %svideo_%s.mp4"%(temporal_folder,temporal_folder,code))
-        except:
-            print("Problems generating video")
+        # try:
+        #     os.system("ffmpeg -r 1 -i %simages/network_%%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p %svideo_%s.mp4"%(temporal_folder,temporal_folder,code))
+        # except:
+        #     print("Problems generating video")
 
     print("Simulation Done!")
     print(" HOPE WORKS WELL ;D")
