@@ -74,7 +74,8 @@ def run():
     
     with open(pathcommon + "requests_info_stats_%s.txt" % code, "w") as f:
         f.write(str(df.groupby("app").agg({"suc":["mean","std","max"]})))
-
+        f.flush()
+        f.close()
 
 
 if __name__ == '__main__':
