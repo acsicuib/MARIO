@@ -298,30 +298,30 @@ if __name__ == '__main__':
         #
         #     print("\n--- %s seconds ---" % (time.time() - start_time))
 
-        # try:
-        #     import plot_actions
-        #     plot_actions.run()
-        # except:
-        #     print("Problems generating actions runs")
-        #
-        # try:
-        #     import plot_averageActionType
-        #     plot_averageActionType.run()
-        # except:
-        #     print("Problems generating plot_averageActionType")
-        #
-        # try:
-        #     import plot_response_time
-        #     plot_response_time.run()
-        # except:
-        #     print("Problems generating response ")
+    # try:
+    #     import plot_actions
+    #     plot_actions.run()
+    # except:
+    #     print("Problems generating actions runs")
+    #
+    # try:
+    #     import plot_averageActionType
+    #     plot_averageActionType.run()
+    # except:
+    #     print("Problems generating plot_averageActionType")
+    #
+    # try:
+    #     import plot_response_time
+    #     plot_response_time.run()
+    # except:
+    #     print("Problems generating response ")
 
 
-        try:
-            import plot_totalrequests
-            plot_totalrequests.run()
-        except:
-            print("Problems generating totalrequest")
+    try:
+        import plot_totalrequests
+        plot_totalrequests.run()
+    except:
+        print("Problems generating totalrequest")
 
 
         # try:
