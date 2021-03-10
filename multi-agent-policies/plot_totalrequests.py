@@ -69,13 +69,12 @@ def run():
         fileStats.flush()
         fileStats.close()
 
+
     df = pd.read_csv(pathcommon + "requests_stats_%s.txt" % code)
-    print("Number of rows: ",len(df))
-    
-    with open(pathcommon + "requests_info_stats_%s.txt" % code, "w") as f:
-        f.write(str(df.groupby("app").agg({"suc":["mean","std","max"]})))
-        f.flush()
-        f.close()
+    file2 = open(pathcommon + "requests_info_stats_%s.txt" % code, "w")
+    file2.write(str(df.groupby("app").agg({"suc":["mean","std","max"]})))
+    file2.flush()
+    file2.close()
 
 
 if __name__ == '__main__':
