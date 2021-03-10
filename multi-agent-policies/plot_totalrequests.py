@@ -70,11 +70,11 @@ def run():
         fileStats.close()
 
 
-    df = pd.read_csv(pathcommon + "requests_stats_%s.txt" % code)
-    file2 = open(pathcommon + "requests_info_stats_%s.txt" % code, "w")
-    file2.write(str(df.groupby("app").agg({"suc":["mean","std","max"]})))
-    file2.flush()
-    file2.close()
+        df = pd.read_csv(pathcommon + "requests_stats_%s.txt" % code)
+        file2 = open(pathcommon + "requests_info_stats_%s.txt" % code, "w")
+        file2.write(str(df.groupby("app").agg({"suc":["mean","std","max"]})))
+        file2.flush()
+        file2.close()
 
 
 if __name__ == '__main__':
