@@ -276,46 +276,46 @@ if __name__ == '__main__':
         print("Generating RESULTS at: %s " % temporal_folder)
 
         # Iteration for each experiment changing the seed of randoms
-        # for iteration in range(nSimulations):
-        #     random.seed(iteration)
-        #     np.random.seed(iteration)
-        #     print("Perform simulation...")
-        #     start_time = time.time()
-        #     main(number_simulation_steps=number_simulation_steps,
-        #          time_in_each_step=time_in_each_step,
-        #          experiment_path=experiment_path,
-        #          conf_folder="configuration/",
-        #          temporal_folder=temporal_folder,
-        #          case=name,
-        #          config=config,
-        #          doExecutionVideo=True,  # expensive task
-        #          it=iteration,
-        #          radius=radius,
-        #          reversepath=reversepath,
-        #          policy_file=policy,
-        #          nm_policy = nm_policy
-        #          )
-        #
-        #     print("\n--- %s seconds ---" % (time.time() - start_time))
+        for iteration in range(nSimulations):
+            random.seed(iteration)
+            np.random.seed(iteration)
+            print("Perform simulation...")
+            start_time = time.time()
+            main(number_simulation_steps=number_simulation_steps,
+                 time_in_each_step=time_in_each_step,
+                 experiment_path=experiment_path,
+                 conf_folder="configuration/",
+                 temporal_folder=temporal_folder,
+                 case=name,
+                 config=config,
+                 doExecutionVideo=True,  # expensive task
+                 it=iteration,
+                 radius=radius,
+                 reversepath=reversepath,
+                 policy_file=policy,
+                 nm_policy = nm_policy
+                 )
 
-    # try:
-    #     import plot_actions
-    #     plot_actions.run()
-    # except:
-    #     print("Problems generating actions runs")
-    #
-    # try:
-    #     import plot_averageActionType
-    #     plot_averageActionType.run()
-    # except:
-    #     print("Problems generating plot_averageActionType")
-    #
-    # try:
-    #     import plot_response_time
-    #     plot_response_time.run()
-    # except:
-    #     print("Problems generating response ")
+            print("\n--- %s seconds ---" % (time.time() - start_time))
 
+    #end for experiments
+    try:
+        import plot_actions
+        plot_actions.run()
+    except:
+        print("Problems generating actions runs")
+
+    try:
+        import plot_averageActionType
+        plot_averageActionType.run()
+    except:
+        print("Problems generating plot_averageActionType")
+
+    try:
+        import plot_response_time
+        plot_response_time.run()
+    except:
+        print("Problems generating response ")
 
     try:
         import plot_totalrequests
@@ -330,12 +330,7 @@ if __name__ == '__main__':
         #     print("Problems generating video")
 
     print("Simulation Done!")
-    print(" HOPE WORKS WELL ;D")
 
-    # try:
-    #     os.system('python plot_actions.py')
-    # except:
-    #     print("Problems with plot_actions.py")
 
 # ffmpeg -r 1 -i results/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p results/out2.mp4
 # ffmpeg -r 1 -i results/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p results/out2.mp4

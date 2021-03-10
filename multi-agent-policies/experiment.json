@@ -1,6 +1,5 @@
 [
-
-    {
+  {
     "code": "Model_Adapt_r7",
     "scenario":"Model",
     "policy":"am.pl",
@@ -8,7 +7,7 @@
     "radius": 7,
     "reversepath": 1
   },
-        {
+  {
     "code": "Model_Adapt_r1",
     "scenario":"Model",
     "policy":"am.pl",
@@ -16,8 +15,7 @@
     "radius": 1,
     "reversepath": 1
   },
-
-    {
+  {
     "code": "Model_NoAdapt_r1",
     "scenario":"Model",
     "policy":"am_noadapt.pl",
@@ -25,7 +23,7 @@
     "radius": 1,
     "reversepath": 1
   },
-    {
+  {
     "code": "Model_NoAdapt_r7",
     "scenario":"Model",
     "policy":"am_noadapt.pl",
@@ -33,7 +31,7 @@
     "radius": 7,
     "reversepath": 1
   },
- {
+  {
     "code": "Model_Cloud_r1",
     "scenario":"Model_Cloud",
     "policy":"am.pl",
@@ -48,6 +46,37 @@
     "n_policy": "nm.pl",
     "radius": 1,
     "reversepath": 1
+  },
+    {
+    "code": "Model_Adapt_Profile_r1",
+    "scenario":"Model",
+    "policy":"am.pl",
+    "n_policy": "nm_withProfiles.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
+  {
+    "code": "Model_NoAdapt_Profile_r1",
+    "scenario":"Model",
+    "policy":"am_noadapt.pl",
+    "n_policy": "nm_withProfiles.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
+  {
+    "code": "Model_Adapt_Profile_r7",
+    "scenario":"Model",
+    "policy":"am.pl",
+    "n_policy": "nm_withProfiles.pl",
+    "radius": 7,
+    "reversepath": 1
+  },
+  {
+    "code": "Model_NoAdapt_Profile_r7",
+    "scenario":"Model",
+    "policy":"am_noadapt.pl",
+    "n_policy": "nm_withProfiles.pl",
+    "radius": 7,
+    "reversepath": 1
   }
-
 ]
