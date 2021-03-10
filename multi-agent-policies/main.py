@@ -274,8 +274,8 @@ if __name__ == '__main__':
             None
 
         print("Generating RESULTS at: %s " % temporal_folder)
-        #
-        # # Iteration for each experiment changing the seed of randoms
+
+        # Iteration for each experiment changing the seed of randoms
         # for iteration in range(nSimulations):
         #     random.seed(iteration)
         #     np.random.seed(iteration)
@@ -297,7 +297,7 @@ if __name__ == '__main__':
         #          )
         #
         #     print("\n--- %s seconds ---" % (time.time() - start_time))
-        #
+
         # try:
         #     import plot_actions
         #     plot_actions.run()
@@ -309,12 +309,12 @@ if __name__ == '__main__':
         #     plot_averageActionType.run()
         # except:
         #     print("Problems generating plot_averageActionType")
-
-        try:
-            import plot_response_time
-            plot_response_time.run()
-        except:
-            print("Problems generating response ")
+        #
+        # try:
+        #     import plot_response_time
+        #     plot_response_time.run()
+        # except:
+        #     print("Problems generating response ")
 
 
         try:

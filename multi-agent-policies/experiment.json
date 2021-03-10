@@ -1,5 +1,38 @@
 [
 
+    {
+    "code": "Model_Adapt_r7",
+    "scenario":"Model",
+    "policy":"am.pl",
+    "n_policy": "nm.pl",
+    "radius": 7,
+    "reversepath": 1
+  },
+        {
+    "code": "Model_Adapt_r1",
+    "scenario":"Model",
+    "policy":"am.pl",
+    "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
+
+    {
+    "code": "Model_NoAdapt_r1",
+    "scenario":"Model",
+    "policy":"am_noadapt.pl",
+    "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
+    {
+    "code": "Model_NoAdapt_r7",
+    "scenario":"Model",
+    "policy":"am_noadapt.pl",
+    "n_policy": "nm.pl",
+    "radius": 7,
+    "reversepath": 1
+  },
  {
     "code": "Model_Cloud_r1",
     "scenario":"Model_Cloud",
@@ -7,7 +40,14 @@
     "n_policy": "nm.pl",
     "radius": 1,
     "reversepath": 1
+  },
+  {
+    "code": "Model_Edge_r1",
+    "scenario":"Model_Edge",
+    "policy":"am.pl",
+    "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
   }
-
 
 ]
