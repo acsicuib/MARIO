@@ -197,6 +197,7 @@ class PolicyManager():
             # We only load samples that are generated along current period (self.activations-1,self.activation)
             df = pd.read_csv(self.path_csv_files + ".csv", skiprows=range(1,self.load_samples_from))  # It includes the csv header
             self.load_samples_from += len(df.index)   # avoid header
+
             # print("AGENT LOADING REQUESTS")
             # print("SERVICE DES:",self.DES)
             # print("TIME:",sim.env.now)
@@ -205,6 +206,8 @@ class PolicyManager():
             # print("REQUEST ",requests)
 
             df = df[df["DES.dst"] == self.DES]
+
+            # print("DF2 len : ", len(df))
 
             #TODO debug
             # if self.DES == 16:

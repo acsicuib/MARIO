@@ -71,18 +71,20 @@ class exponential_distribution(Distribution):
 
 
 class exponentialDistributionStartPoint(Distribution):
-    def __init__(self,start,lambd, **kwargs):
+    def __init__(self,start,lambd,seed=1, **kwargs):
         self.lambd = lambd
         self.start = start
         self.started = False
         super(exponentialDistributionStartPoint, self).__init__(**kwargs)
-
+        self.rnd = np.random.RandomState(seed)
     def next(self):
         if not self.started:
             self.started = True
             return self.start
         else:
-            return int(np.random.exponential(self.lambd, size=1)[0])
+            value = int(self.rnd.exponential(self.lambd, size=1)[0])
+            if value==0: return 1
+            return value
 
 class uniformDistribution(Distribution):
     def __init__(self, min,max, **kwargs):

@@ -55,10 +55,23 @@ class DeviceSpeedAwareRouting(Selection):
                                     key=filterCandidateDES.get)  # A round robing assignment
                 self.freq_use_DES_module[DES_less_used] += 1
                 return minPath, DES_less_used
+            #
+            elif len(candidateDES) == 0:
+                if bestDES == []:
+                    self.logger.critical("There are not deployed modules/services to server the requests.")
 
-            else:
+                    sim.print_debug_assignaments()
+
+                    print("BEST DES ", bestDES)
+                    print("NODE_SRC",node_src)
+                    print("DES_dst",DES_dst)
+                    print("alloc_DES",alloc_DES)
+
+
+                    exit(1)
                 self.freq_use_DES_module[bestDES] += 1
                 return minPath, bestDES
+
 
         except (nx.NetworkXNoPath, nx.NodeNotFound) as e:
             self.logger.warning("There is no path between two nodes: %s - %s " % (node_src, node_dst))

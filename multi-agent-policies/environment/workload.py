@@ -1,5 +1,5 @@
 from yafs.population import Population
-from yafs.distribution import exponentialDistribution,deterministic_distribution
+from yafs.distribution import exponentialDistribution,deterministic_distribution,exponentialDistributionStartPoint,deterministicDistributionStartPoint
 import math
 import logging
 
@@ -42,6 +42,7 @@ class DynamicWorkload(Population):
                 app_name = item["app"]
                 idtopo = item["id_resource"]
                 lambd = item["lambda"]
+                start = item["start"]
 
                 self.logger.info("Launching user %i (app: %s), in node: %i, at time: %i " % (item["id_resource"],app_name, idtopo,sim.env.now))
                 print("Launching user %i (app: %s), in node: %i, at time: %i " % (item["id_resource"],app_name, idtopo,sim.env.now))
@@ -52,8 +53,9 @@ class DynamicWorkload(Population):
                 # A basic creation of the seed: unique for each user and different in each simulation repetition
                 # seed = item["id_resource"] * 1000 + item["lambda"] + self.it
 
-                # dDistribution = exponentialDistribution(name="Exp", lambd=lambd, seed=seed)
-                dDistribution = deterministic_distribution(name="DET", time=lambd)
+                # dDistribution = exponentialDistribution(name="Exp", lambd=lambd)
+                # dDistribution = exponentialDistributionStartPoint(name="Exp", lambd=lambd,start=start)
+                dDistribution = deterministicDistributionStartPoint(name="DET", time=lambd,start=start)
                 self.id_sources.append(sim.deploy_source(app_name, id_node=idtopo, msg=msg, distribution=dDistribution))
 
         for i, exit in enumerate(self.exits):

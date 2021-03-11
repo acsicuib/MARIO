@@ -275,7 +275,7 @@ if __name__ == '__main__':
 
         print("Generating RESULTS at: %s " % temporal_folder)
 
-        # Iteration for each experiment changing the seed of randoms
+
         for iteration in range(nSimulations):
             random.seed(iteration)
             np.random.seed(iteration)
@@ -290,6 +290,7 @@ if __name__ == '__main__':
                  config=config,
                  doExecutionVideo=True,  # expensive task
                  it=iteration,
+
                  radius=radius,
                  reversepath=reversepath,
                  policy_file=policy,
