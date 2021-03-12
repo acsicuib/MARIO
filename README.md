@@ -1,11 +1,14 @@
-### TODO improve readme file 
+ 
 
 # Description
  
-
-- MARIO publication 
-- Target: Special Issue on Distributed Complex Systems: Governance, Engineering, and Maintenance
-- Extend branch: scholar 
+### Osmotic Application and Infrastructure Management:A Decentralised Declarative Solution
+ 
+Managing next-gen applications over Fog computing infrastructures is challenging and calls for new methodologies and tools that enable flexible, scalable and application-specific management along the Cloud-IoT continuum. This article proposes a novel approach for realising a fully decentralised application management in opportunistic Fog computing infrastructures. We present a Prolog implementation of the approach and assess it over some motivating scenarios by experimenting with three different management policies via simulation.
+ 
+- Extending the initial idea of: https://github.com/acsicuib/MARIO/tree/gauss2020
+- Journal of Software: Evolution and Process
+- Status: sending 
 
 ## Acknowledge
 
@@ -16,124 +19,90 @@ PENDING
 In the article you can understand the behavior implemented in this project. Here we briefly comment on those aspects taken into account for its implementation:
 
 
-# Implementation of MARIO 2.5 and NodeManagers 
+# Implementation of Application and Node Managers 
 
 YAFS is a skeleton for simulating Fog environments, and it accepts specific behaviors that allow it to adapt to any scenario. In this case, there is a DES process to implement MARIO; another DES process that controls the movement of users, and finally, as many DES processes as instances of applications are deployed.
 The next files provide this behaviour to the simulator. 
 ```bash
 enviroment folder
-├── app_operator.py
+├── agent.py 
+├── node_manager.py
 ├── userMovement.py
-├── agent.py
 ├── path_routing.py
-├── tiledTopology.py
+├── workload.py
 ├── problogRulesGenerator.py
 ```
 
-- Mario is implemented in app_operator.py file. It controls the service(agent) actions (migrate, replicate, undeploy,...). For that, it is able to generates new instances and remove instance from the simulator (DES processes)
-- The movements of the users is managed by userMovement.py. In each activation changes the position of the users in the topology. 
-- Each instance of the application deployed in the simulator is based on agent.py. This agent.py uses Prolog to take a decision (migrate, replicate,...)
+- Application Manager is implemented in agent.py file. It controls the service(agent) actions (migrate, replicate, undeploy,...). For that, it is able to generates new instances and remove instance from the simulator (DES processes)
+- Node Manager is implemented in node_manager.py. Each NM supervises the actions requested in itfself node.  
 - path_routing.py is the algorithm to route user requests to the instances. It chooses the most suitable path in the topology and it orchestra the service. It has a routing cahge to optimize the simulation performace. This cache is reset when MARIO performs any action.
-- tiledTopology.py generates the topology used in this experiment. It is explained later.
+- workload.py generates the generation of users in the system.
+- userMovement.py controls the random movement of the users.
 - problogRulesGenerator.py, it is a simple parser to generate the simulator facts into Prolog facts.
 
+# Rules or policies
+
+```bash
+policies folder
+├── am.py
+├── am_noadapt.py
+├── nm.py
+├── nm_withProfiles.py
+```
+
+- am.py Application manager rules
+- am_noadapt.py another application manager rules
+- nm.py Node manager rules
+- nm_withProfiles.py another node manager rules.
 
 # Scenario definition
 
 A scenario has the following folder structure:
 ```bash
-TaxiRome
-├── config.ini
-├── data
-│   ├── raw_trajectories.csv
-│   └── traces.json
-├── policy
-│   ├── agentRequests.pl
-│   ├── allocDefinition.json
-│   ├── appDefinition.json
-│   ├── lib.pl
-│   ├── policy1.pl
-│   ├── policy2.pl
-│   ├── policy3.pl
-│   └── policy4.pl
-├── Cesium_viewer
-│   ├── CZML\ Path.html
-│   ├── all_tracks.txt
-│   ├── generate_CZML_fromCSV_toCESIUM.py
-│   └── index.html
-├── test_data_on_topology.py
-├── test_traces_info.py
-|
-```
+scenarios
 
-Files: 
-- config.ini has a list of variables regarding with the parametrization of the simulations, mainly event periods
+├── Model
+│   ├── configuration
+│       ├── appDefinition.json
+│       ├── allocDefinition.json
+│       ├── topology.json
+│       └── usersDefinition.pl
+│   └── config.ini
+├── ...
+```
+Files:
+- AppDefinition.json contains the structure of the application 
+- allocDefinition.json, the initial deployment of services in the topology
+- topology.json the topology structure: nodes, links, attributes...
+- userDefinition.pl the users and related attributes.
+ - config.ini has a list of variables regarding with the parametrization of the simulations, mainly event periods
 ```text
 [simulation]
 nSimulations = 1
-time_in_each_step = 2000
-trackSteps = 100
-stopSteps = 25
+time_in_each_step = 4000
+UsersSteps = 10
+limitMovements = 4
 
-[topology]
-size = 8
-HwReqs_cloud_node = 14
-shape_cloud_node = (2,7)
-IPT = 100
-BW = 1
-# HwReqs = level + 2
-# PR = level * 2
+notAllowedAllocation = true
 
-[appOperator]
-activation_period = 100
+[nodeManager]
+activation_period = 600
 
-[agent]
-activation_period = 200
+[service]
+activation_period = 500
 message_period = 40
 window_agent_outcome = 5
 ```
+notAllowedAllocation parameter is optional and it indicates that node manager block all the operations. We can obtain a static deployment of services.
 
--  policy/--.pl are the prolog files with different policies 1--4
--  policy/allocDefinition.json describes the initial allocation of the instances
-```json
-  "initialAllocation": [
-    {
-      "module_name": "1_01",
-      "app": 1,
-      "id_resource": "n0lt0ln0"
-    },
-```
--  policy/appDefinition.json defines the apps
-```json
-TODO
-
-```
-
-A scenario has other definitions such as topology, routing algorithm, MARIO app and movement manager. All of them are defined in the main.py file.
-
-# Topology structure
-
-In YAFS the network topology is defined using NetworkX library.  The topology is defined in main.py
-
-```python
-TODO
-```
 
 
 # main.py
 
-The experiments in main.py are automated:
+A scenario has other definitions such as topology, routing algorithm, MARIO app and movement manager. All of them are defined in the main.py file.
 
-```python
-TODO
-```
-- "P1_s3" is the code of the experiment
-- "Rome" is the another name
-- "scenarios/TaxiRome" is the folder with the previous structure
-- "policy" is the folder with some information: policy, apps, ...
-- "[..]" is the projection of the topology in a coordinate system. This value can be none and the simulator takes the users' trajectories boundaries.
-- "policyX.pl" is the mandatory policy that all apps will use in the simulator. This value can be none and the simulator uses the value defined in the json.  
-    
+The experiments in main.py are automated in experiments.json file. The results are generated in a temporal folder.
+
 
 # Simulation results
 
@@ -141,36 +110,33 @@ In YAFS simulations you obtain two default files: Result_.csv and Results_link.c
 In this simulation, we added more data gathers in MARIO to get movements, actions, etc. The extra files are:
  
 ```bash
-├── actions_stats.txt
+├── specific_actions.txt
 ├── movements.csv
-├── moves_stats.txt
+├── agg_operations.txt
 ```
 
-- actions_stats.txt is a CSV file. It contains the number of operations performed by MARIO in each activation where there are service(agent) requests.
+- specific_actions.txt is a CSV file. It contains the number of operations performed by MARIO in each activation where there are service(agent) requests.
 ```csv 
-time,undeploy,nop,migrate,replicate,none
-300,0,1,0,5,0
-500,0,5,0,6,0
-700,0,7,1,9,0
+NM,Service,App,Time,Action,OldLevel,NewLevel,Status
+1,2,1,1200,migrate,,large,Accept
+0,3,2,1200,adapt,medium,large,Accept
+4,4,3,1200,replicate,,medium,Accept
+1,3,2,1800,migrate,,large,Accept
 ```
 
 - movements.txt is a CSV file. It has all the handovers of each user(taxi). DES represents the identifier of the user in the simulation. Thus, you can link this information of the user (DES) with the requests traces in the simulator ( *Results* files). 
 ```csv 
 taxi,DES,time,nodeSRC,nodeDST
-taxi_122,9,0,none,n3lt7ln6
-taxi_260,10,0,none,n3lt0ln2
-taxi_351,11,0,none,n3lt6ln5
-taxi_197,12,0,none,n3lt1ln2
+2,32,4000,9,10
+2,14,8000,6,7
+2,40,8000,9,10
 ```
-- moves_stats.txt is a CSV file.  It relates service request (idService) of a app type (app) with its action in a specific time.
+- agg_operations.txt is a CSV file.  It relates service request (idService) of a app type (app) with its action in a specific time.
 ```csv 
-idService,app,time,action
-7,6,300,nop
-6,5,300,replicate
-5,4,300,replicate
-4,3,300,replicate
-3,2,300,replicate
-2,1,300,replicate
+time,undeploy,nop,migrate,replicate,shrink,evict,reject,adapt,DES,app,nodeManager
+1200,0,0,1,0,0,0,0,0,2,1,1
+1200,0,0,0,0,0,0,0,1,3,2,0
+1200,0,0,0,1,0,0,0,0,4,3,4
 ```
 
 # Analysing the results
@@ -178,12 +144,14 @@ idService,app,time,action
 The complexity of analyzing the YAFS results is just as complex as the complexity of the scenario. 
 **Keep calm and learn PANDAS**
 
-There is three files to generate information about the results:
+There is three files to generate information about the results. They are called by main.py:
+
 - plot_actions.py. It generates a bar plot with the number of actions in each MARIO activation. 
-<img src="https://github.com/acsicuib/MARIO/raw/MarioII/media/plot_action.png" width="630" height="316"/></a>
-- plot_pearsonCoefficient.py. It generates a plot about the relationship between actions and users movements.
-<img src="https://github.com/acsicuib/MARIO/raw/MarioII/media/plot_pearson.png" width="630" height="316"/></a>
-- plot_averageActionType.py. It generates a text description about the average number of action by each user movement.
+<img src="https://github.com/acsicuib/MARIO/raw/SI-SoSs/media/example_actions.png" width="630" height="316"/></a>
+- plot_averageActionType.py. It generates stats from different actions taken along the simulation.
+- plot_response_time.py. It analyses the response time.
+- plot_totalrequests. It analyses the service usage.
+- plot_responses and plot_bars are not automatized and they represent some values from previous data.
 
 
 # Snapshots
@@ -206,6 +174,16 @@ RENDERSNAP = False
 class Mario():
     ...
 ```
+
+# Video
+From the snapshots we can generate an animation with the service and user movements. The video is generated from the main.py but also we can create using these commands:
+```
+ffmpeg -r 1 -i network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p video.mp4
+ffmpeg -t 20 -i video.mp4 -vf "fps=10,scale=520:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 output.gif
+```
+
+<img src="https://github.com/acsicuib/MARIO/raw/SI-SoSs/media/output.gif" width="330" height="266"/></a>
+
 
 
 #  How to run the project
@@ -248,9 +226,7 @@ python3 main.py
 
 # The next lines are for me, sorry - copypaste
 
-rsync -rav -e ssh --include '*.txt' --include='*.mp4' --include="*.pdf" --exclude='*.*' --exclude='images/*.pdf' \
-isaac@cloudlab:/home/isaac/projects/SIMARIO/MARIO/multi-agent-policies/results/ \ 
-~/Donwloads/fromServer/
+rsync -rav -e ssh --include '*.txt' --include '*.csv' --include='*.mp4' --include="*.pdf" --exclude='*.*' --exclude='images/*.pdf' isaac@cloudlab:/home/isaac/projects/SIMARIO/MARIO/multi-agent-policies/results/ \ 
 
 
 ```

@@ -299,6 +299,12 @@ if __name__ == '__main__':
 
             print("\n--- %s seconds ---" % (time.time() - start_time))
 
+            try:
+                os.system("ffmpeg -r 1 -i %simages/network_%%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p %svideo_%s.mp4"%(temporal_folder,temporal_folder,code))
+            except:
+                print("Problems generating video")
+
+
     #end for experiments
     try:
         import plot_actions
@@ -324,10 +330,6 @@ if __name__ == '__main__':
     except:
         print("Problems generating totalrequest")
 
-    try:
-        os.system("ffmpeg -r 1 -i %simages/network_%%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p %svideo_%s.mp4"%(temporal_folder,temporal_folder,code))
-    except:
-        print("Problems generating video")
 
     print("Simulation Done!")
 
@@ -345,5 +347,6 @@ if __name__ == '__main__':
 # ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P12_20201028/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P12_size6.mp4
 # ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P12_20201120/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P12_size3.mp4
 # ffmpeg -t 20 -i P12_size6.mp4 -vf "fps=10,scale=520:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 output.gif
+# ffmpeg -t 20 -i video.mp4 -vf "fps=10,scale=520:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 output.gif
 #TODO
 
