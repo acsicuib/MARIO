@@ -28,6 +28,7 @@ from userMovement import UserControlMovement
 from tiledTopology import TiledTopology
 
 
+
 def create_applications_from_json(data):
     applications = {}
     for app in data:
@@ -308,22 +309,28 @@ if __name__ == '__main__':
         f.write(pid)
 
     # Case, Name , folderExperiment, folderPolicy , projection=None, policy_file = None
-    experiments = [
-        ("P1_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy1.pl"),
-        ("P2_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy2.pl"),
-        ("P3_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy3.pl"),
-        ("P4_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy4.pl")
-    ]
+    with open("experiment.json") as f:
+        experiments = json.load(f)
 
-    for ncase, name,experiment_path,policy_folder,projection,policy_file in experiments:
+    for item in experiments:
+        ncase = item["code"]
+        name = item["scenario"]
+        experiment_path = item["path"]
+        policy_folder = item["pathPolicy"]
+        projection = item["coords"]
+        policy_file = item["policyName"]
+
         print("Experiment definition: ",experiment_path)
         config = ConfigParser()
         config.read(experiment_path+'config.ini')
 
         # Generating a temporal folder to record results
         # datestamp = time.strftime('%Y%m%d')
-        datestamp = "20201124" # fixed for testing
-        # datestamp = "20201028" # fixed for testing
+
+        # datestamp = "20210318" # fixed for testing
+
+        datestamp = "20201124" # current execution in server CLoudlab
+
 
         temporal_folder = experiment_path + "results_%s_"%ncase + datestamp + "/"
         try:
@@ -369,28 +376,64 @@ if __name__ == '__main__':
         time_in_each_step = int(config.get('simulation', 'time_in_each_step'))
         nSimulations = int(config.get('simulation', 'nSimulations'))
 
-        # Iteration for each experiment changing the seed of randoms
-        for iteration in range(nSimulations):
-            random.seed(iteration)
-            np.random.seed(iteration)
-            logging.info("Running multi-agent-policies - %s" %experiment_path)
 
-            start_time = time.time()
-            main(number_simulation_steps=number_simulation_steps,
-                 time_in_each_step = time_in_each_step,
-                 experiment_path=experiment_path,
-                 policy_folder = policy_folder,
-                 temporal_folder = temporal_folder,
-                 case=name,
-                 tracks=tracks,
-                 projection=projection,
-                 config = config,
-                 doExecutionVideo=True,  # expensive task
-                 it=iteration,
-                 policy_file = policy_file)
+        #
+        # # Iteration for each experiment changing the seed of randoms
+        # for iteration in range(nSimulations):
+        #     random.seed(iteration)
+        #     np.random.seed(iteration)
+        #     logging.info("Running multi-agent-policies - %s" %experiment_path)
+        #
+        #     start_time = time.time()
+        #     main(number_simulation_steps=number_simulation_steps,
+        #          time_in_each_step = time_in_each_step,
+        #          experiment_path=experiment_path,
+        #          policy_folder = policy_folder,
+        #          temporal_folder = temporal_folder,
+        #          case=name,
+        #          tracks=tracks,
+        #          projection=projection,
+        #          config = config,
+        #          doExecutionVideo= False,  # expensive task
+        #          it=iteration,
+        #          policy_file = policy_file)
+        #
+        #     print("\n--- %s seconds ---" % (time.time() - start_time))
+        #     # do_video_from_execution_snaps(temporal_folder + "animation_snaps", 'snap_%05d.png', 10)
 
-            print("\n--- %s seconds ---" % (time.time() - start_time))
-            do_video_from_execution_snaps(temporal_folder + "animation_snaps", 'snap_%05d.png', 10)
+
+    #end for experiments
+
+    try:
+        import plot_actions
+        plot_actions.run(datestamp)
+    except:
+        print("Problems generating actions runs")
+
+    try:
+        import plot_averageActionType
+        plot_averageActionType.run(datestamp)
+    except:
+        print("Problems generating averageActions runs")
+
+    try:
+        import plot_pearsonCoefficient
+        plot_pearsonCoefficient.run(datestamp)
+    except:
+        print("Problems generating plot_pearsonCoefficient runs")
+
+    try:
+        import plot_responseTime
+        plot_responseTime.run(datestamp)
+    except:
+        print("Problems generating plot_responseTime runs")
+
+    try:
+        import plot_totalrequests
+        plot_totalrequests.run(datestamp)
+    except:
+        print("Problems generating totalrequest")
+
 
     print("Simulation Done!")
 

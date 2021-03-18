@@ -1,0 +1,34 @@
+[
+  {
+    "code":"P1_s3",
+    "name":"Rome",
+    "path":"scenarios/TaxiRome/",
+    "pathPolicy":"policy/",
+    "coords":[[41.878037, 12.4462643], [41.919234, 12.5149603]],
+    "policyName":"policy1.pl"
+  },
+    {
+    "code":"P2_s3",
+    "name":"Rome",
+    "path":"scenarios/TaxiRome/",
+    "pathPolicy":"policy/",
+    "coords":[[41.878037, 12.4462643], [41.919234, 12.5149603]],
+    "policyName":"policy2.pl"
+  },
+    {
+    "code":"P3_s3",
+    "name":"Rome",
+    "path":"scenarios/TaxiRome/",
+    "pathPolicy":"policy/",
+    "coords":[[41.878037, 12.4462643], [41.919234, 12.5149603]],
+    "policyName":"policy3.pl"
+  },
+    {
+    "code":"P4_s3",
+    "name":"Rome",
+    "path":"scenarios/TaxiRome/",
+    "pathPolicy":"policy/",
+    "coords":[[41.878037, 12.4462643], [41.919234, 12.5149603]],
+    "policyName":"policy4.pl"
+  }
+]
