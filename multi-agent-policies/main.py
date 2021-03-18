@@ -309,7 +309,7 @@ if __name__ == '__main__':
         f.write(pid)
 
     # Case, Name , folderExperiment, folderPolicy , projection=None, policy_file = None
-    with open("experiment.json") as f:
+    with open("experiments.json") as f:
         experiments = json.load(f)
 
     for item in experiments:

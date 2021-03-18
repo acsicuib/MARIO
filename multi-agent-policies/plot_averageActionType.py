@@ -23,7 +23,7 @@ def showActionsbyGroup(df0,dfmov0):
 
 
 def run(datestamp):
-    with open("experiment.json") as f:
+    with open("experiments.json") as f:
         experiments = json.load(f)
 
     for item in experiments:

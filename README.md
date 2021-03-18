@@ -347,8 +347,14 @@ source marioenv/bin/activate
 python -m pip install -r requirements.txt 
 
 (on MARIO/multi-agent-policies/ folder)
-export PYTHONPATH="/home/isaac/projects/MARIO:/home/isaac/projects/MARIO/multi-agent-policies/environment:$PYTHONPATH"
+export PYTHONPATH="/home/isaac/projects/MARIO_GRID_vMajorRev:/home/isaac/projects/MARIO_GRID_vMajorRev/multi-agent-policies/environment:$PYTHONPATH"
 python3 main.py
+
+
+
+
+
+
 
 (video generation - or -)
 ffmpeg -r 1 -i multi-agent-policies/scenarios/TaxiRome/results_20201028/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p video.mp4

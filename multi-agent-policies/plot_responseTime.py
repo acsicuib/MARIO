@@ -17,7 +17,7 @@ def myprint(msg,fileStats):
     print(msg)
 
 def run(datestamp):
-    with open("experiment.json") as f:
+    with open("experiments.json") as f:
         experiments = json.load(f)
 
     # datestamp = time.strftime('%Y%m%d')
