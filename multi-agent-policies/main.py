@@ -404,35 +404,35 @@ if __name__ == '__main__':
 
     #end for experiments
 
-    try:
-        import plot_actions
-        plot_actions.run(datestamp)
-    except:
-        print("Problems generating actions runs")
+    # try:
+    #     import plot_actions
+    #     plot_actions.run(datestamp)
+    # except:
+    #     print("Problems generating actions runs")
+    #
+    # try:
+    #     import plot_averageActionType
+    #     plot_averageActionType.run(datestamp)
+    # except:
+    #     print("Problems generating averageActions runs")
+    #
+    # try:
+    #     import plot_pearsonCoefficient
+    #     plot_pearsonCoefficient.run(datestamp)
+    # except:
+    #     print("Problems generating plot_pearsonCoefficient runs")
+    #
+    # try:
+    #     import plot_responseTime
+    #     plot_responseTime.run(datestamp)
+    # except:
+    #     print("Problems generating plot_responseTime runs")
 
-    try:
-        import plot_averageActionType
-        plot_averageActionType.run(datestamp)
-    except:
-        print("Problems generating averageActions runs")
-
-    try:
-        import plot_pearsonCoefficient
-        plot_pearsonCoefficient.run(datestamp)
-    except:
-        print("Problems generating plot_pearsonCoefficient runs")
-
-    try:
-        import plot_responseTime
-        plot_responseTime.run(datestamp)
-    except:
-        print("Problems generating plot_responseTime runs")
-
-    try:
-        import plot_totalrequests
-        plot_totalrequests.run(datestamp)
-    except:
-        print("Problems generating totalrequest")
+    # try:
+    import plot_totalRequests
+    plot_totalRequests.run(datestamp)
+    # except:
+    #     print("Problems generating totalrequest")
 
 
     print("Simulation Done!")

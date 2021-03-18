@@ -68,7 +68,7 @@ def showActionsbyGroup(ncase,num,groupname,df0,dfmov0,pathcommon):
     for tick in ax2.get_yticklabels():
         tick.set_fontsize(24)
     fig.savefig(pathcommon + "actions_%s_G%i.pdf" % (ncase,num), dpi=400)
-
+    plt.close()
 
 
 def run(datestamp):
@@ -154,6 +154,7 @@ def run(datestamp):
                 tick.set_fontsize(24)
 
             fig.savefig(pathcommon+"actions_%s.pdf"%ncase, dpi=400)
+            plt.close()
 
         except:
             print("Some error in plot action "+ncase)

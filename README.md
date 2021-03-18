@@ -367,8 +367,7 @@ scp isaac@deepblue:/home/isaac/projects/MARIO/video.mp4 .
 scp isaac@deepblue:/home/isaac/projects/MARIO/multi-agent-policies/scenarios/TaxiRome/results_20201028/models/rules_swi_UID96_nn0lt0ln0_s0_X_9700.pl .
 # The next lines are for me, sorry - copypsaste
 
-rsync -rav -e ssh --include '*.txt' --include '*.csv' --include='*.mp4' --include="*.pdf" --exclude='*.*' --exclude='images/*.pdf' 
-isaac@cloudlab:/home/isaac/projects/MARIO_GRID_vMajorRev/multi-agent-policies/scenarios/results/TaxiRome/ 
+rsync -rav -e ssh --include '*.txt' --include '*.csv' --include='*.mp4' --include="*.pdf" --exclude='*.*' --exclude='images/*.pdf' isaac@cloudlab:/home/isaac/projects/MARIO_GRID_vMajorRev/multi-agent-policies/scenarios/TaxiRome/ \  
 
 
 ```

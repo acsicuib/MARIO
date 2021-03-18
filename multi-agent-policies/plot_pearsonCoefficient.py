@@ -39,7 +39,7 @@ def computeAndPlot(movements, nopers, name):
     plt.ylabel(r"Frequency", fontsize=20)
     plt.legend(loc='upper right', fontsize=18)  # policy_getcloser # policy_getclosers_I_II_III
     fig.savefig(name, dpi=400)
-
+    plt.close()
 
 def run(datestamp):
     with open("experiments.json") as f:
