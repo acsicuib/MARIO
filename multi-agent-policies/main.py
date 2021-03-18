@@ -326,10 +326,8 @@ if __name__ == '__main__':
 
         # Generating a temporal folder to record results
         # datestamp = time.strftime('%Y%m%d')
-
         # datestamp = "20210318" # fixed for testing
-
-        datestamp = "20201124" # current execution in server CLoudlab
+        datestamp = "20201124" # our date execution in our servers for final experimentation
 
 
         temporal_folder = experiment_path + "results_%s_"%ncase + datestamp + "/"
@@ -377,76 +375,50 @@ if __name__ == '__main__':
         nSimulations = int(config.get('simulation', 'nSimulations'))
 
 
-        #
-        # # Iteration for each experiment changing the seed of randoms
-        # for iteration in range(nSimulations):
-        #     random.seed(iteration)
-        #     np.random.seed(iteration)
-        #     logging.info("Running multi-agent-policies - %s" %experiment_path)
-        #
-        #     start_time = time.time()
-        #     main(number_simulation_steps=number_simulation_steps,
-        #          time_in_each_step = time_in_each_step,
-        #          experiment_path=experiment_path,
-        #          policy_folder = policy_folder,
-        #          temporal_folder = temporal_folder,
-        #          case=name,
-        #          tracks=tracks,
-        #          projection=projection,
-        #          config = config,
-        #          doExecutionVideo= False,  # expensive task
-        #          it=iteration,
-        #          policy_file = policy_file)
-        #
-        #     print("\n--- %s seconds ---" % (time.time() - start_time))
-        #     # do_video_from_execution_snaps(temporal_folder + "animation_snaps", 'snap_%05d.png', 10)
 
+        # Iteration for each experiment changing the seed of randoms
+        for iteration in range(nSimulations):
+            random.seed(iteration)
+            np.random.seed(iteration)
+            logging.info("Running multi-agent-policies - %s" %experiment_path)
+
+            start_time = time.time()
+            main(number_simulation_steps=number_simulation_steps,
+                 time_in_each_step = time_in_each_step,
+                 experiment_path=experiment_path,
+                 policy_folder = policy_folder,
+                 temporal_folder = temporal_folder,
+                 case=name,
+                 tracks=tracks,
+                 projection=projection,
+                 config = config,
+                 doExecutionVideo= True,  # expensive task
+                 it=iteration,
+                 policy_file = policy_file)
+
+            print("\n--- %s seconds ---" % (time.time() - start_time))
+            # do_video_from_execution_snaps(temporal_folder + "animation_snaps", 'snap_%05d.png', 10)
 
     #end for experiments
 
-    # try:
-    #     import plot_actions
-    #     plot_actions.run(datestamp)
-    # except:
-    #     print("Problems generating actions runs")
-    #
-    # try:
-    #     import plot_averageActionType
-    #     plot_averageActionType.run(datestamp)
-    # except:
-    #     print("Problems generating averageActions runs")
-    #
-    # try:
-    #     import plot_pearsonCoefficient
-    #     plot_pearsonCoefficient.run(datestamp)
-    # except:
-    #     print("Problems generating plot_pearsonCoefficient runs")
-    #
-    # try:
-    #     import plot_responseTime
-    #     plot_responseTime.run(datestamp)
-    # except:
-    #     print("Problems generating plot_responseTime runs")
 
-    # try:
+    # Result Analyses
+
+    import plot_actions
+    plot_actions.run(datestamp)
+
+    import plot_averageActionType
+    plot_averageActionType.run(datestamp)
+
+    import plot_pearsonCoefficient
+    plot_pearsonCoefficient.run(datestamp)
+
+    import plot_responseTime
+    plot_responseTime.run(datestamp)
+
     import plot_totalRequests
     plot_totalRequests.run(datestamp)
-    # except:
-    #     print("Problems generating totalrequest")
 
 
     print("Simulation Done!")
 
-
-
-# ffmpeg -r 1 -i results/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p results/out2.mp4
-# ffmpeg -r 1 -i results/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p results/out2.mp4
-# ffmpeg -r 1 -i multi-agent-policies/scenarios/TaxiRome/results_20201028/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p video.mp4
-# ffmpeg -r 1 -i multi-agent-policies/scenarios/TaxiRome/results_P1_20201028/images/snap_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p P1_size6.mp4
-
-
-#ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P1_20201028/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P1_size6.mp4
-#ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P1_20201120/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P1_size3.mp4
-#ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P12_20201028/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P12_size6.mp4
-#ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P12_20201120/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P12_size3.mp4
-# ffmpeg -t 20 -i P12_size6.mp4 -vf "fps=10,scale=520:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 output.gif

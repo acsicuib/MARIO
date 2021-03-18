@@ -220,15 +220,19 @@ tiledTopo.setPosPlot(t.G,[[0,0],[20,20]])
 
 # main.py
 
-The experiments in main.py are automated:
+The experiments in main.py are automated and defined in the experiments.json:
 
-```python
-experiments = [
-    ("P1_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy1.pl"),
-    ("P2_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy2.pl"),
-    ("P3_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy3.pl"),
-    ("P4_s3","Rome","scenarios/TaxiRome/","policy/",[[41.878037, 12.4462643], [41.919234, 12.5149603]],"policy4.pl")
-]
+```json
+[
+  {
+    "code":"P1_s3",
+    "scenario":"Rome",
+    "path":"scenarios/TaxiRome/",
+    "pathPolicy":"policy/",
+    "coords":[[41.878037, 12.4462643], [41.919234, 12.5149603]],
+    "policyName":"policy1.pl"
+  },
+...
 ```
 - "P1_s3" is the code of the experiment
 - "Rome" is the another name
@@ -287,7 +291,9 @@ There is three files to generate information about the results:
 - plot_pearsonCoefficient.py. It generates a plot about the relationship between actions and users movements.
 <img src="https://github.com/acsicuib/MARIO/raw/MarioII/media/plot_pearson.png" width="630" height="316"/></a>
 - plot_averageActionType.py. It generates a text description about the average number of action by each user movement.
-
+- plot_responseTime.py. It analyses the time response of each user, and the time response of each type of app.
+- plot_totalRequests.py. It analyses the service usage ratio for each deployed instance along the simulation. This ratio represents use the facts (pl files)
+to compute the ratio between the current requests received by an instance and the total number of requests that it can serves.
 
 # Snapshots
 <img src="https://github.com/acsicuib/MARIO/raw/MarioII/media/snap_example.png" width="330" height="266"/></a>
@@ -342,32 +348,19 @@ apt install pkg-config
 python3 -m pip install virtualenv
 python3 -m venv marioenv
 source marioenv/bin/activate
-(mariovenv - configure a virtual env.)
- 
-python -m pip install -r requirements.txt 
 
-(on MARIO/multi-agent-policies/ folder)
+#On mariovenv -
+python -m pip install -r requirements.txt 
+# on MARIO/multi-agent-policies/ folder
 export PYTHONPATH="/home/isaac/projects/MARIO_GRID_vMajorRev:/home/isaac/projects/MARIO_GRID_vMajorRev/multi-agent-policies/environment:$PYTHONPATH"
 python3 main.py
 
-
-
-
-
-
-
-(video generation - or -)
+# video generation - or -
 ffmpeg -r 1 -i multi-agent-policies/scenarios/TaxiRome/results_20201028/images/network_%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p video.mp4
 ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P12_20201120/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P12_size3.mp4
+# ffmpeg -t 20 -i P12_size6.mp4 -vf "fps=10,scale=520:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 output.gif
 
-ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P12_20201122/images/snap_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P1_size3.mp4
-ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P1_s3_20201124/images/network_%05d.png -c:v libx264 -pix_fmt yuv420p -crf 23 P1_size3.mp4
-(This lines are for me ;) -  copypaste)
-scp isaac@deepblue:/home/isaac/projects/MARIO/video.mp4 .
-scp isaac@deepblue:/home/isaac/projects/MARIO/multi-agent-policies/scenarios/TaxiRome/results_20201028/models/rules_swi_UID96_nn0lt0ln0_s0_X_9700.pl .
 # The next lines are for me, sorry - copypsaste
-
 rsync -rav -e ssh --include '*.txt' --include '*.csv' --include='*.mp4' --include="*.pdf" --exclude='*.*' --exclude='images/*.pdf' isaac@cloudlab:/home/isaac/projects/MARIO_GRID_vMajorRev/multi-agent-policies/scenarios/TaxiRome/ \  
-
 
 ```
