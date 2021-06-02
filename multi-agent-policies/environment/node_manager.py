@@ -112,7 +112,8 @@ class NodeManager():
             self.log_specific_actions.write("NM,Service,App,Time,Action,OldLevel,NewLevel,Status\n")
 
             # Initial snapshot for debugging issues
-            self.snapshot(sim, routing)
+            if RENDERSNAP:
+                self.snapshot(sim, routing)
         else:
             if not self.static_behaviour:
                 clean_routing_cache = False

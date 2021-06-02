@@ -22,8 +22,8 @@ def myprint(msg,fileStats):
     fileStats.write("\n"+msg)
     print(msg)
 
-def run():
-    with open("experiment.json") as f:
+def run(fileName,renderPlot=False):
+    with open(fileName) as f:
         experiments = json.load(f)
 
     for item in experiments:
@@ -136,12 +136,13 @@ def run():
                 global_satis.append(satis)
                 myprint("\t     %% successful requests: %.2f" % (satis),fileStats)
 
-                fig, ax = plt.subplots(figsize=(20, 12))
-                dtmp.response.plot(ax=ax)
-                plt.title('Response .  User %i on APP: %i' % (DESsrc, app), fontsize=38)
-                # plt.show()
-                fig.savefig(pathcommon +"response_user%i.pdf" % DESsrc, dpi=400)
-                plt.close()
+                if renderPlot:
+                    fig, ax = plt.subplots(figsize=(20, 12))
+                    dtmp.response.plot(ax=ax)
+                    plt.title('Response .  User %i on APP: %i' % (DESsrc, app), fontsize=38)
+                    # plt.show()
+                    fig.savefig(pathcommon +"response_user%i.pdf" % DESsrc, dpi=400)
+                    plt.close()
 
             global_satis = np.array(global_satis)
 

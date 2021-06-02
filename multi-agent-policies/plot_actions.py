@@ -69,8 +69,8 @@ import json
 #         tick.set_fontsize(24)
 #     fig.savefig(pathcommon + "actions_%s_G%i.pdf" % (ncase,num), dpi=400)
 
-def run():
-    with open("experiment.json") as f:
+def run(fileName):
+    with open(fileName) as f:
         experiments = json.load(f)
 
     # item = experiments[0]

@@ -1,10 +1,13 @@
 """
     @author: Antonio Brogi & Stefano Forti & Carlos Guerrero & Isaac Lera
+    # MARIO 3
+    # send to Journal of Software: Evolution and Process
 """
 import os
 import time
 import json
 import logging.config
+import networkx as nx
 
 from configparser import ConfigParser
 
@@ -61,6 +64,7 @@ def main(number_simulation_steps,
          config,
          doExecutionVideo,
          it,
+        id_cloud_node,
          radius,
          reversepath,
          policy_file=None,  # if None we use the policy defined in the APP
@@ -74,10 +78,16 @@ def main(number_simulation_steps,
     t = Topology()
     dataNetwork = json.load(open(experiment_path + conf_folder+'topology.json'))
     t.load_all_node_attr(dataNetwork)
-    cloudNode = 0 # "id == 0"
+    nx.write_gexf(t.G,temporal_folder+"topology_M.gexf")
 
+    cloudNode = id_cloud_node
+
+    # NOTE: AP NODES OR EDGE NODES DO HAVE ONLY ONE DEGREE/one vertice
     edgeNodes = [id for (id,degree) in t.G.degree() if degree == 1]
-    edgeNodes = edgeNodes[1:] #to avoid the cloud in this topology
+    edgeNodes = edgeNodes[1:] # to avoid the cloud in this topology
+
+    print(edgeNodes)
+
 
     """
     Global Rules for all services
@@ -168,7 +178,7 @@ def main(number_simulation_steps,
     nM = NodeManager(globalrules, service_rule_profile, path_csv_files,
                   app_number=len(dataApp),
                   period=int(config.get('service', 'activation_period')),
-                  render=True,  # only snaps
+                  render=False,  # only snaps
                   path_results=temporal_folder,
                   cloud_node=cloudNode,
                   window_agent_size=int(config.get('service', 'window_agent_outcome')),
@@ -226,8 +236,8 @@ def main(number_simulation_steps,
     Storing results from other monitors
     & Render the last movement
     """
-    nM.DEBUG_TEXT_ON_RENDER = False
-    nM.render(s,routingPath,"-1",0,0,"Nop",0,"")
+    # nM.DEBUG_TEXT_ON_RENDER = False
+    # nM.render(s,routingPath,"-1",0,0,"Nop",0,"")
 
     # evol.write_map_user_des(temporal_folder + "/MapUserDES_%s_%i.csv" % (case, it))
 
@@ -238,12 +248,14 @@ def main(number_simulation_steps,
 
 
 if __name__ == '__main__':
+
     import logging.config
     logging.config.fileConfig(os.getcwd() + '/logging.ini')
     # import os
     # print(os.getcwd())
 
-    with open("experiment.json") as f:
+    fileName = "experiment_M.json"
+    with open(fileName) as f:
         experiments = json.load(f)
 
     for item in experiments:
@@ -268,6 +280,8 @@ if __name__ == '__main__':
         time_in_each_step = int(config.get('simulation', 'time_in_each_step'))
         nSimulations = int(config.get('simulation', 'nSimulations'))
 
+        id_cloud_node = int(config.get('simulation', 'idCloud'))
+
         try:
             os.makedirs(temporal_folder)
         except OSError:
@@ -290,7 +304,7 @@ if __name__ == '__main__':
                  config=config,
                  doExecutionVideo=True,  # expensive task
                  it=iteration,
-
+                 id_cloud_node = id_cloud_node,
                  radius=radius,
                  reversepath=reversepath,
                  policy_file=policy,
@@ -299,34 +313,34 @@ if __name__ == '__main__':
 
             print("\n--- %s seconds ---" % (time.time() - start_time))
 
-            try:
-                os.system("ffmpeg -r 1 -i %simages/network_%%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p %svideo_%s.mp4"%(temporal_folder,temporal_folder,code))
-            except:
-                print("Problems generating video")
+            # try:
+            #     os.system("ffmpeg -r 1 -i %simages/network_%%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p %svideo_%s.mp4"%(temporal_folder,temporal_folder,code))
+            # except:
+            #     print("Problems generating video")
 
 
     #end for experiments
     try:
         import plot_actions
-        plot_actions.run()
+        plot_actions.run(fileName)
     except:
         print("Problems generating actions runs")
 
     try:
         import plot_averageActionType
-        plot_averageActionType.run()
+        plot_averageActionType.run(fileName)
     except:
         print("Problems generating plot_averageActionType")
 
     try:
         import plot_response_time
-        plot_response_time.run()
+        plot_response_time.run(fileName)
     except:
         print("Problems generating response ")
 
     try:
         import plot_totalrequests
-        plot_totalrequests.run()
+        plot_totalrequests.run(fileName)
     except:
         print("Problems generating totalrequest")
 

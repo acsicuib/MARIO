@@ -26,9 +26,9 @@ def showActionsbyGroup(df0,dfmov0):
         avActMov[a] = sumaActions[a] / totalmovements0
     return avActMov
 
-def run():
+def run(fileName,renderPlot=False):
 
-    with open("experiment.json") as f:
+    with open(fileName) as f:
         experiments = json.load(f)
 
 
@@ -176,35 +176,36 @@ def run():
             fileStats.flush()
             fileStats.close()
 
-            x = range(len(hw))
-            yHW = list(hw.values())
-            yIns = list(ins.values())
-            fig, ax = plt.subplots(figsize=(20, 12))
+            if renderPlot:
+                x = range(len(hw))
+                yHW = list(hw.values())
+                yIns = list(ins.values())
+                fig, ax = plt.subplots(figsize=(20, 12))
 
-            l1 = ax.plot(x,yHW,color="green",linewidth=2,label="Hw Units")
-            ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-            plt.title('Used Hardware vs Number of instances', fontsize=38)
-            plt.xlabel(r"activations", fontsize=30)
-            plt.ylabel(r"Used Hardware", fontsize=30,color="green")
-            ax.tick_params(axis='y', labelcolor="green")
-            ax.set_ylim(0,60)
-            for tick in ax.get_yticklabels():
-                     tick.set_fontsize(24)
-            ax.grid()
-            ax2 = ax.twinx()
-            ax2.set_ylabel('Number of instances', color="blue", fontsize=30)  # we already handled the x-label with ax1
-            l2  = ax2.plot(x,yIns,color="blue",linewidth=2.4,linestyle= '--',marker="o",label="Instances")
-            # added these three lines
-            lns = l1+l2
-            labs = [l.get_label() for l in lns]
-            ax.legend(lns, labs, loc=4, prop={'size': 30})
-            ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-            ax2.tick_params(axis='y', labelcolor="blue")
-            for tick in ax2.get_yticklabels():
-                     tick.set_fontsize(24)
+                l1 = ax.plot(x,yHW,color="green",linewidth=2,label="Hw Units")
+                ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+                plt.title('Used Hardware vs Number of instances', fontsize=38)
+                plt.xlabel(r"activations", fontsize=30)
+                plt.ylabel(r"Used Hardware", fontsize=30,color="green")
+                ax.tick_params(axis='y', labelcolor="green")
+                ax.set_ylim(0,60)
+                for tick in ax.get_yticklabels():
+                         tick.set_fontsize(24)
+                ax.grid()
+                ax2 = ax.twinx()
+                ax2.set_ylabel('Number of instances', color="blue", fontsize=30)  # we already handled the x-label with ax1
+                l2  = ax2.plot(x,yIns,color="blue",linewidth=2.4,linestyle= '--',marker="o",label="Instances")
+                # added these three lines
+                lns = l1+l2
+                labs = [l.get_label() for l in lns]
+                ax.legend(lns, labs, loc=4, prop={'size': 30})
+                ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+                ax2.tick_params(axis='y', labelcolor="blue")
+                for tick in ax2.get_yticklabels():
+                         tick.set_fontsize(24)
 
-            fig.savefig(pathcommon+"hw_instances_%s.pdf"%code, dpi=400)
-            plt.close()
+                fig.savefig(pathcommon+"hw_instances_%s.pdf"%code, dpi=400)
+                plt.close()
         except:
             print("Error in on av.action type")
 

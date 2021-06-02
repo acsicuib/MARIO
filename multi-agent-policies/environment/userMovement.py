@@ -112,8 +112,9 @@ class UserControlMovement:
                     pos_node = self.edgeNodes.index(current_node)
                     app = sim.alloc_source[user]["app"]
                     if app == 2:
-                        probabilities = list(self.probability_matriz[app][pos_node])
-                        toNode =  np.random.choice(self.edgeNodes+[-1],1,p=probabilities)[0]
+                        # probabilities = list(self.probability_matriz[app][pos_node])
+                        # toNode =  np.random.choice(self.edgeNodes+[-1],1,p=probabilities)[0]
+                        toNode =  np.random.choice(self.edgeNodes+[-1],1)[0]
 
                         if current_node != toNode and toNode >= 0:
                             self.logger.debug("A new movement of user (#%s) from node %s to node %s" % (user, current_node, toNode))
@@ -129,8 +130,11 @@ class UserControlMovement:
                         current_moves += 1
 
                     if app == 1:
-                        probabilities = list(self.probability_matriz[app][pos_node])
-                        toNode = np.random.choice(self.edgeNodes+[-1], 1, p=probabilities)[0]
+
+                        #probabilities = list(self.probability_matriz[app][pos_node])
+                        # toNode = np.random.choice(self.edgeNodes+[-1], 1, p=probabilities)[0]
+                        toNode = np.random.choice(self.edgeNodes + [-1], 1)[0]
+
                         if current_node != toNode and toNode >= 0:
                             self.logger.debug(
                                 "A new movement of user (#%s) from node %s to node %s" % (user, current_node, toNode))
