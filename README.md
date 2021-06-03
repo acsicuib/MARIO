@@ -228,6 +228,10 @@ python3 main.py
 
 rsync -rav -e ssh --include '*.txt' --include '*.pl' --include '*.csv' --include='*.mp4' --include="*.pdf" --exclude='*.*' --exclude='images/*.pdf' isaac@cloudlab:/home/isaac/projects/SIMARIO/MARIO/multi-agent-policies/results/ \ 
 
+On multi-agent-policies isaaclera$ 
+
+rsync -rav -e ssh --include '*.txt' --include '*.csv' --include='*.mp4' --include="*.pdf" --exclude='*.*' --exclude='images/*.pdf' isaac@cloudlab:/home/isaac/projects/SIMARIO/MARIO/multi-agent-policies/results/ results/
+
 
 ```
 

@@ -1,9 +1,49 @@
 [
     {
-    "code": "Medium_Model_NoAdapt_r1_prHier_FOG",
+    "code": "Medium_Model_NoAdapt_r1_pHier_FOG",
     "scenario":"Medium_Model",
     "policy":"am_noadapt.pl",
     "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
+  {
+    "code": "Medium_Model_Adapt_r1_pHier_OSMOTIC",
+    "scenario":"Medium_Model",
+    "policy":"am.pl",
+    "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
+  {
+    "code": "Medium_Model_Cloud_r1_pHier",
+    "scenario":"Medium_Model_Cloud",
+    "policy":"am.pl",
+    "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
+  {
+    "code": "Medium_Model_Edge_r1_pHier",
+    "scenario":"Medium_Model_Edge",
+    "policy":"am.pl",
+    "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
+   {
+    "code": "Medium_Model_Adapt_Profile_r1_pHier_PROFILED",
+    "scenario":"Medium_Model",
+    "policy":"am.pl",
+    "n_policy": "nm_withProfiles.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
+  {
+    "code": "Medium_Model_NoAdapt_Profile_r1_pHier",
+    "scenario":"Medium_Model",
+    "policy":"am_noadapt.pl",
+    "n_policy": "nm_withProfiles.pl",
     "radius": 1,
     "reversepath": 1
   }
