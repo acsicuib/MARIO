@@ -42,7 +42,7 @@ trigger(migrate,Si,M,Id_F) :-
 % Replicates and adapts, if needed %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 operation(replicate,Si,M,Level) :-
     trigger(replicate,Si,TotalRR,M),
-    membrane(trigger,Si,TotalRR,NewSiFlavour),
+    membrane(replicate,Si,TotalRR,NewSiFlavour),
     NewSiFlavour=(Level,_,_).
 
 
@@ -53,11 +53,25 @@ trigger(replicate,Si,TotalRR, M) :-
     D is TotalRR / MaxRR_F, D>1.1,
     mostRequestsFrom(Requests, M).
 
-membrane(trigger,Si,TotalRR,NewSiFlavour) :-
+
+membrane(replicate,Si,TotalRR,NewSiFlavour) :-
 	serviceInstance(Si, S, (_,_,MaxRR_F), self), service(S,SVersions,_),
 	RRdifference is TotalRR- MaxRR_F,
-	member(NewSiFlavour, SVersions), NewSiFlavour=(_,HW_F2,MRR_F2), MRR_F2 >= RRdifference,% HW_F2 =< AvailableHW,
+	member(NewSiFlavour, SVersions), NewSiFlavour=(_,HW_F2,_),
 	\+ (member((_,HW_F3,MRR_F3), SVersions), MRR_F3 >= RRdifference, HW_F3 < HW_F2).
+
+%	ISAAC modification
+%membrane(trigger,Si,TotalRR,NewSiFlavour) :-
+%	serviceInstance(Si, S, (_,_,MaxRR_F), self), service(S,SVersions,_),
+%	RRdifference is TotalRR- MaxRR_F,
+%	member(NewSiFlavour, SVersions), NewSiFlavour=(_,HW_F2,MRR_F2),
+%    MRR_F2 =< RRdifference,
+%	\+ (member((_,HW_F3,MRR_F3), SVersions), (  MRR_F3 >= RRdifference; HW_F3 > HW_F2)).
+
+
+% OLD ORIGINAL
+%	MRR_F2 >= RRdifference,% HW_F2 =< AvailableHW,
+%	\+ (member((_,HW_F3,MRR_F3), SVersions), MRR_F3 >= RRdifference, HW_F3 < HW_F2).
 
 
 

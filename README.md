@@ -226,7 +226,7 @@ python3 main.py
 
 # The next lines are for me, sorry - copypaste
 
-rsync -rav -e ssh --include '*.txt' --include '*.csv' --include='*.mp4' --include="*.pdf" --exclude='*.*' --exclude='images/*.pdf' isaac@cloudlab:/home/isaac/projects/SIMARIO/MARIO/multi-agent-policies/results/ \ 
+rsync -rav -e ssh --include '*.txt' --include '*.pl' --include '*.csv' --include='*.mp4' --include="*.pdf" --exclude='*.*' --exclude='images/*.pdf' isaac@cloudlab:/home/isaac/projects/SIMARIO/MARIO/multi-agent-policies/results/ \ 
 
 
 ```
