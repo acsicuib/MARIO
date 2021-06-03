@@ -1,6 +1,6 @@
 [
     {
-    "code": "Medium_Model_NoAdapt_r1_pr5_FOG",
+    "code": "Medium_Model_NoAdapt_r1_prHier_FOG",
     "scenario":"Medium_Model",
     "policy":"am_noadapt.pl",
     "n_policy": "nm.pl",
