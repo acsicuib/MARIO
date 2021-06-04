@@ -39,7 +39,7 @@
     "radius": 1,
     "reversepath": 1
   },
-      {
+  {
     "code": "FOG_Drone",
     "scenario":"Drone_Model",
     "policy":"am_noadapt.pl",
@@ -57,7 +57,7 @@
   },
   {
     "code": "CLOUD_Drone",
-    "scenario":"Medium_Model_Cloud",
+    "scenario":"Drone_Model_Cloud",
     "policy":"am.pl",
     "n_policy": "nm.pl",
     "radius": 1,
@@ -65,7 +65,7 @@
   },
   {
     "code": "EDGE_Drone",
-    "scenario":"Medium_Model_Edge",
+    "scenario":"Drone_Model_Edge",
     "policy":"am.pl",
     "n_policy": "nm.pl",
     "radius": 1,
