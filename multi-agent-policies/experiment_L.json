@@ -1,6 +1,6 @@
 [
   {
-    "code": "FOG_Drone",
+    "code": "FOG_Drone_MoreUsers",
     "scenario":"Drone_Model",
     "policy":"am_noadapt.pl",
     "n_policy": "nm.pl",
@@ -8,7 +8,7 @@
     "reversepath": 1
   },
   {
-    "code": "OSMOTIC_Drone",
+    "code": "OSMOTIC_Drone_MoreUsers",
     "scenario":"Drone_Model",
     "policy":"am.pl",
     "n_policy": "nm.pl",
@@ -16,7 +16,7 @@
     "reversepath": 1
   },
   {
-    "code": "CLOUD_Drone",
+    "code": "CLOUD_Drone_MoreUsers",
     "scenario":"Drone_Model_Cloud",
     "policy":"am.pl",
     "n_policy": "nm.pl",
@@ -24,7 +24,7 @@
     "reversepath": 1
   },
   {
-    "code": "EDGE_Drone",
+    "code": "EDGE_Drone_MoreUsers",
     "scenario":"Drone_Model_Edge",
     "policy":"am.pl",
     "n_policy": "nm.pl",
@@ -32,7 +32,7 @@
     "reversepath": 1
   },
    {
-    "code": "PROFILED_Drone",
+    "code": "PROFILED_Drone_MoreUsers",
     "scenario":"Drone_Model",
     "policy":"am.pl",
     "n_policy": "nm_withProfiles.pl",
