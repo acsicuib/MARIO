@@ -143,6 +143,7 @@ def main(number_simulation_steps,
     INITIAL DEPLOY OF SERVICES
     """
     for aName in apps.keys():
+        print("Deploying app:",aName)
         s.deploy_app(apps[aName], placement, routingPath)
 
     """
@@ -259,7 +260,7 @@ if __name__ == '__main__':
     # import os
     # print(os.getcwd())
 
-    fileName = "experiment_ML.json"
+    fileName = "experiment_L.json"
     with open(fileName) as f:
         experiments = json.load(f)
 
