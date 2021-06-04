@@ -16,19 +16,21 @@ def parser_service_json(kind,id_node, level):
 #                                   np.arange(6,14) #original building
 #                                   ))
 
-M_ap_nodes = [7, 8, 9, 10, 11, 12, 13, 191, 192, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 180, 181, 182, 183, 184, 185, 101, 102, 103, 104, 105, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135]
+M_ap_nodes = [6, 7, 8, 9, 10, 11, 12, 13, 191, 192, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 180, 181, 182, 183, 184, 185, 101, 102, 103, 104, 105, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 406, 407, 408, 409, 410, 411, 412, 413, 291, 292, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 280, 281, 282, 283, 284, 285, 201, 202, 203, 204, 205, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235]
 print("Total number of AP nodes",len(M_ap_nodes))
 
 
-f = open("initAllocation.json","w")
+f = open("initialAllocation.json","w")
 f.write("{\"initialAllocation\":[\n")
 
-apps = [1,2,3]
+apps = [1,2,3,4]
 for id_resource in M_ap_nodes:
     for kind in apps:
         level = "small"
         if kind == 3:
             level = "medium"
+        if kind == 4:
+            level = "small"
         j = parser_service_json(kind,id_resource,level)
         if id_resource==M_ap_nodes[-1] and kind==apps[-1]:
             f.write(j+"\n")

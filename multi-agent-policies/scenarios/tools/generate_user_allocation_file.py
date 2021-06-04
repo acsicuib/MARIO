@@ -14,7 +14,7 @@ M_ap_nodes = np.concatenate((np.arange(158,170),np.arange(180,186), #classes and
                                   np.arange(6,14) #original building
                                   ))
 
-M_ap_nodes = [7, 8, 9, 10, 11, 12, 13, 191, 192, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 180, 181, 182, 183, 184, 185, 101, 102, 103, 104, 105, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135]
+M_ap_nodes = [6, 7, 8, 9, 10, 11, 12, 13, 191, 192, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 180, 181, 182, 183, 184, 185, 101, 102, 103, 104, 105, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135]
 print("Total number of AP nodes",len(M_ap_nodes))
 
 
@@ -22,7 +22,9 @@ users_students_type_2 = 200
 users_professors_type_1 = 50
 users_iot_type_3 = 20
 
-
+# users_students_type_2 = 50
+# users_professors_type_1 = 25
+# users_iot_type_3 = 10
 
 f = open("users_Definition.json","w")
 f.write("{\"sources\":[\n")

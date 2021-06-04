@@ -84,10 +84,12 @@ def main(number_simulation_steps,
 
     # NOTE: AP NODES OR EDGE NODES DO HAVE ONLY ONE DEGREE/one vertice
     edgeNodes = [id for (id,degree) in t.G.degree() if degree == 1]
-    edgeNodes = edgeNodes[1:] # to avoid the cloud in this topology
+    # edgeNodes = edgeNodes[1:] # to avoid the cloud in this topology
 
     print(edgeNodes)
 
+    # import sys
+    # sys.exit()
 
     """
     Global Rules for all services
@@ -211,8 +213,11 @@ def main(number_simulation_steps,
                         record_movements = record_movements,
                         limit_steps = int(config.get('simulation', 'UsersSteps')),
                         limit_movements = int(config.get('simulation', 'limitMovements')),
-                        edgeNodes = edgeNodes
+                        edgeNodes = edgeNodes,
+                        type_scenario = config.get('simulation', 'typeScenario'),
     )
+
+
 
     s.deploy_monitor("Traces_localization_update", evol, dStart,
                      **{"sim": s,
@@ -254,7 +259,7 @@ if __name__ == '__main__':
     # import os
     # print(os.getcwd())
 
-    fileName = "experiment_M.json"
+    fileName = "experiment_ML.json"
     with open(fileName) as f:
         experiments = json.load(f)
 
