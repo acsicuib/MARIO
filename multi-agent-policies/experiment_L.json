@@ -1,15 +1,7 @@
 [
   {
-    "code": "CLOUD_Drone",
-    "scenario":"Drone_Model_Cloud",
-    "policy":"am.pl",
-    "n_policy": "nm.pl",
-    "radius": 1,
-    "reversepath": 1
-  },
-  {
     "code": "EDGE_Drone",
-    "scenario":"Drone_Model_Cloud",
+    "scenario":"Drone_Model_Edge",
     "policy":"am.pl",
     "n_policy": "nm.pl",
     "radius": 1,
