@@ -1,7 +1,7 @@
 [
   {
     "code": "CLOUD_Drone",
-    "scenario":"Drone_Mode_Cloud",
+    "scenario":"Drone_Model_Cloud",
     "policy":"am.pl",
     "n_policy": "nm.pl",
     "radius": 1,
