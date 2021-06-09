@@ -1,14 +1,6 @@
 [
   {
-    "code": "FOG_Drone_MoreUsers2",
-    "scenario":"Drone_Model",
-    "policy":"am_noadapt.pl",
-    "n_policy": "nm.pl",
-    "radius": 1,
-    "reversepath": 1
-  },
-  {
-    "code": "OSMOTIC_Drone_MoreUsers2",
+    "code": "OSMOTIC_Drone_MoreUsers_fixAMRep",
     "scenario":"Drone_Model",
     "policy":"am.pl",
     "n_policy": "nm.pl",
@@ -16,7 +8,7 @@
     "reversepath": 1
   },
    {
-    "code": "PROFILED_Drone_MoreUsers2",
+    "code": "PROFILED_Drone_MoreUsers_fixAMRep",
     "scenario":"Drone_Model",
     "policy":"am.pl",
     "n_policy": "nm_withProfiles.pl",
