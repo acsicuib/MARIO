@@ -382,7 +382,7 @@ class NodeManager():
                             # [(evictANDaccept,(migrate,s51,medium,2,5),s4,(medium,4,20),n3)
                             # result = ["evictANDaccept", it[1], it[2], it[3], it[6], it[7], it[10]]
                             #                 0               1       2    3       4      5    6
-                            if type == "evictANDaccept":
+                            if type == "evictANDaccept" :
 
                                 oper = action[1]
                                 service = int(action[2].replace("s",""))

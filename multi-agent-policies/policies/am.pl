@@ -49,7 +49,7 @@ trigger(migrate,Si,M,Id_F) :-
 % Replicates and adapts, if needed %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 operation(replicate,Si,M,Level) :-
     trigger(replicate,Si,TotalRR,M),
-    membrane(trigger,Si,TotalRR,NewSiFlavour),
+    membrane(replicate,Si,TotalRR,NewSiFlavour),
     NewSiFlavour=(Level,_,_).
 
 
@@ -60,13 +60,26 @@ trigger(replicate,Si,TotalRR, M) :-
     D is TotalRR / MaxRR_F, D>1.1,
     mostRequestsFrom(Requests, M).
 
-membrane(trigger,Si,TotalRR,NewSiFlavour) :-
+%Original
+%membrane(trigger,Si,TotalRR,NewSiFlavour) :-
+%	serviceInstance(Si, S, (_,_,MaxRR_F), self), service(S,SVersions,_),
+%	RRdifference is TotalRR- MaxRR_F,
+%	member(NewSiFlavour, SVersions), NewSiFlavour=(_,HW_F2,MRR_F2), MRR_F2 >= RRdifference,% HW_F2 =< AvailableHW,
+%	\+ (member((_,HW_F3,MRR_F3), SVersions), MRR_F3 >= RRdifference, HW_F3 < HW_F2).
+
+%IL
+membrane(replicate,Si,TotalRR,NewSiFlavour) :-
 	serviceInstance(Si, S, (_,_,MaxRR_F), self), service(S,SVersions,_),
 	RRdifference is TotalRR- MaxRR_F,
-	member(NewSiFlavour, SVersions), NewSiFlavour=(_,HW_F2,MRR_F2), MRR_F2 >= RRdifference,% HW_F2 =< AvailableHW,
+	member(NewSiFlavour, SVersions), NewSiFlavour=(_,HW_F2,_),
 	\+ (member((_,HW_F3,MRR_F3), SVersions), MRR_F3 >= RRdifference, HW_F3 < HW_F2).
-
-
+%SF
+%membrane(trigger,Si,TotalRR,NewSiFlavour) :-
+%    serviceInstance(Si, S, (_,_,MaxRR_F), self), service(S,SVersions,_),
+%    RRdifference is TotalRR - MaxRR_F,
+%    member(NewSiFlavour, SVersions), NewSiFlavour=(_,HW_F2,MRR_F2),
+%    RRdifference2 is RRdifference - MRR_F2,
+%    \+ (member((_,HW_F3,MRR_F3), SVersions), RRdifference3 is RRdifference - MRR_F2, RRdifference3 < RRdifference2, HW_F3 < HW_F2).
 
 % LIB %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sumList([],0).
@@ -82,3 +95,6 @@ requestsFrom(M,Requests,MR) :-
     member((M,_),Requests),
     findall((M,V),member((M,V),Requests),Vs),
     sumList(Vs,MR).
+
+RRdifference: 200
+(10) > replicate()
