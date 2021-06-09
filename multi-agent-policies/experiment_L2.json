@@ -1,6 +1,30 @@
 [
+    {
+    "code": "CLOUD_Drone_fixAMRep",
+    "scenario":"Drone_Model_Cloud",
+    "policy":"am.pl",
+    "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
   {
-    "code": "OSMOTIC_Drone_MoreUsers_fixAMRep",
+    "code": "EDGE_Drone_fixAMRep",
+    "scenario":"Drone_Model_Edge",
+    "policy":"am.pl",
+    "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
+    {
+    "code": "Fog_Drone_fixAMRep",
+    "scenario":"Drone_Model",
+    "policy":"am_noadapt.pl",
+    "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
+  {
+    "code": "OSMOTIC_Drone_fixAMRep",
     "scenario":"Drone_Model",
     "policy":"am.pl",
     "n_policy": "nm.pl",
@@ -8,7 +32,7 @@
     "reversepath": 1
   },
    {
-    "code": "PROFILED_Drone_MoreUsers_fixAMRep",
+    "code": "PROFILED_Drone_fixAMRep",
     "scenario":"Drone_Model",
     "policy":"am.pl",
     "n_policy": "nm_withProfiles.pl",
