@@ -73,6 +73,10 @@ membrane(replicate,Si,TotalRR,NewSiFlavour) :-
 	RRdifference is TotalRR- MaxRR_F,
 	member(NewSiFlavour, SVersions), NewSiFlavour=(_,HW_F2,_),
 	\+ (member((_,HW_F3,MRR_F3), SVersions), MRR_F3 >= RRdifference, HW_F3 < HW_F2).
+
+
+
+
 %SF
 %membrane(trigger,Si,TotalRR,NewSiFlavour) :-
 %    serviceInstance(Si, S, (_,_,MaxRR_F), self), service(S,SVersions,_),

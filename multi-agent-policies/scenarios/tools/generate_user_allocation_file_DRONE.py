@@ -18,9 +18,15 @@ M_ap_nodes = [6, 7, 8, 9, 10, 11, 12, 13, 191, 192, 158, 159, 160, 161, 162, 163
 print("Total number of AP nodes",len(M_ap_nodes))
 
 
-users_students_type_2 = 300
-users_professors_type_1 = 75
+# TEST 3
+users_students_type_2 = 400
+users_professors_type_1 = 200
 users_iot_type_3 = 30
+
+# TEST 2
+# users_students_type_2 = 300
+# users_professors_type_1 = 175
+# users_iot_type_3 = 30
 
 # users_students_type_2 = 50
 # users_professors_type_1 = 25
