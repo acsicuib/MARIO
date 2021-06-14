@@ -448,8 +448,12 @@ class Sim:
 
                 # version3. the service time is related to the level size
                 # Note Isaac
-                size = self.get_speed_service(app,self.alloc_level[des])
-                time_service = message.inst / float(size)
+
+                size = self.get_factor_time_service(app,self.alloc_level[des])
+
+                # print("SIZE of APP %i - %i"%(app,size))
+                time_service = message.inst // float(size)
+                # print(time_service)
                 # time_service = message.inst / float(att_node["IPT"])
 
 
@@ -1279,6 +1283,9 @@ class Sim:
         self.apps_level = apps_level
 
     def get_size_service(self,app,level):
+        return self.apps_level[app][level][0]
+
+    def get_factor_time_service(self,app,level):
         return self.apps_level[app][level][0]
 
     def get_speed_service(self,app,level):

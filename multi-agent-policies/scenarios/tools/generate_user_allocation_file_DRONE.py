@@ -25,7 +25,7 @@ users_iot_type_3 = 30
 
 # TEST 2
 # users_students_type_2 = 300
-# users_professors_type_1 = 175
+# users_professors_type_1 = 75
 # users_iot_type_3 = 30
 
 # users_students_type_2 = 50

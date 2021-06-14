@@ -1,43 +1,17 @@
 [
   {
-    "code": "Third_CLOUD_Drone_MoreUsers_2",
-    "scenario":"Third_Cloud_Drone_Model",
-    "policy":"am.pl",
-    "n_policy": "nm.pl",
-    "radius": 1,
-    "reversepath": 1
-  },
-  {
-    "code": "Third_EDGE_Drone_MoreUsers_2",
-    "scenario":"Third_Edge_Drone_Model",
-    "policy":"am.pl",
-    "n_policy": "nm.pl",
-    "radius": 1,
-    "reversepath": 1
-  },
-  {
-    "code": "Third_FOG_Drone_MoreUsers_2",
+    "code": "Third_FOG_Drone_service",
     "scenario":"Third_Drone_Model",
     "policy":"am_noadapt.pl",
     "n_policy": "nm.pl",
     "radius": 1,
     "reversepath": 1
   },
-
-
-    {
-    "code": "Third_OSMOTIC_Drone_MoreUsers_2",
+  {
+    "code": "Third_OSMOTIC_Drone_service",
     "scenario":"Third_Drone_Model",
     "policy":"am.pl",
     "n_policy": "nm.pl",
-    "radius": 1,
-    "reversepath": 1
-  },
-     {
-    "code": "Third_PROFILED_Drone_MoreUsers_2",
-    "scenario":"Third_Drone_Model",
-    "policy":"am.pl",
-    "n_policy": "nm_withProfiles.pl",
     "radius": 1,
     "reversepath": 1
   }
