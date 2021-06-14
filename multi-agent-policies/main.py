@@ -76,17 +76,28 @@ def main(number_simulation_steps,
     TOPOLOGY
     """
     t = Topology()
+
+    print(experiment_path + conf_folder)
     dataNetwork = json.load(open(experiment_path + conf_folder+'topology.json'))
     t.load_all_node_attr(dataNetwork)
-    nx.write_gexf(t.G,temporal_folder+"topology_M.gexf")
+    nx.write_gexf(t.G,temporal_folder+"topology.gexf")
 
     cloudNode = id_cloud_node
 
     # NOTE: AP NODES OR EDGE NODES DO HAVE ONLY ONE DEGREE/one vertice
-    edgeNodes = [id for (id,degree) in t.G.degree() if degree == 1]
-    # edgeNodes = edgeNodes[1:] # to avoid the cloud in this topology
+    # edgeNodes = [id for (id,degree) in t.G.degree() if degree == 1] #Second test
+    # edgeNodes = edgeNodes[1:] # to avoid the cloud in this topology # Original test
 
-    print(edgeNodes)
+    if config.get('simulation', 'typeScenario')=="L":
+        edgeNodes = np.concatenate((np.arange(6, 14),np.arange(101, 106), np.arange(124, 136), np.arange(124, 136), np.arange(158, 170),
+                                   np.arange(180, 186),np.arange(191, 193),np.arange(406, 414),np.arange(201, 206),np.arange(224, 236),
+                                   np.arange(224, 236), np.arange(258, 270), np.arange(280, 286), np.arange(291, 293)))
+
+    if config.get('simulation', 'typeScenario')=="M":
+        edgeNodes = np.concatenate((np.arange(6, 14),np.arange(101, 106), np.arange(124, 136), np.arange(124, 136), np.arange(158, 170),
+                                   np.arange(180, 186),np.arange(191, 193)))
+
+    # print(edgeNodes)
 
     # import sys
     # sys.exit()
@@ -260,7 +271,7 @@ if __name__ == '__main__':
     # import os
     # print(os.getcwd())
 
-    fileName = "experiment_L2.json"
+    fileName = "experiment_3L.json"
     with open(fileName) as f:
         experiments = json.load(f)
 

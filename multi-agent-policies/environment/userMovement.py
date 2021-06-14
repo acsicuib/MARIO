@@ -113,7 +113,7 @@ class UserControlMovement:
             toNode =  np.random.choice(self.edgeNodes+[-1],1,p=probabilities)[0]
             return toNode
         else:
-            if random.random()>0.8: #we can change of building
+            if random.random()>0.9: #we can change of building
                 return np.random.choice(self.edgeNodes+[-1],1)[0]
             else:
                 nodes = self.getNeighbourdNode(pos_node)
