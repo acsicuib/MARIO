@@ -54,11 +54,19 @@ trigger(replicate,Si,TotalRR, M) :-
     mostRequestsFrom(Requests, M).
 
 
+%IL replicating providing the small
 membrane(replicate,Si,TotalRR,NewSiFlavour) :-
 	serviceInstance(Si, S, (_,_,MaxRR_F), self), service(S,SVersions,_),
 	RRdifference is TotalRR- MaxRR_F,
 	member(NewSiFlavour, SVersions), NewSiFlavour=(_,HW_F2,_),
-	\+ (member((_,HW_F3,MRR_F3), SVersions), MRR_F3 >= RRdifference, HW_F3 < HW_F2).
+	\+ (member((_,HW_F3,MRR_F3), SVersions), MRR_F3 =< RRdifference, HW_F3 < HW_F2).
+
+% IL replicating providing the greater
+%membrane(replicate,Si,TotalRR,NewSiFlavour) :-
+%	serviceInstance(Si, S, (_,_,MaxRR_F), self), service(S,SVersions,_),
+%	RRdifference is TotalRR- MaxRR_F,
+%	member(NewSiFlavour, SVersions), NewSiFlavour=(_,HW_F2,_),
+%	\+ (member((_,HW_F3,MRR_F3), SVersions), MRR_F3 >= RRdifference, HW_F3 < HW_F2).
 
 %	ISAAC modification
 %membrane(trigger,Si,TotalRR,NewSiFlavour) :-
