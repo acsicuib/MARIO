@@ -271,7 +271,7 @@ if __name__ == '__main__':
     # import os
     # print(os.getcwd())
 
-    fileName = "experiment_3L.json"
+    fileName = "experiment_3L_CE.json"
     with open(fileName) as f:
         experiments = json.load(f)
 

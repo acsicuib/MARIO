@@ -1,0 +1,18 @@
+[
+  {
+    "code": "Third_CLOUD_Drone_MoreUsers",
+    "scenario":"Third_Cloud_Drone_Model",
+    "policy":"am.pl",
+    "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
+  {
+    "code": "Third_EDGE_Drone_MoreUsers",
+    "scenario":"Third_Edge_Drone_Model",
+    "policy":"am.pl",
+    "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
+  }
+]
