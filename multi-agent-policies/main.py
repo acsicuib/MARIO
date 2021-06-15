@@ -99,8 +99,8 @@ def main(number_simulation_steps,
 
     # print(edgeNodes)
 
-    # import sys
-    # sys.exit()
+    import sys
+    sys.exit()
 
     """
     Global Rules for all services
@@ -271,7 +271,7 @@ if __name__ == '__main__':
     # import os
     # print(os.getcwd())
 
-    fileName = "experiment_3L_CE.json"
+    fileName = "experiment_3M.json"
     with open(fileName) as f:
         experiments = json.load(f)
 
