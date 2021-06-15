@@ -99,8 +99,8 @@ def main(number_simulation_steps,
 
     # print(edgeNodes)
 
-    import sys
-    sys.exit()
+    # import sys
+    # sys.exit()
 
     """
     Global Rules for all services
