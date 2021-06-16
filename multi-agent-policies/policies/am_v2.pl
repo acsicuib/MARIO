@@ -81,6 +81,3 @@ requestsFrom(M,Requests,MR) :-
     member((M,_),Requests),
     findall((M,V),member((M,V),Requests),Vs),
     sumList(Vs,MR).
-
-RRdifference: 200
-(10) > replicate()
