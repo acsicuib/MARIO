@@ -46,9 +46,7 @@ trigger(migrate,Si,M,Id_F) :-
 
 operation(replicate,Si,M,Level) :-
     trigger(replicate,Si,TotalRR,M),
-    write(M),
     membrane(replicate,Si,TotalRR,NewSiFlavour),
-    write(NewSiFlavour),
     NewSiFlavour=(Level,_,_).
 
 trigger(replicate,Si,TotalRR, M) :-
