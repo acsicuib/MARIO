@@ -1,5 +1,15 @@
 [
 
+        {
+    "code": "Four_FOG_Drone",
+    "scenario":"Third_Drone_Model",
+    "policy":"am_noadapt_v2.pl",
+    "n_policy": "nm_noadapt_v2.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
+
+
     {
     "code": "Four_OSMOTIC_Drone",
     "scenario":"Third_Drone_Model",

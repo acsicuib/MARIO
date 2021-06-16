@@ -69,6 +69,7 @@ membrane(replicate,Si,_,_,NewSiFlavour) :-
 
 % LIB %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sumList([],0).
+
 sumList([(_,X)|Xs], N) :- sumList(Xs,SumXs), N is X+SumXs.
 
 sumIntList([],0).
