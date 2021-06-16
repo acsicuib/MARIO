@@ -13,37 +13,33 @@ n_operation(accept,(adapt,Si,NewSiFlavour),_) :-
     AvailableHW + HW_F >= HW_NewF.
 
 n_operation(accept,(Op,Si,SiFlavour),_) :-
-    operation(Op,Si,SiFlavour), (Op=migrate; Op=replicate), 
-    SiFlavour=(_,HW_F,_), 
-    node(self, AvailableHW, _),
-    AvailableHW >= HW_F.
-
-% NEW NEW NEW
-%-before shrinking or evicting a bacterion currently running in self, we shrink the incoming bacterion if possible
-n_operation(shrinkNewComerANDaccept,(Op,Si,SiFlavour),(Si,Id_F2,_)) :-
-    operation(Op,Si,SiFlavour), (Op=migrate; Op=replicate),
-    serviceInstance(Si, S, _, _), service(S,SVersions,_), 
-    member((Id_F2,HW_F2,_),SVersions), node(self, AvailableHW, _), AvailableHW >= HW_F2, 
-    \+ (member((_,HW_F3,_), SVersions), AvailableHW >= HW_F3, HW_F3 >= HW_F2).
-
-% shrinkANDaccept %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-n_operation(shrinkANDaccept,(Op,Si,SiFlavour),(Sj,SjFlavour,NewSjFlavour)) :-
     operation(Op,Si,SiFlavour), (Op=migrate; Op=replicate),
     SiFlavour=(_,HW_F,_),
     node(self, AvailableHW, _),
+    AvailableHW >= HW_F.
+
+n_operation(shrinkNewComerANDaccept,(Op,Si,SiFlavour),(Si,Id_F2,_)) :-
+    operation(Op,Si,SiFlavour), (Op=migrate; Op=replicate),
+    serviceInstance(Si, S, _, N), service(S,SVersions,_),
+    operator(_,Services,free), member(Si, Services),
+    member((F2,HW_F2,_),SVersions), node(self, AvailableHW, _), AvailableHW >= HW_F2, % the smallest
+    \+ (member((F3,HW_F3,_), SVersions), dif(F2,F3), AvailableHW >= HW_F3, HW_F3 >= HW_F2).
+
+n_operation(shrinkANDaccept,(Op,Si,SiFlavour),(Sj,SjFlavour,NewSjFlavour)) :-
+    operation(Op,Si,SiFlavour), (Op=migrate; Op=replicate),
+    operator(_,Services,subscriber), member(Si, Services),
+    SiFlavour=(_,HW_F,_),
+    node(self, AvailableHW, _),
     NeededHW is HW_F - AvailableHW,            % (HWNeeded>0 if preceding defs of n_operation failed)
-    shrinkableInstances(L),
-    member((_,Sj,SjFlavour),L),
-    %dif((Si,SiFlavour),(Sj,SjFlavour)),
+    modifiableInstances(L), member((_,Sj,SjFlavour),L),
     lighterFlavour(Sj,SjFlavour,NeededHW,NewSjFlavour).
 
 % evictANDaccept %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 n_operation(evictANDaccept,(Op,Si,SiFlavour),(Sj,SjFlavour,M)) :-
     operation(Op,Si,SiFlavour), (Op=migrate; Op=replicate),
-    shrinkableInstances(L),
-    member((_,Sj,SjFlavour),L),
-    %dif((Si,SiFlavour),(Sj,SjFlavour)),        % perhaps not needed here
-    node(self, _, Neighbours), 
+    operator(_,Services,subscriber), member(Si, Services),
+    modifiableInstances(L), member((_,Sj,SjFlavour),L),
+    node(self, _, Neighbours),
     freestNeighbour(Neighbours,M,HW_M),
     SiFlavour=(_,HW_F,_),
     HW_M >= HW_F.
@@ -55,8 +51,9 @@ n_operation(reject,(Op,Si,SiFlavour),_) :-
 sumList([],0).
 sumList([X|Xs], N) :- sumList(Xs,SumXs), N is X+SumXs.
 
-shrinkableInstances(SortedL) :-
-    findall((P,S,SFlavour), productivity(S,SFlavour,P),L), 
+modifiableInstances(SortedL) :-
+    findall((P,S,SFlavour), productivity(S,SFlavour,P),L),
+    operator(_,Services,free), member(S, Services),
     msort(L,SortedL).
 
 productivity(Sj,SjFlavour,Pj) :-
