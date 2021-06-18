@@ -1,6 +1,21 @@
 [
-
-        {
+   {
+    "code": "Four_CLOUD_Drone",
+    "scenario":"Third_Cloud_Drone_Model",
+    "policy":"am.pl",
+    "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
+  {
+    "code": "Four_EDGE_Drone",
+    "scenario":"Third_Edge_Drone_Model",
+    "policy":"am.pl",
+    "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
+  {
     "code": "Four_FOG_Drone",
     "scenario":"Third_Drone_Model",
     "policy":"am_noadapt_v2.pl",
@@ -8,9 +23,7 @@
     "radius": 1,
     "reversepath": 1
   },
-
-
-    {
+  {
     "code": "Four_OSMOTIC_Drone",
     "scenario":"Third_Drone_Model",
     "policy":"am_v2.pl",
