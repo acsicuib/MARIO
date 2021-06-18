@@ -1,4 +1,4 @@
-%:- ['nm_example'].
+% NM_V2 with profile
 :- discontiguous n_operation/3.
 
 % accept %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -18,9 +18,9 @@ n_operation(accept,(Op,Si,SiFlavour),_) :-
     node(self, AvailableHW, _),
     AvailableHW >= HW_F.
 
-n_operation(shrinkNewComerANDaccept,(Op,Si,SiFlavour),(Si,Id_F2,_)) :-
+n_operation(shrinkNewComerANDaccept,(Op,Si,SiFlavour),(Si,F2,_)) :-
     operation(Op,Si,SiFlavour), (Op=migrate; Op=replicate),
-    serviceInstance(Si, S, _, N), service(S,SVersions,_),
+    serviceInstance(Si, S, _, _), service(S,SVersions,_),
     operator(_,Services,free), member(Si, Services),
     member((F2,HW_F2,_),SVersions), node(self, AvailableHW, _), AvailableHW >= HW_F2, % the smallest
     \+ (member((F3,HW_F3,_), SVersions), dif(F2,F3), AvailableHW >= HW_F3, HW_F3 >= HW_F2).

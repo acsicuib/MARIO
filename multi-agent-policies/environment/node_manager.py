@@ -529,6 +529,8 @@ class NodeManager():
         rules_dir = str(rules_dir)
         model_file = rules_dir + "/model_NM%i_DES%s_%i.pl" % (current_node, serviceID, sim.env.now)
 
+        # print("FILE: ",model_file)
+
         with open(model_file, "w") as f:
             f.write(rules_and_facts)
             f.write("\n%% Self-NODE is: n%i\n"%current_node)
@@ -553,6 +555,8 @@ class NodeManager():
             # it = iter("".join(c for c in expr if c not in "()[] ").split(","))
             # result = [(x, y, z, v, w) for x, y, z, v, w in zip(it, it, it, it, it)]
             result = self.outputparsersAccordingWithArgsOperation(expr)
+
+
             assert len(result) >= 0, "(nodeManager.py) Prolog response is incorrect"
             return result
 
