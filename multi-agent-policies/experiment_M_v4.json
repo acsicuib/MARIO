@@ -10,7 +10,7 @@
   },
   {
     "code": "Four_EDGE_Medium",
-    "scenario":"Third_Cloud_Edge_Model_Medium",
+    "scenario":"Third_Edge_Drone_Model_Medium",
     "policy":"am.pl",
     "n_policy": "nm.pl",
     "radius": 1,

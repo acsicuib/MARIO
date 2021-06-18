@@ -277,6 +277,8 @@ if __name__ == '__main__':
 
     for item in experiments:
 
+        print(item)
+
         code = item["code"]
         name = item["scenario"]
         policy = item["policy"]
