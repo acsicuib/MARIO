@@ -1286,7 +1286,8 @@ class Sim:
         return self.apps_level[app][level][0]
 
     def get_factor_time_service(self,app,level):
-        return self.apps_level[app][level][0]*10
+        # return self.apps_level[app][level][0]*10
+        return 50 #for version 3. All services have the same service
 
     def get_speed_service(self,app,level):
         return self.apps_level[app][level][1]

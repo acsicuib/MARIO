@@ -56,13 +56,13 @@ trigger(replicate,Si,TotalRR, M) :-
     D is TotalRR / MaxRR_F, D>1.1,
     mostRequestsFrom(Requests, M).
 
-membrane(replicate,Si,TotalRR,_,NewSiFlavour) :-
+membrane(replicate,Si,TotalRR,NewSiFlavour) :-
     serviceInstance(Si, S, (_,_,MaxRR_F), self), service(S,SVersions,_),
     RRdifference is TotalRR - MaxRR_F,
     member(NewSiFlavour, SVersions), NewSiFlavour=(F2,HW_F2,MRR_F2), MRR_F2 >= RRdifference, % the smallest that can handle the difference
     \+ (member((F3,HW_F3,MRR_F3), SVersions), dif(F2,F3), MRR_F3 >= RRdifference, HW_F3 < HW_F2).
 
-membrane(replicate,Si,_,_,NewSiFlavour) :-
+membrane(replicate,Si,_,NewSiFlavour) :-
     serviceInstance(Si, S, (_,_,_), self), service(S,SVersions,_),
     member(NewSiFlavour, SVersions), NewSiFlavour=(F2,HW_F2,_),
     \+ (member((F3,HW_F3,_), SVersions), dif(F2,F3), HW_F3 < HW_F2).
