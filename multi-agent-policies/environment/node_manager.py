@@ -229,7 +229,14 @@ class NodeManager():
                             # Examples:
                             # operator(op1, [s1], free).
                             # operator(op2, [s2, s3], subscriber).
-                            modelsSub = {1:"subscriber",2:"free",3:"subscriber",4:"subscriber"} #TODO external definition. It depends on the number of apps.
+
+
+                            #modelsSub = {1:"subscriber",2:"free",3:"subscriber",4:"subscriber"} #TODO external definition. It depends on the number of apps.
+
+                            #TODO v5
+                            modelsSub = {1:"subscriber",2:"free",3:"free",4:"subscriber"} #TODO external definition. It depends on the number of apps.
+
+
                             free = []
                             sub = []
                             for (theDES,theAPP) in operators:

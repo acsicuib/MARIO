@@ -1,7 +1,7 @@
 [
 
   {
-    "code": "Four_Latv4_CLOUD_Medium",
+    "code": "Four_Latv5_CLOUD_Medium",
     "scenario":"Third_Cloud_Drone_Model_Medium",
     "policy":"am.pl",
     "n_policy": "nm.pl",
@@ -9,7 +9,7 @@
     "reversepath": 1
   },
   {
-    "code": "Four_Latv4_EDGE_Medium",
+    "code": "Four_Latv5_EDGE_Medium",
     "scenario":"Third_Edge_Drone_Model_Medium",
     "policy":"am.pl",
     "n_policy": "nm.pl",
@@ -17,7 +17,7 @@
     "reversepath": 1
   },
   {
-    "code": "Four_Latv4_FOG_Medium",
+    "code": "Four_Latv5_FOG_Medium",
     "scenario":"Third_Drone_Model_Medium",
     "policy":"am_noadapt_v2.pl",
     "n_policy": "nm_noadapt_v2.pl",
@@ -25,7 +25,7 @@
     "reversepath": 1
   },
   {
-    "code": "Four_Latv4_OSMOTIC_Medium",
+    "code": "Four_Latv5_OSMOTIC_Medium",
     "scenario":"Third_Drone_Model_Medium",
     "policy":"am_v2.pl",
     "n_policy": "nm_v2.pl",
@@ -33,7 +33,7 @@
     "reversepath": 1
   },
   {
-    "code": "Four_Latv4_PROFILED_Medium",
+    "code": "Four_Latv5_PROFILED_Medium",
     "scenario":"Third_Drone_Model_Medium",
     "policy":"am_v2.pl",
     "n_policy": "nm_withProfiles_v2.pl",
@@ -44,7 +44,7 @@
 
 
     {
-    "code": "Four_Latv4_CLOUD_Drone",
+    "code": "Four_Latv5_CLOUD_Drone",
     "scenario":"Third_Cloud_Drone_Model",
     "policy":"am.pl",
     "n_policy": "nm.pl",
@@ -52,7 +52,7 @@
     "reversepath": 1
   },
   {
-    "code": "Four_Latv4_EDGE_Drone",
+    "code": "Four_Latv5_EDGE_Drone",
     "scenario":"Third_Edge_Drone_Model",
     "policy":"am.pl",
     "n_policy": "nm.pl",
@@ -60,7 +60,7 @@
     "reversepath": 1
   },
   {
-    "code": "Four_Latv4_FOG_Drone",
+    "code": "Four_Latv5_FOG_Drone",
     "scenario":"Third_Drone_Model",
     "policy":"am_noadapt_v2.pl",
     "n_policy": "nm_noadapt_v2.pl",
@@ -68,7 +68,7 @@
     "reversepath": 1
   },
   {
-    "code": "Four_Latv4_OSMOTIC_Drone",
+    "code": "Four_Latv5_OSMOTIC_Drone",
     "scenario":"Third_Drone_Model",
     "policy":"am_v2.pl",
     "n_policy": "nm_v2.pl",
@@ -77,7 +77,7 @@
   },
 
   {
-    "code": "Four_Latv4_PROFILED_Drone",
+    "code": "Four_Latv5_PROFILED_Drone",
     "scenario":"Third_Drone_Model",
     "policy":"am_v2.pl",
     "n_policy": "nm_withProfiles_v2.pl",
