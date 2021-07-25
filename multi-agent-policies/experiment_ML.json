@@ -1,7 +1,7 @@
 [
     {
     "code": "FOG_Medium",
-    "scenario":"Medium_Model_smallSizeEdgeNodes",
+    "scenario":"Medium_Model_FOP",
     "policy":"am_noadapt.pl",
     "n_policy": "nm.pl",
     "radius": 1,
@@ -9,7 +9,7 @@
   },
   {
     "code": "OSMOTIC_Medium",
-    "scenario":"Medium_Model_smallSizeEdgeNodes",
+    "scenario":"Medium_Model_FOP",
     "policy":"am.pl",
     "n_policy": "nm.pl",
     "radius": 1,
@@ -33,7 +33,7 @@
   },
    {
     "code": "PROFILED_Medium",
-    "scenario":"Medium_Model_smallSizeEdgeNodes",
+    "scenario":"Medium_Model_FOP",
     "policy":"am.pl",
     "n_policy": "nm_withProfiles.pl",
     "radius": 1,
@@ -41,7 +41,7 @@
   },
   {
     "code": "FOG_Drone",
-    "scenario":"Drone_Model",
+    "scenario":"Large_Model_FOP",
     "policy":"am_noadapt.pl",
     "n_policy": "nm.pl",
     "radius": 1,
@@ -49,7 +49,7 @@
   },
   {
     "code": "OSMOTIC_Drone",
-    "scenario":"Drone_Model",
+    "scenario":"Large_Model_FOP",
     "policy":"am.pl",
     "n_policy": "nm.pl",
     "radius": 1,
@@ -57,7 +57,7 @@
   },
   {
     "code": "CLOUD_Drone",
-    "scenario":"Drone_Model_Cloud",
+    "scenario":"Large_Model_Cloud",
     "policy":"am.pl",
     "n_policy": "nm.pl",
     "radius": 1,
@@ -65,7 +65,7 @@
   },
   {
     "code": "EDGE_Drone",
-    "scenario":"Drone_Model_Edge",
+    "scenario":"Large_Model_Edge",
     "policy":"am.pl",
     "n_policy": "nm.pl",
     "radius": 1,
@@ -73,7 +73,7 @@
   },
    {
     "code": "PROFILED_Drone",
-    "scenario":"Drone_Model",
+    "scenario":"Large_Model_FOP",
     "policy":"am.pl",
     "n_policy": "nm_withProfiles.pl",
     "radius": 1,

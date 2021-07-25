@@ -1,41 +1,39 @@
 [
-  {
-    "code": "Third_FOG_Drone_MoreUsers",
-    "scenario":"Third_Drone_Model",
+    {
+    "code": "Model_NoAdapt_r1_pr5_nout_s10",
+    "scenario":"Small_Model_FOP",
     "policy":"am_noadapt.pl",
     "n_policy": "nm.pl",
     "radius": 1,
     "reversepath": 1
   },
-
-
-    {
-    "code": "Third_OSMOTIC_Drone_MoreUsers",
-    "scenario":"Third_Drone_Model",
+  {
+    "code": "Model_Adapt_r1_pr5_nout_s10",
+    "scenario":"Small_Model_FOP",
     "policy":"am.pl",
     "n_policy": "nm.pl",
     "radius": 1,
     "reversepath": 1
   },
   {
-    "code": "Third_CLOUD_Drone_MoreUsers",
-    "scenario":"Third_Cloud_Drone_Model",
+    "code": "Model_Cloud_r1_pr5_nout_s10",
+    "scenario":"Small_Model_Cloud",
     "policy":"am.pl",
     "n_policy": "nm.pl",
     "radius": 1,
     "reversepath": 1
   },
   {
-    "code": "Third_EDGE_Drone_MoreUsers",
-    "scenario":"Third_Edge_Drone_Model",
+    "code": "Model_Edge_r1_pr5_nout_s10",
+    "scenario":"Small_Model_Edge",
     "policy":"am.pl",
     "n_policy": "nm.pl",
     "radius": 1,
     "reversepath": 1
   },
    {
-    "code": "Third_PROFILED_Drone_MoreUsers",
-    "scenario":"Third_Drone_Model",
+    "code": "Small_Model_FOP",
+    "scenario":"Model",
     "policy":"am.pl",
     "n_policy": "nm_withProfiles.pl",
     "radius": 1,

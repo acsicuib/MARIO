@@ -8,7 +8,7 @@ Managing next-gen applications over Fog computing infrastructures is challenging
  
 - Extending the initial idea of: https://github.com/acsicuib/MARIO/tree/gauss2020
 - Journal of Software: Evolution and Process
-- Status: sending 
+- Status: Major revision 
 
 ## Acknowledge
 
