@@ -22,13 +22,14 @@ color = ["#7BD5F5","#D0E6A5","#FFDD94","#FA897B","#CCABD8"]
 
 
 # MEDIUM SCENARIO
-trApp1 = [30.07,2.04,28.86,28.76,27.77]
-trApp2 = [30.17,2.02,22.30,18.30,17.74]
-trApp3 = [30.55,2,17.77,21.29,20.87]
+trApp1 = [30.07,2.08,20.2678,24.9722,24.6578]
+trApp2 = [30.17,2.0265,8.626045,17.08994,17.1744]
+trApp3 = [30.55,2,19.287314,17.923587,17.710178]
 
-errorApp1 = [0.398566,0,0,0,0]
-errorApp2 = [0.571435,0,0,0,0]
-errorApp3 = [0.243134,0,0,0,0]
+
+errorApp1 = [0.398566,0.216255,4.648492,1.4458,1.4084]
+errorApp2 = [0.571435,0.024007,0.207795,1.044,1.0881]
+errorApp3 = [0.243134,0,0.472720,0.303,0.098316]
 
 
 
@@ -44,12 +45,18 @@ trerror =[errorApp1,errorApp2,errorApp3]
 
 #MEDIUM SCENARIO
 # rrApp3 = [0.250,0.624,1.203,0.638,0.640]
-rrApp1 = [0.313,0.285,0.312,0.747,0.742]
-rrApp2 = [0.232,1.423,0.463,0.624,0.534]
-rrApp3 = [0.250,0.028,0.252,0.311,0.310]
+rrApp1 = [0.312762,0.284672,  0.396978,0.437564,0.452089]
+rrApp2 = [0.231019,1.418658,   0.809885,0.72423,0.717388]
+rrApp3 = [0.250233,0.028,      0.2610,0.25151,0.251526]
+
+
+rorApp1 = [0.000029,0 ,0.0579,0.07498,0.082531]
+rorApp2 = [0.001362,0.00835,0.01110,0.050888,0.044204]
+rorApp3 = [0,0, 0.01605,0.000186,0]
+
 
 rrs=[rrApp1,rrApp2,rrApp3]
-
+trrr = [rorApp1,rorApp2,rorApp3]
 
 x = np.array([0,1,2])
 labels = ["App1","App2","App3"]
@@ -100,7 +107,7 @@ for ap in x:
         acc = shiftx+(width*i)
         label = name[i]
         if ap>=1: label = None
-        ax.bar(acc, rrs[ap][i], width, label=label,color=color[i])
+        ax.bar(acc, rrs[ap][i], yerr=trrr[ap][i],width = width, label=label,color=color[i])
 
         ax.annotate('%0.2f'%rrs[ap][i],
               xy=(acc, rrs[ap][i]),
