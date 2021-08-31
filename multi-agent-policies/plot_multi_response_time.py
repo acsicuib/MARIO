@@ -150,5 +150,5 @@ def run(fileName,renderPlot=False):
         #     print("Error in one response time")
 
 if __name__ == '__main__':
-    run(fileName="experiment_MSeed.json")
+    run(fileName="experiment_MSeedTEST.json")
     print("Done")

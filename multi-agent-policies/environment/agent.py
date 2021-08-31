@@ -36,7 +36,7 @@ class PolicyManager():
 
         return deployed_services,nodes_with_services
 
-    def __init__(self,DES,name,rules,service_rule_profile,path,app_operator,render,radius,reversepath):
+    def __init__(self,DES,name,rules,service_rule_profile,path,app_operator,render,radius,reversepath,iteration):
         self.id_monitor = None
         self.DES = DES #Service ID
         self.name = name
@@ -58,6 +58,7 @@ class PolicyManager():
         self.radius = radius
         self.reversepath = reversepath
         # data = json.load(open(path + 'usersDefinition.json'))
+        self.iteration = iteration
 
     def get_free_space_on_nodes(self,sim):
         currentOccupation = dict([a, int(x)] for a,x in nx.get_node_attributes(G=sim.topology.G, name="HwReqs").items())
@@ -309,7 +310,7 @@ class PolicyManager():
                           "%s\n%s\n"%(rule_file,str(facts))
 
         # Write rules and facts in a Prolog file *.pl
-        rules_dir = Path(path_results + "models/")
+        rules_dir = Path(path_results + "models_%i/"%self.iteration)
         rules_dir.mkdir(parents=True, exist_ok=True)
         rules_dir = str(rules_dir)
         model_file = rules_dir + "/model_B%i_n%s_DES%s_%i_%i.pl" % (self.app_operator.UID + 1, current_node, serviceID, self.action_on_render, sim.env.now)

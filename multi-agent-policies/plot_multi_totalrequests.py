@@ -49,7 +49,7 @@ def run(fileName):
 
             fileStats = open(pathcommon + "requests_stats_%s_%i.txt" %(code,iteration), "w")
             fileStats.write("time,app,des,tr,ltr,suc\n")
-            plfiles = list(glob.glob(pathcommon+"models/*.pl"))
+            plfiles = list(glob.glob(pathcommon+"models_%i/*.pl"%iteration))
             plfiles = sorted(plfiles,key=lambda name:int(name.split("_")[-1].replace(".pl","")),reverse=False)
 
             print("Number of files: ",len(plfiles))
@@ -110,5 +110,5 @@ def run(fileName):
         # except:
         #     print("Error in one totalrequests")
 if __name__ == '__main__':
-    run(fileName="experiment_MSeed.json")
+    run(fileName="experiment_MSeedTEST.json")
     print("Done")

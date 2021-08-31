@@ -752,7 +752,7 @@ class NodeManager():
 
     def create_monitor_of_module(self, des, path, routing, service, sim):
         period = deterministic_distribution(self.period, name="Deterministic")
-        pm = PolicyManager(des, service, self.common_rules, self.service_rule_profile, self.path_csv_files, self, self.render,self.radius,self.reversepath)
+        pm = PolicyManager(des, service, self.common_rules, self.service_rule_profile, self.path_csv_files, self, self.render,self.radius,self.reversepath,self.iteration)
 
         # Performance tip: it avoids an huge load of useless samples
         number_of_lines = 0
