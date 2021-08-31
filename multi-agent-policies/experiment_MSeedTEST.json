@@ -1,0 +1,10 @@
+[
+   {
+    "code": "FOG_Medium_SEED",
+    "scenario":"Medium_Model_FOP",
+    "policy":"am_noadapt.pl",
+    "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
+  }
+]

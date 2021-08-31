@@ -204,6 +204,7 @@ class NodeManager():
                             neighbours.add(nodeManagerId)
 
                             operators = []
+                            counter_of_instances = 0
                             for n in neighbours:
                                 modules = sim.get_modules_from_node(n)
                                 for desOnThatNode in modules.keys():
@@ -219,11 +220,15 @@ class NodeManager():
                                     if n == nodeManagerId:
                                         rules.and_rule("serviceInstance", "s%i" % desOnThatNode, appname_label,
                                                        message_level, "self")
+                                        counter_of_instances+=1
                                     else:
                                         rules.and_rule("serviceInstance", "s%i" % desOnThatNode, appname_label,
                                                        message_level, "n%i" % n)
+                                        counter_of_instances += 1
 
-
+                            if counter_of_instances == 0:
+                                self.logger.critical("Node %i has not instances"%nodeManagerId )
+                                self.logger.critical("!!")
                             ####
                             # S.0.2b
                             # Generate Operator facts
@@ -307,7 +312,8 @@ class NodeManager():
                             # S.1 - Running Prolog Model
                             #
                             ##
-                            action = self.run_prolog_model(rules, serviceId, nodeManagerId, self.path_results, sim,appname)
+                            if counter_of_instances >0:
+                                action = self.run_prolog_model(rules, serviceId, nodeManagerId, self.path_results, sim,appname)
 
                             # print("Actions debugging by NodeManager %i - Time: %i "%(nodeManagerId,sim.env.now))
                             # print("Raw action from prolog:")
@@ -315,136 +321,135 @@ class NodeManager():
                             # print("*"*10)
 
 
-                            ##
-                            #
-                            # S.2 - Performing ACTION
-                            #
-                            ##
-                            type = action[0]
+                                ##
+                                #
+                                # S.2 - Performing ACTION
+                                #
+                                ##
+                                type = action[0]
 
-                            if type == "accept":
-                                oper = action[1]
-                                service = action[2]
+                                if type == "accept":
+                                    oper = action[1]
+                                    service = action[2]
 
-                                service = int(service.replace("s", ""))
+                                    service = int(service.replace("s", ""))
 
-                                if oper == "adapt":
+                                    if oper == "adapt":
+                                        level = action[3]
+                                        levelOnNode = sim.alloc_level[service]
+                                    else:
+                                        levelOnNode =""
+
+
+
+
+                                    assert oper == operation[0], "Actions are different in NodeManager"
+                                    assert service == serviceId, "ServiceId (DES) should be equals in NodeManager"
+                                    done = self.prepare_perform_action(sim, routing, path, service_name, serviceId, oper, fromNode,nodeManagerId,level,"Accept")
+                                    if done: #it should be done
+                                        clean_routing_cache = (clean_routing_cache != True)
+                                        self.logger.debug("Action %s taken on NodeManager %s." % (oper, nodeManagerId))
+                                        counter_actions[oper] += 1
+                                        self.log_specific_actions.write("%i,%i,%i,%i,%s,%s,%s,%s\n" % (
+                                            nodeManagerId, serviceId, self.get_app_identifier(service_name), sim.env.now, oper, levelOnNode,level,"Accept"))
+
+                                if type == "reject":
+                                    # print(action)
+                                    # print(operation)
+                                    oper = action[1]
+                                    counter_actions["reject"] += 1
+                                    # counter_actions[oper] += 1
+                                    self.logger.warning("Action %s taken on NodeManager %s. REJECTED " % (oper, nodeManagerId))
+                                    self.log_specific_actions.write("%i,%i,%i,%i,%s,%s,%s,%s\n" % (nodeManagerId, serviceId, self.get_app_identifier(service_name), sim.env.now, oper,"", level, "Reject"))
+
+                                if type == "shrinkANDaccept":
+                                    # result = ["shrinkANDaccept", it[1], it[2], it[3], it[6], it[10]]
+                                    #  [shrinkANDaccept, migrate, s53, medium, s55,  small),
+                                    oper = action[1]
+                                    service = int(action[2].replace("s", ""))
                                     level = action[3]
-                                    levelOnNode = sim.alloc_level[service]
-                                else:
-                                    levelOnNode =""
+
+                                    service_to_shrink = int(action[4].replace("s", ""))
+                                    old_level = sim.alloc_level[service_to_shrink]
+                                    level_to_shrink = action[5]
+                                    service_name_to_evict = sim.get_module(service_to_shrink)
+
+                                    #Two actions shrink and migrate
+                                    self.logger.debug("Action %s taken on NodeManager %s." % ("shrink", nodeManagerId))
+                                    done = self.prepare_perform_action(sim, routing, path, service_name_to_evict, service_to_shrink,
+                                                                       "adapt", nodeManagerId, nodeManagerId, level_to_shrink, "Accept",infotype="shrinkANDaccept_1")
+                                    counter_actions["shrink"] += 1
+                                    self.log_specific_actions.write("%i,%i,%i,%i,%s,%s,%s,%s\n" % (
+                                        nodeManagerId, service_to_shrink, self.get_app_identifier(service_name_to_evict), sim.env.now,
+                                        "shrink", old_level,level,"Accept-1"))
+
+                                    self.logger.debug("\t AND Action %s taken on NodeManager %s." % (action, nodeManagerId))
+                                    done = self.prepare_perform_action(sim, routing, path, service_name, service,
+                                                                       oper, fromNode, nodeManagerId, level, "Accept",infotype="shrinkANDaccept_2")
+                                    # counter_actions[oper] += 1
+                                    self.log_specific_actions.write("%i,%i,%i,%i,%s,%s,%s,%s\n" % (
+                                        nodeManagerId, service, self.get_app_identifier(service_name), sim.env.now,
+                                        oper,"", level,"Accept-2"))
+
+                                    clean_routing_cache = (action != "reject") or (clean_routing_cache != True)
+
+                                # [(evictANDaccept,(migrate,s51,medium,2,5),s4,(medium,4,20),n3)
+                                # result = ["evictANDaccept", it[1], it[2], it[3], it[6], it[7], it[10]]
+                                #                 0               1       2    3       4      5    6
+                                if type == "evictANDaccept" :
+
+                                    oper = action[1]
+                                    service = int(action[2].replace("s",""))
+                                    level = action[3]
 
 
+                                    service_to_evict = int(action[4].replace("s",""))
+                                    old_level = sim.alloc_level[service_to_evict]
+                                    level_to_evict = action[5]
+                                    node_to_evict = int(action[6].replace("n", ""))
+                                    service_name_to_evict = sim.get_module(service_to_evict)
 
+                                    #Two actions evict and migrate
+                                    self.logger.debug("Action %s taken on NodeManager %s." % ("evict", nodeManagerId))
+                                    done = self.prepare_perform_action(sim, routing, path, service_name_to_evict, service_to_evict,
+                                                                       "migrate", nodeManagerId, node_to_evict , level_to_evict, "Accept",infotype="evictAndAccept_1")
+                                    counter_actions["evict"] += 1
+                                    self.log_specific_actions.write("%i,%i,%i,%i,%s,%s,%s,%s\n" % (
+                                        nodeManagerId, service_to_evict, self.get_app_identifier(service_name_to_evict), sim.env.now,
+                                        "evict",old_level, level_to_evict,"Accept-1"))
 
-                                assert oper == operation[0], "Actions are different in NodeManager"
-                                assert service == serviceId, "ServiceId (DES) should be equals in NodeManager"
-                                done = self.prepare_perform_action(sim, routing, path, service_name, serviceId, oper, fromNode,nodeManagerId,level,"Accept")
-                                if done: #it should be done
+                                    self.logger.debug("\t AND Action %s taken on NodeManager %s." % (action, nodeManagerId))
+                                    done = self.prepare_perform_action(sim, routing, path, service_name, service,
+                                                                       oper, fromNode, nodeManagerId, level, "Accept",infotype="evictAndAccept_2")
+                                    # counter_actions[oper] += 1
+                                    self.log_specific_actions.write("%i,%i,%i,%i,%s,%s,%s,%s\n" % (
+                                        nodeManagerId, service, self.get_app_identifier(service_name), sim.env.now,
+                                        oper, "", level,"Accept-2"))
+
+                                    clean_routing_cache = (clean_routing_cache != True)
+
+                                if type == "shrinkNewComerANDaccept":
+
+                                    sim.print_debug_assignaments()
+
+                                    oper = action[1]
+                                    service = int(action[2].replace("s", ""))
+                                    level = action[3]
+                                    service_name = sim.get_module(service)
+                                    old_level = sim.alloc_level[service]
+                                    counter_actions["shrink"] += 1
+
+                                    done = self.prepare_perform_action(sim, routing, path, service_name, service, oper, fromNode,
+                                                                       nodeManagerId, level, "Accept-shrink")
+
                                     clean_routing_cache = (clean_routing_cache != True)
                                     self.logger.debug("Action %s taken on NodeManager %s." % (oper, nodeManagerId))
                                     counter_actions[oper] += 1
                                     self.log_specific_actions.write("%i,%i,%i,%i,%s,%s,%s,%s\n" % (
-                                        nodeManagerId, serviceId, self.get_app_identifier(service_name), sim.env.now, oper, levelOnNode,level,"Accept"))
+                                            nodeManagerId, serviceId, self.get_app_identifier(service_name), sim.env.now, oper,
+                                            old_level, level, "Accept-shrink"))
 
-                            if type == "reject":
-                                # print(action)
-                                # print(operation)
-                                oper = action[1]
-                                counter_actions["reject"] += 1
-                                # counter_actions[oper] += 1
-                                self.logger.warning("Action %s taken on NodeManager %s. REJECTED " % (oper, nodeManagerId))
-                                self.log_specific_actions.write("%i,%i,%i,%i,%s,%s,%s,%s\n" % (nodeManagerId, serviceId, self.get_app_identifier(service_name), sim.env.now, oper,"", level, "Reject"))
-
-                            if type == "shrinkANDaccept":
-                                # result = ["shrinkANDaccept", it[1], it[2], it[3], it[6], it[10]]
-                                #  [shrinkANDaccept, migrate, s53, medium, s55,  small),
-                                oper = action[1]
-                                service = int(action[2].replace("s", ""))
-                                level = action[3]
-
-                                service_to_shrink = int(action[4].replace("s", ""))
-                                old_level = sim.alloc_level[service_to_shrink]
-                                level_to_shrink = action[5]
-                                service_name_to_evict = sim.get_module(service_to_shrink)
-
-                                #Two actions shrink and migrate
-                                self.logger.debug("Action %s taken on NodeManager %s." % ("shrink", nodeManagerId))
-                                done = self.prepare_perform_action(sim, routing, path, service_name_to_evict, service_to_shrink,
-                                                                   "adapt", nodeManagerId, nodeManagerId, level_to_shrink, "Accept",infotype="shrinkANDaccept_1")
-                                counter_actions["shrink"] += 1
-                                self.log_specific_actions.write("%i,%i,%i,%i,%s,%s,%s,%s\n" % (
-                                    nodeManagerId, service_to_shrink, self.get_app_identifier(service_name_to_evict), sim.env.now,
-                                    "shrink", old_level,level,"Accept-1"))
-
-                                self.logger.debug("\t AND Action %s taken on NodeManager %s." % (action, nodeManagerId))
-                                done = self.prepare_perform_action(sim, routing, path, service_name, service,
-                                                                   oper, fromNode, nodeManagerId, level, "Accept",infotype="shrinkANDaccept_2")
-                                # counter_actions[oper] += 1
-                                self.log_specific_actions.write("%i,%i,%i,%i,%s,%s,%s,%s\n" % (
-                                    nodeManagerId, service, self.get_app_identifier(service_name), sim.env.now,
-                                    oper,"", level,"Accept-2"))
-
-                                clean_routing_cache = (action != "reject") or (clean_routing_cache != True)
-
-                            # [(evictANDaccept,(migrate,s51,medium,2,5),s4,(medium,4,20),n3)
-                            # result = ["evictANDaccept", it[1], it[2], it[3], it[6], it[7], it[10]]
-                            #                 0               1       2    3       4      5    6
-                            if type == "evictANDaccept" :
-
-                                oper = action[1]
-                                service = int(action[2].replace("s",""))
-                                level = action[3]
-
-
-                                service_to_evict = int(action[4].replace("s",""))
-                                old_level = sim.alloc_level[service_to_evict]
-                                level_to_evict = action[5]
-                                node_to_evict = int(action[6].replace("n", ""))
-                                service_name_to_evict = sim.get_module(service_to_evict)
-
-                                #Two actions evict and migrate
-                                self.logger.debug("Action %s taken on NodeManager %s." % ("evict", nodeManagerId))
-                                done = self.prepare_perform_action(sim, routing, path, service_name_to_evict, service_to_evict,
-                                                                   "migrate", nodeManagerId, node_to_evict , level_to_evict, "Accept",infotype="evictAndAccept_1")
-                                counter_actions["evict"] += 1
-                                self.log_specific_actions.write("%i,%i,%i,%i,%s,%s,%s,%s\n" % (
-                                    nodeManagerId, service_to_evict, self.get_app_identifier(service_name_to_evict), sim.env.now,
-                                    "evict",old_level, level_to_evict,"Accept-1"))
-
-                                self.logger.debug("\t AND Action %s taken on NodeManager %s." % (action, nodeManagerId))
-                                done = self.prepare_perform_action(sim, routing, path, service_name, service,
-                                                                   oper, fromNode, nodeManagerId, level, "Accept",infotype="evictAndAccept_2")
-                                # counter_actions[oper] += 1
-                                self.log_specific_actions.write("%i,%i,%i,%i,%s,%s,%s,%s\n" % (
-                                    nodeManagerId, service, self.get_app_identifier(service_name), sim.env.now,
-                                    oper, "", level,"Accept-2"))
-
-                                clean_routing_cache = (clean_routing_cache != True)
-
-                            if type == "shrinkNewComerANDaccept":
-
-                                sim.print_debug_assignaments()
-
-                                oper = action[1]
-                                service = int(action[2].replace("s", ""))
-                                level = action[3]
-                                service_name = sim.get_module(service)
-                                old_level = sim.alloc_level[service]
-                                counter_actions["shrink"] += 1
-
-                                done = self.prepare_perform_action(sim, routing, path, service_name, service, oper, fromNode,
-                                                                   nodeManagerId, level, "Accept-shrink")
-
-                                clean_routing_cache = (clean_routing_cache != True)
-                                self.logger.debug("Action %s taken on NodeManager %s." % (oper, nodeManagerId))
-                                counter_actions[oper] += 1
-                                self.log_specific_actions.write("%i,%i,%i,%i,%s,%s,%s,%s\n" % (
-                                        nodeManagerId, serviceId, self.get_app_identifier(service_name), sim.env.now, oper,
-                                        old_level, level, "Accept-shrink"))
-
-
-                        # End-for actions from NodeManager with the serviceID
+                            # End-for actions from NodeManager with the serviceID
 
                         # End-for. Managed all operations in memory of the NodeManager.
                         self.load_samples_from[nodeManagerId] += offset   # avoid header

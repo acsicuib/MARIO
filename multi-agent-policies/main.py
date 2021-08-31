@@ -273,6 +273,7 @@ if __name__ == '__main__':
     # print(os.getcwd())
 
     fileName = "experiment_MSeed.json"
+    fileName = "experiment_MSeedTEST.json" #TODO
     with open(fileName) as f:
         experiments = json.load(f)
 
@@ -310,6 +311,7 @@ if __name__ == '__main__':
         print("Generating RESULTS at: %s " % temporal_folder)
 
         for iteration in range(nSimulations):
+            iteration = 1
             random.seed(iteration)
             np.random.seed(iteration)
             print("Perform simulation...")
