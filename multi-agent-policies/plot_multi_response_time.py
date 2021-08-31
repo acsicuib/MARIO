@@ -28,9 +28,10 @@ def run(fileName,renderPlot=False):
     with open(fileName) as f:
         experiments = json.load(f)
 
-    response_results = collections.defaultdict(list)
+
 
     for item in experiments:
+            response_results = collections.defaultdict(list)
         # try:
             # item = experiments[0]
             # print(item)
