@@ -199,7 +199,8 @@ def main(number_simulation_steps,
                   radius = radius,
                   reversepath = reversepath,
                   nm_policy = nm_policy,
-                  static_behaviour= static_behaviour
+                  static_behaviour= static_behaviour,
+                     iteration = it
                   )
 
     s.deploy_monitor("App-Operator", nM, time_activation,
@@ -217,7 +218,7 @@ def main(number_simulation_steps,
 
     dStart = deterministicDistributionStartPoint(0, time_in_each_step, name="Deterministic")
 
-    record_movements = open(temporal_folder+"/movements.csv","w")
+    record_movements = open(temporal_folder+"/movements_%i.csv"%it,"w")
     record_movements.write("app,DES,time,nodeSRC,nodeDST\n")
     evol = UserControlMovement(
                         experiment_path = experiment_path,
@@ -271,7 +272,7 @@ if __name__ == '__main__':
     # import os
     # print(os.getcwd())
 
-    fileName = "experiment_ML.json"
+    fileName = "experiment_MSeed.json"
     with open(fileName) as f:
         experiments = json.load(f)
 
@@ -308,7 +309,6 @@ if __name__ == '__main__':
 
         print("Generating RESULTS at: %s " % temporal_folder)
 
-
         for iteration in range(nSimulations):
             random.seed(iteration)
             np.random.seed(iteration)
@@ -339,27 +339,28 @@ if __name__ == '__main__':
 
 
     #end for experiments
-    try:
-        import plot_actions
-        plot_actions.run(fileName)
-    except:
-        print("Problems generating actions runs")
+
+    # try:
+    #     import plot_actions
+    #     plot_actions.run(fileName)
+    # except:
+    #     print("Problems generating actions runs")
+    #
+    # try:
+    #     import plot_averageActionType
+    #     plot_averageActionType.run(fileName)
+    # except:
+    #     print("Problems generating plot_averageActionType")
 
     try:
-        import plot_averageActionType
-        plot_averageActionType.run(fileName)
-    except:
-        print("Problems generating plot_averageActionType")
-
-    try:
-        import plot_response_time
-        plot_response_time.run(fileName)
+        import plot_multi_response_time
+        plot_multi_response_time.run(fileName)
     except:
         print("Problems generating response ")
 
     try:
-        import plot_totalrequests
-        plot_totalrequests.run(fileName)
+        import plot_multi_totalrequests
+        plot_multi_totalrequests.run(fileName)
     except:
         print("Problems generating totalrequest")
 

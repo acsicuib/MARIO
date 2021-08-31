@@ -25,7 +25,7 @@ DEBUG_TEXT_ON_RENDER = False
 class NodeManager():
 
     def __init__(self, common_rules, service_rule_profile, path_csv_files, app_number, period, render, path_results, cloud_node, window_agent_size,
-                    radius,reversepath,nm_policy,static_behaviour):
+                    radius,reversepath,nm_policy,static_behaviour,iteration):
         self.create_initial_services = True
         self.logger = logging.getLogger(__name__)
         self.memory = defaultdict(list)
@@ -68,6 +68,7 @@ class NodeManager():
         self.nm_policy = nm_policy
         self.static_behaviour = static_behaviour
 
+        self.iteration = iteration
     def close(self):
         self.log_agg_operation_NM.close()
         self.log_specific_actions.close()
@@ -103,12 +104,12 @@ class NodeManager():
                         self.create_monitor_of_module(des, path, routing, service, sim)
             self.create_initial_services = False #only one time
 
-            self.log_agg_operation_NM = open(self.path_results + "agg_operations_NM.csv", 'w')
+            self.log_agg_operation_NM = open(self.path_results + "agg_operations_NM_%i.csv"%self.iteration, 'w')
             self.log_agg_operation_NM.write("time," + str(",".join(list_of_operations)) + ",DES,app,nodeManager\n")
 
                 # "time,undeploy,nop,migrate,replicate,none,shrink,expand,DES,app\n")
 
-            self.log_specific_actions = open(self.path_results + "specific_actions.csv", 'w')
+            self.log_specific_actions = open(self.path_results + "specific_actions_%i.csv"%self.iteration, 'w')
             self.log_specific_actions.write("NM,Service,App,Time,Action,OldLevel,NewLevel,Status\n")
 
             # Initial snapshot for debugging issues

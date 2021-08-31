@@ -1,0 +1,10 @@
+[
+  {
+    "code": "CLOUD_Medium_SEED",
+    "scenario":"Medium_Model_Cloud",
+    "policy":"am.pl",
+    "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
+  }
+]
