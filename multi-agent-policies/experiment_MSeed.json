@@ -1,9 +1,33 @@
 [
+   {
+    "code": "FOG_Medium_SEED",
+    "scenario":"Medium_Model_FOP",
+    "policy":"am_noadapt.pl",
+    "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
   {
-    "code": "CLOUD_Medium_SEED",
-    "scenario":"Medium_Model_Cloud",
+    "code": "OSMOTIC_Medium_SEED",
+    "scenario":"Medium_Model_FOP",
     "policy":"am.pl",
     "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
+  {
+    "code": "EDGE_Medium_SEED",
+    "scenario":"Medium_Model_Edge",
+    "policy":"am.pl",
+    "n_policy": "nm.pl",
+    "radius": 1,
+    "reversepath": 1
+  },
+   {
+    "code": "PROFILED_Medium_SEED",
+    "scenario":"Medium_Model_FOP",
+    "policy":"am.pl",
+    "n_policy": "nm_withProfiles.pl",
     "radius": 1,
     "reversepath": 1
   }

@@ -44,16 +44,16 @@ enviroment folder
 
 ```bash
 policies folder
-├── am.py
-├── am_noadapt.py
-├── nm.py
-├── nm_withProfiles.py
+├── am.pl
+├── am_noadapt.pl
+├── nm.pl
+├── nm_withProfiles.pl
 ```
 
-- am.py Application manager rules
-- am_noadapt.py another application manager rules
-- nm.py Node manager rules
-- nm_withProfiles.py another node manager rules.
+- am.pl Application manager rules
+- am_noadapt.pl another application manager rules
+- nm.pl Node manager rules
+- nm_withProfiles.pl another node manager rules.
 
 # Scenario definition
 
