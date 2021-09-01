@@ -42,9 +42,10 @@ class UserControlMovement:
 
         if self.type_scenario == "B":
             if self.probability_matriz == {}:
+                #NOTE last column is the probability to go out check function "get_node"
                 self.probability_matriz[1] = [  ## AKA USERS - TEACHERS
                     [0.3, 0.6, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0],
-                    [0.2, 0.4, 0.3, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0],
+                    [0.2, 0.4, 0.3, 0.1, 0.0, 0.0, 0.0, 0.0, 0],
                     [0.0, 0.15, 0.5, 0.15, 0.0, 0.2, 0.0, 0.0, 0],
                     [0.0, 0.0, 0.4, 0.4, 0.2, 0.0, 0.0, 0.0, 0],
                     [0.0, 0.0, 0.1, 0.5, 0.4, 0.0, 0.0, 0.0, 0],
@@ -54,7 +55,7 @@ class UserControlMovement:
                 ]
                 ## AKA USERS - Students
                 self.probability_matriz[2] = [
-                    [0.46, 0.44, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, .0],
+                    [0.46, 0.44, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0],
                     [0.3, 0.4, 0.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0],
                     [0.0, 0.1, 0.6, 0.1, 0.0, 0.2, 0.0, 0.0, 0],
                     [0.0, 0.0, 0.1, 0.5, 0.2, 0.2, 0.0, 0.0, 0],
@@ -109,7 +110,9 @@ class UserControlMovement:
         :return:
         """
         if self.type_scenario=="B":
-            probabilities = list(self.probability_matriz[app][pos_node])
+            #NOTE edgeNodes goes from: 6..13 to 0..7
+            matrix_pos = pos_node-6
+            probabilities = list(self.probability_matriz[app][matrix_pos])
             toNode =  np.random.choice(self.edgeNodes+[-1],1,p=probabilities)[0]
             return toNode
         else:
