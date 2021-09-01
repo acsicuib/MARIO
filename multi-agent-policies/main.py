@@ -92,10 +92,12 @@ def main(number_simulation_steps,
         edgeNodes = np.concatenate((np.arange(6, 14),np.arange(101, 106), np.arange(124, 136), np.arange(124, 136), np.arange(158, 170),
                                    np.arange(180, 186),np.arange(191, 193),np.arange(406, 414),np.arange(201, 206),np.arange(224, 236),
                                    np.arange(224, 236), np.arange(258, 270), np.arange(280, 286), np.arange(291, 293)))
-
-    if config.get('simulation', 'typeScenario')=="M":
+    elif config.get('simulation', 'typeScenario')=="M":
         edgeNodes = np.concatenate((np.arange(6, 14),np.arange(101, 106), np.arange(124, 136), np.arange(124, 136), np.arange(158, 170),
                                    np.arange(180, 186),np.arange(191, 193)))
+
+    else: #small scenario
+        edgeNodes = np.array([6,7,8,9,10,11,12,13])
 
     # print(edgeNodes)
     #
