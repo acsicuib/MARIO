@@ -274,9 +274,10 @@ if __name__ == '__main__':
     # import os
     # print(os.getcwd())
 
-    fileName = "experiment_SSeed.json"
+    # fileName = "experiment_SSeed.json"
     # fileName = "experiment_LSeed.json"
     # fileName = "experiment_MSeedTEST.json"
+    fileName = "experiment_SSeed_1ms.json"
     with open(fileName) as f:
         experiments = json.load(f)
 
@@ -313,29 +314,29 @@ if __name__ == '__main__':
 
         print("Generating RESULTS at: %s " % temporal_folder)
 
-        # for iteration in range(nSimulations):
-        #     # iteration = 1 #TODO test bugs
-        #     random.seed(iteration)
-        #     np.random.seed(iteration)
-        #     print("Perform simulation...")
-        #     start_time = time.time()
-        #     main(number_simulation_steps=number_simulation_steps,
-        #          time_in_each_step=time_in_each_step,
-        #          experiment_path=experiment_path,
-        #          conf_folder="configuration/",
-        #          temporal_folder=temporal_folder,
-        #          case=name,
-        #          config=config,
-        #          doExecutionVideo=True,  # expensive task
-        #          it=iteration,
-        #          id_cloud_node = id_cloud_node,
-        #          radius=radius,
-        #          reversepath=reversepath,
-        #          policy_file=policy,
-        #          nm_policy = nm_policy
-        #          )
-        #
-        #     print("\n--- %s seconds ---" % (time.time() - start_time))
+        for iteration in range(nSimulations):
+            # iteration = 1 #TODO test bugs
+            random.seed(iteration)
+            np.random.seed(iteration)
+            print("Perform simulation...")
+            start_time = time.time()
+            main(number_simulation_steps=number_simulation_steps,
+                 time_in_each_step=time_in_each_step,
+                 experiment_path=experiment_path,
+                 conf_folder="configuration/",
+                 temporal_folder=temporal_folder,
+                 case=name,
+                 config=config,
+                 doExecutionVideo=True,  # expensive task
+                 it=iteration,
+                 id_cloud_node = id_cloud_node,
+                 radius=radius,
+                 reversepath=reversepath,
+                 policy_file=policy,
+                 nm_policy = nm_policy
+                 )
+
+            print("\n--- %s seconds ---" % (time.time() - start_time))
 
             # try:
             #     os.system("ffmpeg -r 1 -i %simages/network_%%05d.png -c:v libx264 -vf fps=1 -pix_fmt yuv420p %svideo_%s.mp4"%(temporal_folder,temporal_folder,code))

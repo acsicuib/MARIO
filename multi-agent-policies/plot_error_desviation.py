@@ -59,5 +59,5 @@ def run(fileName,renderPlot=False):
     print("STD value %f"%val.std())    
     
 if __name__ == '__main__':
-    run(fileName="experiment_LSeed.json")
+    run(fileName="experiment_MSeed.json")
     print("Done")
