@@ -18,8 +18,6 @@ def run(fileName,renderPlot=False):
     with open(fileName) as f:
         experiments = json.load(f)
 
-
-
     allErrorValues = []
     for item in experiments:
             response_results = collections.defaultdict(list)
@@ -59,5 +57,5 @@ def run(fileName,renderPlot=False):
     print("STD value %f"%val.std())    
     
 if __name__ == '__main__':
-    run(fileName="experiment_MSeed.json")
+    run(fileName="experiment_SSeed.json")
     print("Done")

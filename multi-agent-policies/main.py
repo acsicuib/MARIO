@@ -281,7 +281,7 @@ if __name__ == '__main__':
     # fileName = "experiment_MSeedTEST.json"
     # fileName = "experiment_SSeed_1ms.json"
     # fileName = "experiment_LSeed_v2.json"
-    fileName = "experiment_SSeed.json"
+    fileName = "experiment_ML.json"
     with open(fileName) as f:
         experiments = json.load(f)
 
