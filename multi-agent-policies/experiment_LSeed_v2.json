@@ -1,0 +1,10 @@
+[
+  {
+    "code": "Drone_FOG_SEED_v2",
+    "scenario":"Large_Model_FOP",
+    "policy":"am_noadapt_v2.pl",
+    "n_policy": "nm_noadapt_v2.pl",
+    "radius": 1,
+    "reversepath": 1
+  }
+]
