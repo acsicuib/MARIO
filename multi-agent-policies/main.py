@@ -274,11 +274,14 @@ if __name__ == '__main__':
     # import os
     # print(os.getcwd())
 
+    #TODO get the last updated file from json file
+
     # fileName = "experiment_SSeed.json"
     # fileName = "experiment_LSeed.json"
     # fileName = "experiment_MSeedTEST.json"
     # fileName = "experiment_SSeed_1ms.json"
-    fileName = "experiment_LSeed_v2.json"
+    # fileName = "experiment_LSeed_v2.json"
+    fileName = "experiment_SSeed.json"
     with open(fileName) as f:
         experiments = json.load(f)
 

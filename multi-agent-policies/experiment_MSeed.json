@@ -2,8 +2,8 @@
   {
     "code": "CLOUD_Medium_SEED",
     "scenario":"Medium_Model_Cloud",
-    "policy":"am.pl",
-    "n_policy": "nm.pl",
+    "policy":"am_v2.pl",
+    "n_policy": "nm_v2.pl",
     "radius": 1,
     "reversepath": 1
   },
@@ -11,32 +11,32 @@
    {
     "code": "FOG_Medium_SEED",
     "scenario":"Medium_Model_FOP",
-    "policy":"am_noadapt.pl",
-    "n_policy": "nm.pl",
+    "policy":"am_noadapt_v2.pl",
+    "n_policy": "nm_noadapt_v2.pl",
     "radius": 1,
     "reversepath": 1
   },
   {
     "code": "OSMOTIC_Medium_SEED",
     "scenario":"Medium_Model_FOP",
-    "policy":"am.pl",
-    "n_policy": "nm.pl",
+    "policy":"am_v2.pl",
+    "n_policy": "nm_v2.pl",
     "radius": 1,
     "reversepath": 1
   },
   {
     "code": "EDGE_Medium_SEED",
     "scenario":"Medium_Model_Edge",
-    "policy":"am.pl",
-    "n_policy": "nm.pl",
+    "policy":"am_v2.pl",
+    "n_policy": "nm_v2.pl",
     "radius": 1,
     "reversepath": 1
   },
    {
     "code": "PROFILED_Medium_SEED",
     "scenario":"Medium_Model_FOP",
-    "policy":"am.pl",
-    "n_policy": "nm_withProfiles.pl",
+    "policy":"am_v2.pl",
+    "n_policy": "nm_withProfiles_v2.pl",
     "radius": 1,
     "reversepath": 1
   }

@@ -2,40 +2,40 @@
     {
     "code": "SMALL_FOG_SEED",
     "scenario":"Small_Model_FOP",
-    "policy":"am_noadapt.pl",
-    "n_policy": "nm.pl",
+    "policy":"am_noadapt_v2.pl",
+    "n_policy": "nm_noadapt_v2.pl",
     "radius": 1,
     "reversepath": 1
   },
   {
     "code": "SMALL_OSMOTIC_SEED",
     "scenario":"Small_Model_FOP",
-    "policy":"am.pl",
-    "n_policy": "nm.pl",
+    "policy":"am_v2.pl",
+    "n_policy": "nm_v2.pl",
     "radius": 1,
     "reversepath": 1
   },
   {
     "code": "SMALL_CLOUD_SEED",
     "scenario":"Small_Model_Cloud",
-    "policy":"am.pl",
-    "n_policy": "nm.pl",
+    "policy":"am_v2.pl",
+    "n_policy": "nm_v2.pl",
     "radius": 1,
     "reversepath": 1
   },
   {
     "code": "SMALL_EDGE_SEED",
     "scenario":"Small_Model_Edge",
-    "policy":"am.pl",
-    "n_policy": "nm.pl",
+    "policy":"am_v2.pl",
+    "n_policy": "nm_v2.pl",
     "radius": 1,
     "reversepath": 1
   },
    {
     "code": "SMALL_PROFILED_SEED",
     "scenario":"Small_Model_FOP",
-    "policy":"am.pl",
-    "n_policy": "nm_withProfiles.pl",
+    "policy":"am_v2.pl",
+    "n_policy": "nm_withProfiles_v2.pl",
     "radius": 1,
     "reversepath": 1
   }
