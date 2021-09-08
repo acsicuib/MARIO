@@ -5,7 +5,7 @@
     "HwReqs": 1,
     "MaxReqs": 5,
     "MaxLatency": 10,
-    "level": {"small":[1,5],"medium":[2,10],"large": [5,20]},
+   "level": {"small":[1,10],"medium":[2,20],"large": [5,50]},
 
     "transmission": [
       {
@@ -35,7 +35,7 @@
     "HwReqs": 1,
     "MaxReqs": 5,
     "MaxLatency": 10,
-   "level": {"small":[1,2],"medium":[2,5],"large": [3,30]},
+  "level": {"small":[1,10],"medium":[2,20],"large": [5,50]},
 
     "transmission": [
       {
