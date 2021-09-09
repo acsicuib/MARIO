@@ -320,7 +320,6 @@ if __name__ == '__main__':
         print("Generating RESULTS at: %s " % temporal_folder)
 
         for iteration in range(nSimulations):
-            # iteration = 1 #TODO test bugs
             random.seed(iteration)
             np.random.seed(iteration)
             print("Perform simulation...")
