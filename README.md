@@ -103,6 +103,19 @@ A scenario has other definitions such as topology, routing algorithm, MARIO app 
 
 The experiments in main.py are automated in experiments.json file. The results are generated in a temporal folder.
 
+# Scripting-flow
+
+The experimentation is complex due to the number of cases and measures (multiples conf. files, multiples simulations, large trace files, large number of prolog files, ...)
+Thus, in order to perform and obtain the results, the script-running flow is the next:
+- main.py. 
+- At the end of the simulation, inside the main.py, two scripts are called "plot_multi_response_time.py" and "plot_multi_totalrequests.py", both compute the average metrics.
+Generates two files: final_response_stats_%code.txt and final_serviceusage_stats_%s.txt. The last two columns are the average and deviation.
+- The plot_clean_outliers.py filter the simulations according with a threshold of average median deviation.
+Generates two files: clean_outliers_response__%code.txt and clean_outliers_response_%code.txt The last two columns are the average and deviation.
+- In Plot_bars.py you need to insert the last values previous txt files manually to generate Small and Medium scenario.
+- In plot_bars_for4_su and _tr.py files, idem for the Large-scale scenario. 
+
+Each script works with the experiment json file to navigate through the result folders... 
 
 # Simulation results
 

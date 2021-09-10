@@ -1,20 +1,5 @@
 [
-  {
-    "code": "Drone_FOG_SEED",
-    "scenario":"Large_Model_FOP",
-    "policy":"am_noadapt_v2.pl",
-    "n_policy": "nm_noadapt_v2.pl",
-    "radius": 1,
-    "reversepath": 1
-  },
-  {
-    "code": "Drone_OSMOTIC_SEED",
-    "scenario":"Large_Model_FOP",
-    "policy":"am_v2.pl",
-    "n_policy": "nm_v2.pl",
-    "radius": 1,
-    "reversepath": 1
-  },
+
   {
     "code": "Drone_CLOUD_SEED",
     "scenario":"Large_Model_Cloud",
@@ -30,13 +15,6 @@
     "n_policy": "nm_v2.pl",
     "radius": 1,
     "reversepath": 1
-  },
-   {
-    "code": "Drone_PROFILED_SEED",
-    "scenario":"Large_Model_FOP",
-    "policy":"am_v2.pl",
-    "n_policy": "nm_withProfiles_v2.pl",
-    "radius": 1,
-    "reversepath": 1
   }
+
 ]
