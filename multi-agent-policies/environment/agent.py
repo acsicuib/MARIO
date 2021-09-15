@@ -255,8 +255,6 @@ class PolicyManager():
             cmd = ["swipl", model_file, str(serviceID)]
             p = Popen(cmd, stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(timeout=10)
-
-
             expr = stdout.decode("utf-8")
             expr = expr.replace("\n","")
             it = iter("".join(c for c in expr if c not in "()[] ").split(","))
