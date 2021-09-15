@@ -363,4 +363,7 @@ ffmpeg -framerate 10 -i multi-agent-policies/scenarios/TaxiRome/results_P12_2020
 # The next lines are for me, sorry - copypsaste
 rsync -rav -e ssh --include '*.txt' --include '*.csv' --include='*.mp4' --include="*.pdf" --exclude='*.*' --exclude='images/*.pdf' isaac@cloudlab:/home/isaac/projects/MARIO_GRID_vMajorRev/multi-agent-policies/scenarios/TaxiRome/ \  
 
+
+
+rsync -rav -e ssh --include '*.txt' --exclude '*.csv' --include='*.mp4' --include="*.pdf" --exclude='*.*' --exclude='images/*.pdf' isaac@cloudlab:/home/isaac/projects/MARIO_GRID_vOriginal/multi-agent-policies/scenarios/TaxiRome/ TaxiRome2/
 ```

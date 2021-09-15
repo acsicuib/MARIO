@@ -41,9 +41,15 @@ def computeAndPlot(movements, nopers, name):
     fig.savefig(name, dpi=400)
     plt.close()
 
-def run(datestamp):
+#test
+def run(datestamp = "20201124"):
     with open("experiments.json") as f:
+        for i in range(10):
+            print(i)
+        print(datestamp+"  ")
+        l = [0,1]
         experiments = json.load(f)
+
 
     for item in experiments:
         try:

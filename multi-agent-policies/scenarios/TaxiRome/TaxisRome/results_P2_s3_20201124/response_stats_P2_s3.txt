@@ -1,0 +1,587 @@
+
+App: 1
+	 on service: 11
+	 on node: ['n3lt4ln4' 'n3lt5ln4' 'n3lt5ln5']
+	 total requests: 1299
+AVG 6.037729
+MIN 6.010000
+MAX 9.010000
+STD 0.287116
+	 average response: 6
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 1
+	 on service: 25
+	 on node: ['n3lt6ln5' 'n3lt7ln5' 'n3lt7ln6']
+	 total requests: 1299
+AVG 13.254919
+MIN 9.010000
+MAX 27.020000
+STD 2.750067
+	 average response: 13
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 1
+	 on service: 32
+	 on node: ['n3lt2ln2' 'n3lt3ln2' 'n3lt4ln2']
+	 total requests: 1299
+AVG 23.934557
+MIN 9.010000
+MAX 197.010000
+STD 16.079292
+	 average response: 23
+	 total successful requests: 1285.000000
+	     % successful requests: 0.99
+App: 1
+	 on service: 33
+	 on node: ['n3lt2ln3' 'n3lt3ln3' 'n3lt3ln4']
+	 total requests: 1299
+AVG 23.923487
+MIN 9.010000
+MAX 188.010000
+STD 15.314534
+	 average response: 23
+	 total successful requests: 1287.000000
+	     % successful requests: 0.99
+App: 1
+	 on service: 35
+	 on node: ['n3lt1ln2']
+	 total requests: 1299
+AVG 18.615212
+MIN 12.010000
+MAX 191.010000
+STD 15.049531
+	 average response: 18
+	 total successful requests: 1285.000000
+	     % successful requests: 0.99
+App: 1
+	 on service: 40
+	 on node: ['n3lt7ln7']
+	 total requests: 1299
+AVG 14.987714
+MIN 9.010000
+MAX 33.020000
+STD 4.194469
+	 average response: 14
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 1
+	 on service: 52
+	 on node: ['n3lt7ln2' 'n3lt7ln3' 'n3lt7ln4']
+	 total requests: 1299
+AVG 13.323780
+MIN 12.010000
+MAX 36.020000
+STD 3.043312
+	 average response: 13
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 1
+	 on service: 54
+	 on node: ['n3lt0ln0']
+	 total requests: 1299
+AVG 15.486913
+MIN 12.010000
+MAX 182.010000
+STD 13.998065
+	 average response: 15
+	 total successful requests: 1287.000000
+	     % successful requests: 0.99
+App: 1
+	 on service: 55
+	 on node: ['n3lt7ln0' 'n3lt7ln1' 'n3lt7ln2']
+	 total requests: 1299
+AVG 14.403095
+MIN 9.010000
+MAX 18.010000
+STD 2.462685
+	 average response: 14
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 2
+	 on service: 14
+	 on node: ['n3lt2ln4' 'n3lt2ln5' 'n3lt3ln3' 'n3lt3ln4']
+	 total requests: 1299
+AVG 6.010008
+MIN 6.010000
+MAX 6.020000
+STD 0.000277
+	 average response: 6
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 2
+	 on service: 20
+	 on node: ['n3lt3ln2']
+	 total requests: 1299
+AVG 18.526336
+MIN 9.010000
+MAX 176.010000
+STD 13.045268
+	 average response: 18
+	 total successful requests: 1287.000000
+	     % successful requests: 0.99
+App: 2
+	 on service: 22
+	 on node: ['n3lt1ln2' 'n3lt1ln3' 'n3lt2ln3']
+	 total requests: 1299
+AVG 14.652417
+MIN 9.010000
+MAX 179.010000
+STD 14.951331
+	 average response: 14
+	 total successful requests: 1287.000000
+	     % successful requests: 0.99
+App: 2
+	 on service: 24
+	 on node: ['n3lt3ln3']
+	 total requests: 1299
+AVG 25.052071
+MIN 18.010000
+MAX 185.010000
+STD 13.385812
+	 average response: 25
+	 total successful requests: 1287.000000
+	     % successful requests: 0.99
+App: 2
+	 on service: 31
+	 on node: ['n3lt4ln3' 'n3lt5ln3' 'n3lt6ln3']
+	 total requests: 1299
+AVG 13.610092
+MIN 9.010000
+MAX 33.020000
+STD 5.747919
+	 average response: 13
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 2
+	 on service: 46
+	 on node: ['n3lt4ln3']
+	 total requests: 1299
+AVG 22.836805
+MIN 15.010000
+MAX 27.010000
+STD 3.430237
+	 average response: 22
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 3
+	 on service: 12
+	 on node: ['n3lt5ln0' 'n3lt6ln0']
+	 total requests: 1299
+AVG 6.010000
+MIN 6.010000
+MAX 6.010000
+STD 0.000000
+	 average response: 6
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 3
+	 on service: 16
+	 on node: ['n3lt2ln2']
+	 total requests: 1299
+AVG 8.838545
+MIN 6.020000
+MAX 173.010000
+STD 14.085646
+	 average response: 8
+	 total successful requests: 1288.000000
+	     % successful requests: 0.99
+App: 3
+	 on service: 18
+	 on node: ['n3lt6ln5' 'n3lt7ln5' 'n3lt7ln6']
+	 total requests: 1299
+AVG 10.587806
+MIN 9.010000
+MAX 21.010000
+STD 3.077625
+	 average response: 10
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 3
+	 on service: 23
+	 on node: ['n3lt0ln7']
+	 total requests: 1299
+AVG 8.671093
+MIN 6.020000
+MAX 9.030000
+STD 0.958257
+	 average response: 8
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 3
+	 on service: 27
+	 on node: ['n3lt1ln1' 'n3lt2ln1' 'n3lt3ln1' 'n3lt4ln1']
+	 total requests: 1299
+AVG 13.505058
+MIN 9.020000
+MAX 18.030000
+STD 3.838364
+	 average response: 13
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 3
+	 on service: 37
+	 on node: ['n3lt5ln3' 'n3lt5ln4' 'n3lt5ln5']
+	 total requests: 1299
+AVG 17.601178
+MIN 9.030000
+MAX 24.020000
+STD 4.423888
+	 average response: 17
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 3
+	 on service: 41
+	 on node: ['n3lt0ln5']
+	 total requests: 1299
+AVG 12.107937
+MIN 12.010000
+MAX 21.010000
+STD 0.879747
+	 average response: 12
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 3
+	 on service: 43
+	 on node: ['n3lt3ln2' 'n3lt3ln3' 'n3lt4ln1' 'n3lt4ln2']
+	 total requests: 1299
+AVG 22.724788
+MIN 9.030000
+MAX 33.010000
+STD 6.934347
+	 average response: 22
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 3
+	 on service: 51
+	 on node: ['n3lt3ln3' 'n3lt3ln4' 'n3lt4ln3']
+	 total requests: 1299
+AVG 26.231062
+MIN 15.010000
+MAX 33.010000
+STD 5.294625
+	 average response: 26
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 3
+	 on service: 58
+	 on node: ['n3lt7ln2' 'n3lt7ln3' 'n3lt7ln4']
+	 total requests: 1299
+AVG 18.681147
+MIN 12.020000
+MAX 27.020000
+STD 3.333011
+	 average response: 18
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 4
+	 on service: 9
+	 on node: ['n3lt0ln0' 'n3lt0ln1' 'n3lt0ln2' 'n3lt0ln3' 'n3lt0ln4']
+	 total requests: 1299
+AVG 2.056959
+MIN 1.010000
+MAX 167.010000
+STD 11.671813
+	 average response: 2
+	 total successful requests: 1292.000000
+	     % successful requests: 0.99
+App: 4
+	 on service: 10
+	 on node: ['n3lt0ln2']
+	 total requests: 1299
+AVG 2.177129
+MIN 1.010000
+MAX 170.010000
+STD 11.922352
+	 average response: 2
+	 total successful requests: 1291.000000
+	     % successful requests: 0.99
+App: 4
+	 on service: 15
+	 on node: ['n3lt5ln4' 'n3lt6ln6' 'n3lt6ln7' 'n3lt7ln7']
+	 total requests: 1299
+AVG 1.205550
+MIN 1.010000
+MAX 9.020000
+STD 0.763500
+	 average response: 1
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 4
+	 on service: 17
+	 on node: ['n3lt5ln5' 'n3lt6ln5']
+	 total requests: 1299
+AVG 1.087028
+MIN 1.010000
+MAX 12.020000
+STD 0.823267
+	 average response: 1
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 4
+	 on service: 38
+	 on node: ['n3lt2ln5' 'n3lt2ln6']
+	 total requests: 1299
+AVG 1.218637
+MIN 1.010000
+MAX 15.020000
+STD 1.547655
+	 average response: 1
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 4
+	 on service: 42
+	 on node: ['n3lt5ln6' 'n3lt5ln7' 'n3lt6ln7']
+	 total requests: 1299
+AVG 1.320423
+MIN 1.010000
+MAX 15.030000
+STD 1.119920
+	 average response: 1
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 4
+	 on service: 48
+	 on node: ['n3lt2ln3']
+	 total requests: 1299
+AVG 3.064657
+MIN 1.010000
+MAX 194.010000
+STD 14.586946
+	 average response: 3
+	 total successful requests: 1290.000000
+	     % successful requests: 0.99
+App: 4
+	 on service: 49
+	 on node: ['n3lt0ln7']
+	 total requests: 1299
+AVG 2.297929
+MIN 2.010000
+MAX 24.020000
+STD 2.334023
+	 average response: 2
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 4
+	 on service: 57
+	 on node: ['n3lt2ln3' 'n3lt3ln2' 'n3lt3ln3']
+	 total requests: 1299
+AVG 6.353341
+MIN 2.010000
+MAX 204.010000
+STD 15.516850
+	 average response: 6
+	 total successful requests: 1289.000000
+	     % successful requests: 0.99
+App: 5
+	 on service: 13
+	 on node: ['n3lt7ln2' 'n3lt7ln5']
+	 total requests: 1299
+AVG 1.160893
+MIN 1.010000
+MAX 9.020000
+STD 0.932459
+	 average response: 1
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 5
+	 on service: 19
+	 on node: ['n3lt3ln4' 'n3lt7ln4' 'n3lt7ln5']
+	 total requests: 1299
+AVG 2.148614
+MIN 1.010000
+MAX 21.010000
+STD 2.758687
+	 average response: 2
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 5
+	 on service: 21
+	 on node: ['n3lt3ln2' 'n3lt3ln3']
+	 total requests: 1299
+AVG 2.022317
+MIN 1.010000
+MAX 174.010000
+STD 8.337535
+	 average response: 2
+	 total successful requests: 1295.000000
+	     % successful requests: 1.00
+App: 5
+	 on service: 26
+	 on node: ['n3lt4ln3']
+	 total requests: 1299
+AVG 1.169400
+MIN 1.010000
+MAX 12.020000
+STD 1.261134
+	 average response: 1
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 5
+	 on service: 28
+	 on node: ['n3lt6ln3']
+	 total requests: 1298
+AVG 1.281448
+MIN 1.010000
+MAX 21.020000
+STD 2.219157
+	 average response: 1
+	 total successful requests: 1298.000000
+	     % successful requests: 1.00
+App: 5
+	 on service: 30
+	 on node: ['n3lt3ln3']
+	 total requests: 1299
+AVG 3.451008
+MIN 2.020000
+MAX 180.010000
+STD 8.655211
+	 average response: 3
+	 total successful requests: 1295.000000
+	     % successful requests: 1.00
+App: 5
+	 on service: 39
+	 on node: ['n3lt3ln2' 'n3lt3ln3']
+	 total requests: 1299
+AVG 4.780593
+MIN 3.010000
+MAX 195.010000
+STD 9.654256
+	 average response: 4
+	 total successful requests: 1294.000000
+	     % successful requests: 1.00
+App: 5
+	 on service: 44
+	 on node: ['n3lt6ln5' 'n3lt7ln4' 'n3lt7ln5']
+	 total requests: 1299
+AVG 2.793718
+MIN 1.010000
+MAX 30.010000
+STD 2.454840
+	 average response: 2
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 5
+	 on service: 47
+	 on node: ['n3lt0ln2' 'n3lt0ln3']
+	 total requests: 1299
+AVG 1.842217
+MIN 1.010000
+MAX 177.010000
+STD 8.568060
+	 average response: 1
+	 total successful requests: 1295.000000
+	     % successful requests: 1.00
+App: 5
+	 on service: 50
+	 on node: ['n3lt0ln3']
+	 total requests: 1299
+AVG 2.684365
+MIN 1.010000
+MAX 165.010000
+STD 7.679804
+	 average response: 2
+	 total successful requests: 1296.000000
+	     % successful requests: 1.00
+App: 5
+	 on service: 53
+	 on node: ['n3lt3ln3']
+	 total requests: 1299
+AVG 6.266251
+MIN 4.010000
+MAX 198.010000
+STD 9.771237
+	 average response: 6
+	 total successful requests: 1294.000000
+	     % successful requests: 1.00
+App: 6
+	 on service: 29
+	 on node: ['n3lt3ln4' 'n3lt4ln3' 'n3lt4ln4' 'n3lt5ln4']
+	 total requests: 1297
+AVG 2.317641
+MIN 1.010000
+MAX 26.010000
+STD 3.078521
+	 average response: 2
+	 total successful requests: 1297.000000
+	     % successful requests: 1.00
+App: 6
+	 on service: 34
+	 on node: ['n3lt2ln2']
+	 total requests: 1299
+AVG 2.933018
+MIN 2.010000
+MAX 183.010000
+STD 8.895399
+	 average response: 2
+	 total successful requests: 1295.000000
+	     % successful requests: 1.00
+App: 6
+	 on service: 36
+	 on node: ['n3lt0ln5' 'n3lt0ln6' 'n3lt1ln4' 'n3lt1ln5']
+	 total requests: 1299
+AVG 1.156274
+MIN 1.010000
+MAX 12.020000
+STD 1.128298
+	 average response: 1
+	 total successful requests: 1299.000000
+	     % successful requests: 1.00
+App: 6
+	 on service: 45
+	 on node: ['n3lt2ln4' 'n3lt2ln5' 'n3lt3ln3' 'n3lt3ln4']
+	 total requests: 1298
+AVG 2.555840
+MIN 1.010000
+MAX 192.010000
+STD 9.601557
+	 average response: 2
+	 total successful requests: 1293.000000
+	     % successful requests: 1.00
+App: 6
+	 on service: 56
+	 on node: ['n3lt3ln3']
+	 total requests: 1298
+AVG 7.265008
+MIN 5.010000
+MAX 201.010000
+STD 9.903178
+	 average response: 7
+	 total successful requests: 1293.000000
+	     % successful requests: 1.00
+App: 6
+	 on service: 113
+	 on node: ['n3lt7ln4' 'n3lt7ln5']
+	 total requests: 1249
+AVG 1.086061
+MIN 1.010000
+MAX 11.010000
+STD 0.725991
+	 average response: 1
+	 total successful requests: 1249.000000
+	     % successful requests: 1.00
+Global % of successful requests: 1.00
+Averages by app: 1
+	 avg. response time: 15.996378
+	 avg. successful requests: 1293.222222
+	 avg. % successful requests: 0.995552
+Averages by app: 2
+	 avg. response time: 16.781288
+	 avg. successful requests: 1293.000000
+	 avg. % successful requests: 0.995381
+Averages by app: 3
+	 avg. response time: 14.495861
+	 avg. successful requests: 1297.900000
+	 avg. % successful requests: 0.999153
+Averages by app: 4
+	 avg. response time: 2.309073
+	 avg. successful requests: 1295.222222
+	 avg. % successful requests: 0.997092
+Averages by app: 5
+	 avg. response time: 2.690984
+	 avg. successful requests: 1296.636364
+	 avg. % successful requests: 0.998250
+Averages by app: 6
+	 avg. response time: 2.885640
+	 avg. successful requests: 1287.666667
+	 avg. % successful requests: 0.998203

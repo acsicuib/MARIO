@@ -1,0 +1,1 @@
+CASE P2_s3Apps ALL: {'migrate': 0.4069767441860465, 'replicate': 0.313953488372093, 'undeploy': 0.1511627906976744}Apps WS: {}Apps LS: {'migrate': 0.813953488372093, 'replicate': 0.627906976744186, 'undeploy': 0.3023255813953488}
