@@ -1,14 +1,12 @@
-# Description
-
-MARIOII publication is under review.
+# Declarative Application Management in the Fog: A Bacteria-Inspired Decentralised Approach
 
 
+## Cite this article
+Brogi, A., Forti, S., Guerrero, C. et al. Declarative Application Management in the Fog. 
+J Grid Computing 19, 45 (2021). https://doi.org/10.1007/s10723-021-09582-y
 
-## Acknowledge
+[Link](https://link.springer.com/article/10.1007/s10723-021-09582-y)
 
-```text
-PENDING
-```
 
 In the article you can understand the behavior implemented in this project. Here we briefly comment on those aspects taken into account for its implementation:
 
