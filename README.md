@@ -12,8 +12,11 @@ Managing next-gen applications over Fog computing infrastructures is challenging
 
 ## Acknowledge
 
+Paper available at: https://onlinelibrary.wiley.com/doi/full/10.1002/smr.2405
+
 ```text
-PENDING
+Forti, S, Lera, I, Guerrero, C, Brogi, A. Osmotic management of distributed complex systems: A declarative decentralised approach. J Softw Evol Proc. 2021;e2405. doi:10.1002/smr.2405
+
 ```
 
 In the article you can understand the behavior implemented in this project. Here we briefly comment on those aspects taken into account for its implementation:
