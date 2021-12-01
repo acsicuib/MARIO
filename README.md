@@ -6,9 +6,6 @@
  
 Managing next-gen applications over Fog computing infrastructures is challenging and calls for new methodologies and tools that enable flexible, scalable and application-specific management along the Cloud-IoT continuum. This article proposes a novel approach for realising a fully decentralised application management in opportunistic Fog computing infrastructures. We present a Prolog implementation of the approach and assess it over some motivating scenarios by experimenting with three different management policies via simulation.
  
-- Extending the initial idea of: https://github.com/acsicuib/MARIO/tree/gauss2020
-- Journal of Software: Evolution and Process
-- Status: Major revision 
 
 ## Acknowledge
 
@@ -18,6 +15,7 @@ Paper available at: https://onlinelibrary.wiley.com/doi/full/10.1002/smr.2405
 Forti, S, Lera, I, Guerrero, C, Brogi, A. Osmotic management of distributed complex systems: A declarative decentralised approach. J Softw Evol Proc. 2021;e2405. doi:10.1002/smr.2405
 
 ```
+- Extending the initial idea of: https://github.com/acsicuib/MARIO/tree/gauss2020
 
 In the article you can understand the behavior implemented in this project. Here we briefly comment on those aspects taken into account for its implementation:
 
